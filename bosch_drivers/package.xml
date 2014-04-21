@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<package>
+  <name>bosch_drivers</name>
+  <version>0.4.4</version>
+  <description>Collection of hardware drivers.
+  This metapackage primarily contains drivers for MEMS sensors from Bosch Sensortec. Sensors require a hardware interface, such as an Ardunio, to connect to the computer. The drivers are not dependent on ROS, but basic ROS nodes are provided. Other hardware drivers in use at Bosch RTC are also found in this metapackage.</description>
+  <url type="website">http://wiki.ros.org/bosch_drivers</url>
+  <url type="repository">https://github.com/bosch-ros-pkg/bosch_drivers</url>
+  <url type="bugtracker">https://github.com/bosch-ros-pkg/bosch_drivers/issues</url>
+  <license>BSD</license>
+  <license>LGPL</license>
+  <license>Apache 2.0</license>
+  <maintainer email="Philip.Roan@us.bosch.com">Philip Roan</maintainer>
+  <author>Philip Roan</author>
+  <author>Benjamin Pitzer</author>
+  <author>Joshua Vasquez</author>
+  <author>and others</author>
+
+
+  <!-- The *_depend tags are used to specify dependencies -->
+  <!-- Dependencies can be catkin packages or system dependencies -->
+  <!-- Examples: -->
+  <!-- Use build_depend for packages you need at compile time: -->
+  <!--   <build_depend>message_generation</build_depend> -->
+  <!-- Use buildtool_depend for build tool packages: -->
+  <!--   <buildtool_depend>catkin</buildtool_depend> -->
+  <!-- Use run_depend for packages you need at runtime: -->
+  <!--   <run_depend>message_runtime</run_depend> -->
+  <!-- Use test_depend for packages you need only for testing: -->
+  <!--   <test_depend>gtest</test_depend> -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <metapackage />
+  </export>
+</package>
