@@ -92,8 +92,9 @@ bool PwmDriver::set( float value )
   temp = (duty_cycle & (0xFF << 0));
   duty_cycle_chopped[3] = (uint8_t)temp;
   
-  //std::cout << "duty_cycle: " << duty_cycle << "  chopped: " << duty_cycle_chopped[0] + 0 << " " << duty_cycle_chopped[1] + 0 << " " << duty_cycle_chopped[2] + 0 << " " << duty_cycle_chopped[3] + 0 << " " << std::endl;
   
+  //std::cout << "duty_cycle: " << duty_cycle << "  chopped: " << duty_cycle_chopped[0] + 0 << " " << duty_cycle_chopped[1] + 0 << " " << duty_cycle_chopped[2] + 0 << " " << duty_cycle_chopped[3] + 0 << " " << std::endl;
+
   if( hardware_->write( this->getDeviceAddress(), PWM, _frequency, flags, _pin, duty_cycle_chopped, num_bytes ) < 0 )
   {
     ROS_ERROR("PwmDriver::setPWM(): could not write PWM to serial device.");

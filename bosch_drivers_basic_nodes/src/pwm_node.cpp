@@ -58,8 +58,8 @@ int main( int argc, char **argv )
   Arduino.initialize();
   
   uint8_t pwm_pin = 5;
-  uint32_t frequency = 490;
-  PwmDriver* pwm_driver = new PwmDriver( &Arduino, pwm_pin, frequency ); 
+  uint32_t frequency = 490; //[Hz]
+  PwmDriver* pwm_driver = new PwmDriver( &Arduino, frequency, pwm_pin ); 
   if( pwm_driver->initialize() == false)
   {
     ROS_ERROR("Error initializing PWM driver");

@@ -160,40 +160,40 @@ ssize_t ArduinoInterface::read( int device_address, interface_protocol protocol,
 ssize_t ArduinoInterface::write( int device_address, interface_protocol protocol, int frequency, int* flags, uint8_t reg_address, uint8_t* data, size_t num_bytes )
 { 
   int error_code = 0;
-
+  
   // Check connection:
   if( connection_failure_ == true )
   {
-		std::cout << "connection_failure, hardware initialized?" << '\n';
+    std::cout << "connection_failure, hardware initialized?" << '\n';
     return -1;
   }
   
-	// Specify data package as write command
+  // Specify data package as write command
   data_packet_ = WRITE;
-
-	// Specify data package protocol
-	data_packet_ |= (protocol << 1);
- 
+  
+  // Specify data package protocol
+  data_packet_ |= (protocol << 1);
+  
   switch( protocol )
   {
     case I2C:
-	  {
+    {
       error_code = arduinoI2cWrite( (uint8_t)device_address, (uint32_t)frequency, reg_address, data, num_bytes );
       break;
-	  }
+    }
     case SPI:
     {
       error_code = arduinoSpiWrite ( (uint8_t)frequency, (uint8_t)flags[0], reg_address, data, num_bytes );
       break;
     }
-	  case PWM:
-	  {
-	    // Arduino only accepts 8 Bit PWM, so pass MSB only
-		  error_code = arduinoPwmWrite( (uint32_t)frequency, reg_address, data[0] );
-		  break;
-	  }
-	  case GPIO:
-	  {
+    case PWM:
+    {
+      // Arduino only accepts 8 Bit PWM, so pass MSB only
+      error_code = arduinoPwmWrite( (uint32_t)frequency, reg_address, data[0] );
+      break;
+    }
+    case GPIO:
+    {
       error_code = arduinoGpioWrite( reg_address, (bool)data[0] );
       break;
     }
