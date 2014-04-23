@@ -5,9 +5,9 @@ project(bosch_drivers_basic_nodes)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  roscpp
   bosch_drivers_common
   arduino_interface
-  uniserial
   pwm_driver
 )
 

@@ -5,8 +5,8 @@ project(arduino_interface)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  bosch_drivers_common
   roscpp
+  bosch_drivers_common
   uniserial
 )
 
@@ -82,7 +82,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES arduino_interface
-#  CATKIN_DEPENDS bosch_drivers_common roscpp uniserial
+  CATKIN_DEPENDS roscpp bosch_drivers_common uniserial
 )
 
 ###########

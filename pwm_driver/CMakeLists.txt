@@ -5,6 +5,7 @@ project(pwm_driver)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  roscpp
   bosch_drivers_common
 )
 
@@ -80,7 +81,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES pwm_driver
-#  CATKIN_DEPENDS bosch_drivers_common
+  CATKIN_DEPENDS roscpp bosch_drivers_common
 #  DEPENDS system_lib
 )
 

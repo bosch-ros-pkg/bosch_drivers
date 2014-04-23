@@ -39,8 +39,8 @@
 #ifndef PWM_Driver_H_
 #define PWM_Driver_H_
 
-// ROS headers for debugging output
-#include <ros/console.h>
+#include <ros/console.h> // ROS headers for debugging output
+
 #include <bosch_drivers_common/bosch_drivers_common.hpp>
 #include <bosch_drivers_common/bosch_drivers_sensor_driver.hpp>
 #include <bosch_drivers_common/bosch_drivers_hardware_interface.hpp>
