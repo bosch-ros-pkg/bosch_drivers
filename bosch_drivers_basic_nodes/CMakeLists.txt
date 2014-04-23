@@ -1,11 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(pwm_driver)
+project(bosch_drivers_basic_nodes)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   bosch_drivers_common
+  arduino_interface
+  uniserial
+  pwm_driver
 )
 
 ## System dependencies are found with CMake's conventions
@@ -78,9 +81,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES pwm_driver
-#  CATKIN_DEPENDS bosch_drivers_common
+#  INCLUDE_DIRS include
+#  LIBRARIES bosch_drivers_basic_nodes
+#  CATKIN_DEPENDS arduino_interface bosch_drivers_common pwm_driver
 #  DEPENDS system_lib
 )
 
@@ -92,26 +95,25 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-  include
   ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
- add_library(pwm_driver
-   src/pwm_driver.cpp
- )
+# add_library(bosch_drivers_basic_nodes
+#   src/${PROJECT_NAME}/bosch_drivers_basic_nodes.cpp
+# )
 
 ## Declare a cpp executable
-# add_executable(pwm_driver_node src/pwm_driver_node.cpp)
+add_executable(pwm_node src/pwm_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(pwm_driver_node pwm_driver_generate_messages_cpp)
+# add_dependencies(bosch_drivers_basic_nodes_node bosch_drivers_basic_nodes_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(pwm_driver_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(pwm_node
+  ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##
@@ -128,11 +130,9 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS pwm_driver pwm_driver_node
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+install(TARGETS pwm_node
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 ## Mark cpp header files for installation
 # install(DIRECTORY include/${PROJECT_NAME}/
@@ -153,7 +153,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_pwm_driver.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_bosch_drivers_basic_nodes.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

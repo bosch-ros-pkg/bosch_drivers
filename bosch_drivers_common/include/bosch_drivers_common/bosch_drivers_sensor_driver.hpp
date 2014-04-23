@@ -40,9 +40,9 @@
 #define BOSCH_DRIVERS_SENSOR_DRIVER_H_
 
 
-#include <bosch_drivers_common.hpp>
-#include <bosch_drivers_parameters.hpp>
-#include <bosch_drivers_hardware_interface.hpp>
+#include "bosch_drivers_common.hpp"
+#include "bosch_drivers_parameters.hpp"
+#include "bosch_drivers_hardware_interface.hpp"
 
 namespace bosch_drivers_common
 {

@@ -39,7 +39,7 @@
 #ifndef BOSCH_DRIVERS_PARAMETERS_H_
 #define BOSCH_DRIVERS_PARAMETERS_H_
 
-#include <bosch_drivers_common.hpp>
+#include "bosch_drivers_common.hpp"
 
 namespace bosch_drivers_common
 { 

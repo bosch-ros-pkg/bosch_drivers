@@ -2,7 +2,7 @@
  *
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2012, Robert Bosch LLC.
+ *  Copyright (c) 2013, Robert Bosch LLC.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -34,55 +34,54 @@
  *
  *********************************************************************/
 
-//\Author Joshua Vasquez and Philip Roan, Robert Bosch LLC
+//\Author Kai Franke, Robert Bosch LLC
 
-#ifndef ARDUINO_CONSTANTS_H_
-#define ARDUINO_CONSTANTS_H_
+// ROS headers
+#include <ros/ros.h>
 
-/** This file includes constants common to the arduino sketches and the driver.
- * It includes bosch_drivers_common.hpp for the \p interface_protocol enumeration
- * and the \p NULL_DEVICE definition.
- */
+#include <arduino_interface/arduino_interface.hpp> 
+#include <pwm_driver/pwm_driver.h>
 
-#include <bosch_drivers_common/bosch_drivers_common.hpp>
-
-namespace bosch_drivers_common
+int main( int argc, char **argv )
 {
-  /**
-   * \brief Default BAUD rate for connecting devices over serial ports
-   *
-   * Constant is of type \p long to fit on Arduino, where an int is 16 bits.
-   */
-  static const unsigned long DEFAULT_BAUD_RATE = 115200;
+  
+  //ROS initialization and publisher/subscriber setup
+  ros::init( argc, argv, "PWM_Driver" );
+  ros::NodeHandle nh("~");
 
-  /**
-   * The following constants are serial codes used to ensure that the 
-   * Arduino hardware and arduino_interface class are communicating 
-   * correctly over the serial port:
-   * \var static const uint8_t VERIFY  
-   * \var static const uint8_t SUCCESS 
-   * \var static const uint8_t FAILURE      
-   * \var static const uint8_t FREQ_STANDARD 
-   * \var static const uint8_t FREQ_FAST
-   */
-  static const uint8_t VERIFY  = 0x33; 
-  static const uint8_t SUCCESS = 0x34;
-  static const uint8_t FAILURE = 0x35;
+  std::string hw_id;
   
-  /**
-   * \brief I2C frequency selection 
-   */
-  
-  static const uint8_t FREQ_STANDARD = 0x00; // 100 kHz
-  static const uint8_t FREQ_FAST     = 0x01; // 400 kHz
+  // Get parameters from .launch file or parameter server, or take defaults
+  nh.param<std::string>( "hardware_id", hw_id, "/dev/ttyACM0" );
 
-  static const uint8_t READ = 0;
-  static const uint8_t WRITE = 1;
+  ArduinoInterface Arduino( hw_id );
+  Arduino.initialize();
   
-  /**
-   * \brief ADC constants
-   */
-  uint16_t MAX_ADC_VALUE = 1023;
+  uint8_t pwm_pin = 5;
+  uint32_t frequency = 490;
+  PwmDriver* pwm_driver = new PwmDriver( &Arduino, pwm_pin, frequency ); 
+  if( pwm_driver->initialize() == false)
+  {
+    ROS_ERROR("Error initializing PWM driver");
+    return -1;
+  }
+
+  ros::Rate loop_rate_Hz(50);
+
+  float duty_cycle = 0;
+
+  while( nh.ok() )
+  {
+    pwm_driver->set(duty_cycle);
+
+    duty_cycle += 0.005;
+    if( duty_cycle > 1)
+      duty_cycle = 0;
+      
+    ros::spinOnce();
+    loop_rate_Hz.sleep();
+  }
+  
+  ROS_WARN( "Closing PWM driver." );
+  return 0;  
 }
-
-#endif //__ARDUINO_CONSTANTS_H__

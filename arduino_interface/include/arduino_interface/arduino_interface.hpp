@@ -42,10 +42,11 @@
 // ROS headers for debugging output
 #include <ros/console.h>
 
-#include <bosch_drivers_hardware_interface.hpp>
-#include <bosch_drivers_parameters.hpp>
+#include <bosch_drivers_common/bosch_drivers_hardware_interface.hpp>
+#include <bosch_drivers_common/bosch_drivers_parameters.hpp>
 
-#include <uniserial.hpp>
+#include <uniserial/uniserial.hpp>
+
 #include "arduino_constants.hpp"
 
 using namespace bosch_drivers_common;

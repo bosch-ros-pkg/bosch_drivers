@@ -41,9 +41,9 @@
 
 // ROS headers for debugging output
 #include <ros/console.h>
-#include <bosch_drivers_common.hpp>
-#include <bosch_drivers_sensor_driver.hpp>
-#include <bosch_drivers_hardware_interface.hpp>
+#include <bosch_drivers_common/bosch_drivers_common.hpp>
+#include <bosch_drivers_common/bosch_drivers_sensor_driver.hpp>
+#include <bosch_drivers_common/bosch_drivers_hardware_interface.hpp>
 
 using namespace bosch_drivers_common;
 
