@@ -1,13 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(bosch_drivers_basic_nodes)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   bosch_drivers_common
   arduino_interface
+  gpio_driver
   pwm_driver
 )
 
@@ -104,6 +102,7 @@ include_directories(
 # )
 
 ## Declare a cpp executable
+add_executable(gpio_node src/gpio_node.cpp)
 add_executable(pwm_node src/pwm_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
@@ -111,9 +110,13 @@ add_executable(pwm_node src/pwm_node.cpp)
 # add_dependencies(bosch_drivers_basic_nodes_node bosch_drivers_basic_nodes_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
+target_link_libraries(gpio_node
+  ${catkin_LIBRARIES}
+)
 target_link_libraries(pwm_node
   ${catkin_LIBRARIES}
 )
+
 
 #############
 ## Install ##
@@ -130,7 +133,7 @@ target_link_libraries(pwm_node
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS pwm_node
+install(TARGETS gpio_node pwm_node
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

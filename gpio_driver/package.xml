@@ -1,16 +1,14 @@
 <?xml version="1.0"?>
 <package>
-  <name>bosch_drivers_basic_nodes</name>
+  <name>gpio_driver</name>
   <version>0.1.1</version>
-  <description>This package contains basic nodes for running Bosch MEMS sensors. The nodes also serve as examples. Further examples can be found in bosch_drivers_examples.</description>
-  <url type="website">http://wiki.ros.org/bosch_drivers_basic_nodes</url>
-  <url type="repository">https://github.com/bosch-ros-pkg/bosch_drivers/bosch_drivers_basic_nodes</url>
-  <url type="bugtracker">https://github.com/bosch-ros-pkg/bosch_drivers/bosch_drivers_basic_nodes/issues</url>
+  <description>This pacakge provides  access the general purpose input and ouput (GPIO) pins of any supported hardware interface, such as Arduino. It is possible to configure pins as Output, floating Input, Input with Pullup or Input with Pulldown. Depending on the hardware used some of these options might not be available. Once the GPIO is configured it can be set to HIGH or LOW if output or can be read if configured as an input.</description> 
+  <url type="website">http://wiki.ros.org/gpio_driver</url>
+  <url type="repository">https://github.com/bosch-ros-pkg/bosch_drivers/gpio_driver</url>
+  <url type="bugtracker">https://github.com/bosch-ros-pkg/bosch_drivers/gpio_driver/issues</url>
   <license>BSD</license>
   <maintainer email="Philip.Roan@us.bosch.com">Philip Roan</maintainer>
-  <author>Joshua Vasquez</author>
   <author>Kai Franke</author>
-  <author email="Philip.Roan@us.bosch.com">Philip Roan</author>
 
 
   <!-- The *_depend tags are used to specify dependencies -->
@@ -28,15 +26,10 @@
 
   <build_depend>roscpp</build_depend>
   <build_depend>bosch_drivers_common</build_depend>
-  <build_depend>arduino_interface</build_depend>
-  <build_depend>gpio_driver</build_depend>
-  <build_depend>pwm_driver</build_depend>
 
   <run_depend>roscpp</run_depend>
   <run_depend>bosch_drivers_common</run_depend>
-  <run_depend>arduino_interface</run_depend>
-  <run_depend>gpio_driver</run_depend>
-  <run_depend>pwm_driver</run_depend>
+
 
 
   <!-- The export tag contains other, unspecified, tags -->
