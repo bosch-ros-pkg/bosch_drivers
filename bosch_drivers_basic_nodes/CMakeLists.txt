@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   arduino_interface
   gpio_driver
   pwm_driver
+  encoder_driver
 )
 
 ## System dependencies are found with CMake's conventions
@@ -104,6 +105,7 @@ include_directories(
 ## Declare a cpp executable
 add_executable(gpio_node src/gpio_node.cpp)
 add_executable(pwm_node src/pwm_node.cpp)
+add_executable(encoder_node src/encoder_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -114,6 +116,9 @@ target_link_libraries(gpio_node
   ${catkin_LIBRARIES}
 )
 target_link_libraries(pwm_node
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(encoder_node
   ${catkin_LIBRARIES}
 )
 
@@ -133,7 +138,7 @@ target_link_libraries(pwm_node
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS gpio_node pwm_node
+install(TARGETS gpio_node pwm_node encoder_node
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
