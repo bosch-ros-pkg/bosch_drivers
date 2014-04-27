@@ -3,6 +3,8 @@ project(bmp085_driver)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  message_generation
+  std_msgs
   bosch_drivers_common
 )
 
@@ -36,10 +38,9 @@ add_message_files( FILES
 )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages( DEPENDENCIES
+  std_msgs
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -53,7 +54,7 @@ add_message_files( FILES
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES bmp085_driver
-  CATKIN_DEPENDS roscpp bosch_drivers_common
+  CATKIN_DEPENDS roscpp message_runtime std_msgs bosch_drivers_common
 #  DEPENDS system_lib
 )
 

@@ -48,8 +48,8 @@
 //\Author Joshua Vasquez and Philip Roan, Robert Bosch LLC
 
 
-#ifndef BMP085_H_
-#define BMP085_H_
+#ifndef BMP085_DRIVER_H_
+#define BMP085_DRIVER_H_
 
 #include <cmath>
 #include <unistd.h> // for the sleep function
@@ -287,4 +287,4 @@ private:
   bool writeToReg( uint8_t reg, uint8_t value );
 };
 
-#endif // BMP085_H_
+#endif // BMP085_DRIVER_H_
