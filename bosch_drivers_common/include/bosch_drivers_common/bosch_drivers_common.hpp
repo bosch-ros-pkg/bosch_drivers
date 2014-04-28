@@ -94,7 +94,6 @@ namespace bosch_drivers_common
   static const uint8_t SPI_CLOCK_DIV_128 = 0x03;
   //static const uint8_t SPI_CLOCK_DIV64 0x07;
 
-  
   /**
    *  SPI Read/Write Flags
    * \brief  The following members are the relevant bitflag offsets necessary for prompting the sensor for an SPI read or write.
@@ -108,10 +107,10 @@ namespace bosch_drivers_common
    */
   static const uint8_t SPI_READ_FLAG = 7;
   static const uint8_t SPI_WRITE_FLAG = 7;
-  
-  
+    
   // \brief This constant is used to specify an SPI device with no chip select.
   static const uint8_t NULL_DEVICE = 0xFF;
+
 
   /**
    * \brief GPIO Constants
@@ -119,11 +118,13 @@ namespace bosch_drivers_common
    */
   enum gpio_input_mode { FLOATING, PULLUP, PULLDOWN };
 
+
   /**
    * \brief Motor Constants
    *
    */
   enum motor_drive_mode { DRIVE, FREE_RUNNING, BRAKE };
+
 
   /**
    * \brief encoder Constants

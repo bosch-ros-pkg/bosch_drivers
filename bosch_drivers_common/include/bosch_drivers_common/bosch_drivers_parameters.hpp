@@ -48,12 +48,17 @@ namespace bosch_drivers_common
    *
    * A specific parameters class for a particular sensor will inherit this class.
    */
-  class Parameters   
+  class bosch_driver_parameters   
   {
   public:
-    Parameters() {};
-    virtual ~Parameters() {};
+    bosch_driver_parameters() {};
+    virtual ~bosch_driver_parameters() {};
 
+    /**
+     * \brief The address of the sensor
+     *
+     */
+    uint8_t device_address_;
     /**
      * \brief The protocol which the sensor is configured to transmit data.
      *
@@ -71,56 +76,56 @@ namespace bosch_drivers_common
      *
      * This parameter is only relevant for sensors that support the SPI protocol.
      */
-    int pin_;              
+    //uint8_t pin_;              
  
     /**
-     * \brief An integer containing bit-order, mode, and the spi chip-select pin.
+     * \brief An byte containing bit-order, mode, and the spi chip-select pin.
      *
      * Packing this information into an 8-bit set of flags minimizes the number
      * of transmissions between the computer and the hardware interface.
      */
-    int flags_;   
+    uint8_t flags_;   
   
     /**
      * \brief Sets the frequency of the sensor data transmissions between the hardware interface and the sensor.
      */           
-    virtual bool setFrequency( int frequency ) = 0;
+    //virtual bool setFrequency( int frequency ) = 0;
 
     /**
      * \brief Retrieve the frequency at which the sensor data transmissions take place.
      */
-    virtual int getFrequency() = 0;
+    //virtual int getFrequency() = 0;
  
     /**
      * \brief Select the protocol that both the hardware interface and sensor use to communicate.
      *
      * \p interface_protocol is an enumerated datatype from bosch_drivers_common.
      */
-    virtual bool setProtocol( interface_protocol protocol_name ) = 0;
+    //virtual bool setProtocol( interface_protocol protocol_name ) = 0;
  
     /**
      * \brief Retrieve the communication protocol.
      */
-    virtual interface_protocol getProtocol() = 0;
+    //virtual interface_protocol getProtocol() = 0;
 
     /**
      * \brief Retreive the flags for communication between hardware interface and sensor.
      */
-    virtual int* getFlags() = 0; // SPI only
+    //virtual int* getFlags() = 0; // SPI only
  
     /**
      * \brief Alert software driver to which pin the sensor's chip-select pin is connected to.
      *
      * Relevant to SPI mode only.
      */
-    virtual bool setPin( uint8_t pin ) = 0; // SPI, GPIO only. In read/write methods, the pin is the input to the device_address.
+    //virtual bool setPin( uint8_t pin ) = 0; // SPI, GPIO only. In read/write methods, the pin is the input to the device_address.
  
     /**
      * \brief Retrieve the hardware pin that the sensor's chip-select pin is connected to.
      *
      * Relevant to SPI mode only.
      */
-    virtual int getPin() = 0; // SPI, GPIO only
+    //virtual int getPin() = 0; // SPI, GPIO only
   };
 }
 #endif //BOSCH_DRIVERS_PARAMETERS_H_

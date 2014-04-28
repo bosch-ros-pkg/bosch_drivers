@@ -77,10 +77,54 @@ namespace bosch_drivers_common
      * read from the bus without changing any chip select lines.
      * \note  For GPIO transactions, the \p device_address is the pin or port.
      */
-    virtual uint8_t getDeviceAddress() = 0; // depends on the parameters 
+    virtual uint8_t getDeviceAddress() = 0;
+
+    /**
+     * \brief Sets the frequency of the sensor data transmissions between the hardware interface and the sensor.
+     */           
+    virtual bool setFrequency( int frequency ) = 0;
+
+    /**
+     * \brief Retrieve the frequency at which the sensor data transmissions take place.
+     */
+    virtual int getFrequency() = 0;
+ 
+    /**
+     * \brief Select the protocol that both the hardware interface and sensor use to communicate.
+     *
+     * \p interface_protocol is an enumerated datatype from bosch_drivers_common.
+     */
+    virtual bool setProtocol( interface_protocol protocol_name ) = 0;
+ 
+    /**
+     * \brief Retrieve the communication protocol.
+     */
+    virtual interface_protocol getProtocol() = 0;
+
+    /**
+     * \brief Retreive the flags for communication between hardware interface and sensor.
+     */
+    virtual int* getFlags() = 0; // SPI only
+ 
+    /**
+     * \brief Alert software driver to which pin the sensor's chip-select pin is connected to.
+     *
+     * Relevant to SPI mode only.
+     */
+    //virtual bool setPin( uint8_t pin ) = 0; // SPI, GPIO only. In read/write methods, the pin is the input to the device_address.
+ 
+    /**
+     * \brief Retrieve the hardware pin that the sensor's chip-select pin is connected to.
+     *
+     * Relevant to SPI mode only.
+     */
+    //virtual int getPin() = 0; // SPI, GPIO only
+
+
  
   protected:
     bosch_hardware_interface* hardware_;
+    bosch_driver_parameters sensor_parameters_;
   };
 }
 #endif //BOSCH_DRIVERS_SENSOR_DRIVER_H_
