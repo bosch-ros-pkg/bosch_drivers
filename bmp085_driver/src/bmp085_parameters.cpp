@@ -50,106 +50,12 @@
 #include "bmp085_driver/bmp085_parameters.hpp"
 
 
-/**********************************************************************/
-// Constructor
-/**********************************************************************/
-BMP085Parameters::BMP085Parameters() 
+BMP085_parameters::BMP085_parameters() 
 {
-  // set defaults:
-  this->setFrequency( 400000 );
-  this->setProtocol( I2C );
-  this->setSamplingMode( STANDARD );
-  flags_ = 0;  // unused for this sensor since it does not support SPI.
 }
 
-
-/**********************************************************************/
-// Destructor
-/**********************************************************************/
-BMP085Parameters::~BMP085Parameters()
+BMP085_parameters::~BMP085_parameters()
 {
 }
 
 
-/**********************************************************************/
-/**********************************************************************/
-bool BMP085Parameters::setSamplingMode( sampling_mode mode )
-{
-  oss_ = mode;
-  return true;
-}
-
-
-/**********************************************************************/
-/**********************************************************************/
-bool BMP085Parameters::setProtocol( interface_protocol protocol )
-{
-  // This function must exist since it is an inherited virtual function.
-  if( protocol != I2C )
-  {
-    ROS_ERROR( "Cannot change protocol from default: I2C.  No other protocols are supported.");
-    return false;
-  }
-  else
-    protocol_ = protocol;
-  
-  return true;
-}
-
-
-/**********************************************************************/
-/**********************************************************************/
-bool BMP085Parameters::setFrequency( int frequency )
-{
-  frequency_ = frequency;
-  return true;
-}
-
-
-/**********************************************************************/
-/**********************************************************************/
-interface_protocol BMP085Parameters::getProtocol()
-{
-  return protocol_;
-}
-
-
-/**********************************************************************/
-/**********************************************************************/
-int BMP085Parameters::getFrequency()
-{
-  return frequency_;
-}
-
-
-/**********************************************************************/
-/**********************************************************************/
-bool BMP085Parameters::setPin( uint8_t pin)
-{
-  pin_ = pin;
-  return true;
-}
-
-
-/**********************************************************************/
-/**********************************************************************/
-int BMP085Parameters::getPin()
-{
-  return pin_;
-}
-
-
-/**********************************************************************/
-/**********************************************************************/
-int* BMP085Parameters::getFlags()
-{
-  return &flags_;
-}
-
-
-/**********************************************************************/
-/**********************************************************************/
-BMP085Parameters::sampling_mode BMP085Parameters::getSamplingMode()
-{
-  return oss_;
-}

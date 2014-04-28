@@ -104,7 +104,7 @@ namespace bosch_drivers_common
     /**
      * \brief Retreive the flags for communication between hardware interface and sensor.
      */
-    virtual int* getFlags() = 0; // SPI only
+    virtual uint8_t* getFlags() = 0; // SPI only
  
     /**
      * \brief Alert software driver to which pin the sensor's chip-select pin is connected to.
@@ -120,11 +120,11 @@ namespace bosch_drivers_common
      */
     //virtual int getPin() = 0; // SPI, GPIO only
 
-
+    bosch_driver_parameters getParameters();
  
   protected:
     bosch_hardware_interface* hardware_;
-    bosch_driver_parameters sensor_parameters_;
+    bosch_driver_parameters* sensor_parameters_;
   };
 }
 #endif //BOSCH_DRIVERS_SENSOR_DRIVER_H_

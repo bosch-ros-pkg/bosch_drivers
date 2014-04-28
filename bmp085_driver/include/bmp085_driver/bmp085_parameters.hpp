@@ -70,7 +70,7 @@
 
 using namespace bosch_drivers_common;
 
-class BMP085Parameters: public Parameters
+class BMP085_parameters: public bosch_driver_parameters
 {
 public:
 /*!
@@ -100,15 +100,15 @@ public:
   };
  
   /*!
-   * \fn BMP085Parameters()
+   * \fn BMP085bosch_driver_parameters()
    * \brief  constructor
    */
-  BMP085Parameters();
+  BMP085_parameters();
 /*!
- * \fn BMP085Parameters()
+ * \fn BMP085bosch_driver_parameters()
  * \brief  destructor
  */
-  ~BMP085Parameters();
+  ~BMP085_parameters();
 
 
 /*!
@@ -118,7 +118,7 @@ public:
  *     given by the enumerated datatype \a sampling_mode.
  * \return a boolean (always true because of the sampling_mode enum)
  */
-  bool setSamplingMode(sampling_mode mode);   
+  //bool setSamplingMode(sampling_mode mode);   
 
 /*!
  * \fn  bool setProtocol(interface_protocol protocol)
@@ -127,7 +127,7 @@ public:
  *     user does not need to call it, however.
  * \return true if the user requests I2C.
  */
-  bool setProtocol(interface_protocol protocol);
+  //bool setProtocol(interface_protocol protocol);
 
 /*!
  * \fn  bool setFrequency( int frequency)
@@ -137,7 +137,7 @@ public:
  *     all generic hardware interfaces.
  * \return a boolean indicating success.
  */
-  bool setFrequency(int frequency);
+  //bool setFrequency(int frequency);
   
 /*!
  * \fn  bool setPin( uint8_t pin)
@@ -148,7 +148,7 @@ public:
  * \note  user does not need to call this method. It is a dummy.
  * \return always true
  */
-  bool setPin( uint8_t pin);
+  //bool setPin( uint8_t pin);
 /*!
  * \fn  interface_protocol getProtocol()
  * \brief returns the interface protocol that this sensor is using to
@@ -156,7 +156,7 @@ public:
  * \return  an interface_protocol enumerated datatype from 
  *      bosch_drivers_common.
  */ 
-  interface_protocol  getProtocol();
+  //interface_protocol  getProtocol();
 
 /*!
  * \fn int getFrequency()
@@ -164,7 +164,7 @@ public:
  *     set to be read from the generic hardware interface.
  * \return an int, representing the frequency.
  */
-  int         getFrequency();
+  //int         getFrequency();
 
 /*!
  * \fn int* getFlags()
@@ -176,7 +176,7 @@ public:
  * \note  user does not need to call this method. It is a dummy.
  * \return the memory address of the class value: \a flags_
  */
-  int*         getFlags();
+  //int*         getFlags();
 
 /*!
  * \fn int  getPin()
@@ -187,7 +187,7 @@ public:
  * \note  user does not need to call this method. It is a dummy.
  * \return  \a pin_
  */
-  int         getPin();
+  //int         getPin();
 
 /*!
  * \fn  sampling_mode getSamplingMode()
@@ -198,7 +198,7 @@ public:
  *     raw sensor values.
  * \return a sampling_mode enumerated datatype.
  */  
-  sampling_mode getSamplingMode();
+  //sampling_mode getSamplingMode();
 
 
   // Hardware_Interface hardware_; //|--> we inherit these members from the parameters class!

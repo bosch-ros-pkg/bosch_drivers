@@ -70,7 +70,7 @@ using namespace bosch_drivers_common;
  * \warning   This class implements it's methods through a generic
  * hardware interface.
  */
-class BMP085: public sensor_driver, public BMP085Parameters
+class BMP085: public sensor_driver
 {
 public:
 
@@ -108,7 +108,7 @@ public:
   ~BMP085(); 
 
   // inheritted from sensor_driver
-  uint8_t getDeviceAddress(); // depends on protocol_.
+  //uint8_t getDeviceAddress(); // depends on protocol_.
   
   /**
    * \brief sends a prompt to initialize the connected hardware device so 
@@ -186,6 +186,16 @@ public:
    * \param input_pressure the new reference pressure in [kPa]
    */
   void setPressureAtSeaLevel( double pressure );
+
+  bool setSamplingMode( BMP085_parameters::sampling_mode mode );
+  BMP085_parameters::sampling_mode getSamplingMode();
+
+  uint8_t getDeviceAddress();
+  bool setProtocol( interface_protocol protocol );
+  interface_protocol getProtocol();
+
+  bool setFrequency( int frequency );
+  int getFrequency();
 
 private:
   // BMP085 Register Addresses

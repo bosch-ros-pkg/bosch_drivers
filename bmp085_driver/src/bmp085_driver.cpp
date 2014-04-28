@@ -58,9 +58,15 @@
 // Constructor
 /**********************************************************************/
 BMP085::BMP085( bosch_hardware_interface* hw ) :
-  sensor_driver( hw ),
-  BMP085Parameters()
+  sensor_driver( hw )
 {
+  sensor_parameters_ = new BMP085_parameters();
+  sensor_parameters_->device_address_ = DEVICE_ADDRESS; //fixed and defined in header
+  sensor_parameters_->frequency_ = 400000; // [Hz]
+  sensor_parameters_->protocol_ = I2C;
+  ((BMP085_parameters*)sensor_parameters_)->oss_ = BMP085_parameters::STANDARD;
+  //flags_ = 0;  // unused for this sensor since it does not support SPI.
+
   // set default pressure at sea level:
   pressure_at_sea_level_ = 101.325; // in [kPa]
 }
@@ -71,6 +77,7 @@ BMP085::BMP085( bosch_hardware_interface* hw ) :
 /**********************************************************************/
 BMP085::~BMP085() 
 {
+  delete sensor_parameters_;
 }
 
 
@@ -104,7 +111,8 @@ bool BMP085::initialize()
    
   // Read 22 bytes of Calibration-constant data
  
-  if( hardware_->read( this->getDeviceAddress(), this->getProtocol(), this->getFrequency(), this->getFlags(), (uint8_t)ADDRESS_AC1_MSB, FullCalData, 22 ) < 0 )
+  //if( hardware_->read( this->getDeviceAddress(), this->getProtocol(), this->getFrequency(), this->getFlags(), (uint8_t)ADDRESS_AC1_MSB, FullCalData, 22 ) < 0 )
+  if( hardware_->read( *sensor_parameters_, (uint8_t)ADDRESS_AC1_MSB, FullCalData, 22 ) < 0 )
   {
     ROS_ERROR("BMP085::initialize(): Invalid Calibration data");
     return false;
@@ -151,17 +159,7 @@ bool BMP085::takeMeasurement()
 /**********************************************************************/
 uint8_t BMP085::getDeviceAddress()
 {
-  // I2C is the only way the sensor can be read.  
-  // Ensure I2C has been set:
-  switch( this->getProtocol() )
-  {
-  case I2C:
-    return DEVICE_ADDRESS;
-    break;
-  default:
-    ROS_ERROR("BMP085::getDeviceAddress(): Protocol not set in parameters. Please set a protocol, and recompile.");
-    return DEVICE_ADDRESS;
-  } 
+  return sensor_parameters_->device_address_;
 }
 
 
@@ -339,10 +337,79 @@ void BMP085::setPressureAtSeaLevel( double pressure )
 /**********************************************************************/
 bool BMP085::writeToReg( uint8_t reg, uint8_t value )
 {
-  if( hardware_->write( this->getDeviceAddress(), this->getProtocol(), this->getFrequency(), this->getFlags(), (uint8_t)reg, &value, 1 ) < 0 )
+  //if( hardware_->write( this->getDeviceAddress(), this->getProtocol(), this->getFrequency(), this->getFlags(), (uint8_t)reg, &value, 1 ) < 0 )
+  if( hardware_->write( *sensor_parameters_, (uint8_t)reg, &value, 1 ) < 0 )
   {
     ROS_ERROR("could not write value to register."); 
     return false;
   }
   return true;
+}
+
+/**********************************************************************/
+/**********************************************************************/
+bool BMP085::setSamplingMode( BMP085_parameters::sampling_mode mode )
+{
+  ((BMP085_parameters*)sensor_parameters_)->oss_ = mode;
+  return true;
+}
+
+
+/**********************************************************************/
+/**********************************************************************/
+bool BMP085::setProtocol( interface_protocol protocol )
+{
+  // This function must exist since it is an inherited virtual function.
+  if( protocol != I2C )
+  {
+    ROS_ERROR( "Cannot change protocol from default: I2C.  No other protocols are supported.");
+    return false;
+  }
+  else
+  {
+    sensor_parameters_->protocol_ = protocol;
+  }
+  return true;
+}
+
+
+/**********************************************************************/
+/**********************************************************************/
+bool BMP085::setFrequency( int frequency )
+{
+  sensor_parameters_->frequency_ = frequency;
+  return true;
+}
+
+
+/**********************************************************************/
+/**********************************************************************/
+interface_protocol BMP085::getProtocol()
+{
+  return sensor_parameters_->protocol_;
+}
+
+
+/**********************************************************************/
+/**********************************************************************/
+int BMP085::getFrequency()
+{
+  return sensor_parameters_->frequency_;
+}
+
+
+
+/**********************************************************************/
+/**********************************************************************/
+//int* BMP085::getFlags()
+//{
+//  return sensor_parameters_->&flags_;
+//}
+
+
+/**********************************************************************/
+/**********************************************************************/
+BMP085_parameters::sampling_mode BMP085::getSamplingMode()
+{
+  return ((BMP085_parameters*)sensor_parameters_)->oss_;
 }
