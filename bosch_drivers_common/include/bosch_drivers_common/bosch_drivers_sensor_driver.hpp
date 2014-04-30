@@ -79,6 +79,7 @@ namespace bosch_drivers_common
      */
     virtual uint8_t getDeviceAddress() = 0;
 
+    virtual bool setDeviceAddress() = 0;
     /**
      * \brief Sets the frequency of the sensor data transmissions between the hardware interface and the sensor.
      */           

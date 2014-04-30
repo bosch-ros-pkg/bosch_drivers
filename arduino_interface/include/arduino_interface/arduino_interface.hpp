@@ -127,16 +127,16 @@ private:
   ssize_t arduinoSpiWrite( uint8_t frequency, uint8_t flags, uint8_t reg_address, uint8_t* data, size_t num_bytes );
   ssize_t arduinoI2cRead( uint8_t device_address, uint32_t frequency, uint8_t reg_address, uint8_t* data, size_t num_bytes );                
   ssize_t arduinoI2cWrite( uint8_t device_address, uint32_t frequency, uint8_t reg_address, uint8_t* data, size_t num_bytes );
-	ssize_t arduinoPwmWrite( uint32_t frequency, uint8_t reg_address, uint8_t data );
-	ssize_t arduinoGpioRead( uint8_t flags, uint8_t pin, uint8_t* value );
-	ssize_t arduinoGpioWrite( uint8_t pin, bool value );
-	ssize_t arduinoEncoderRead( int* pin, uint8_t* data );
-	ssize_t arduinoEncoderWrite( int* flags, uint8_t* data );
-	ssize_t arduinoAdcWrite( uint8_t* voltage );
-	ssize_t arduinoAdcRead( uint8_t pin, uint8_t* data );
-
+  ssize_t arduinoPwmWrite( uint32_t frequency, uint8_t reg_address, uint8_t data );
+  ssize_t arduinoGpioRead( uint8_t flags, uint8_t pin, uint8_t* value );
+  ssize_t arduinoGpioWrite( uint8_t pin, bool value );
+  ssize_t arduinoEncoderRead( uint8_t device_address, uint8_t* data );
+  ssize_t arduinoEncoderWrite( uint8_t device_address, uint8_t* data );
+  ssize_t arduinoAdcWrite( uint8_t* voltage );
+  ssize_t arduinoAdcRead( uint8_t pin, uint8_t* data );
+  
   bool waitOnBytes( int num_bytes );
-
+  
   /**
    * \brief Serial port where the Arduino can be found.
    *

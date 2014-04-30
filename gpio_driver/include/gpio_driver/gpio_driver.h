@@ -36,8 +36,8 @@
 
 //\Author Kai Franke, Robert Bosch LLC
 
-#ifndef GPIO_Driver_H_
-#define GPIO_Driver_H_
+#ifndef GPIO_DRIVER_H_
+#define GPIO_DRIVER_H_
 
 // ROS headers for debugging output
 #include <ros/console.h>
@@ -66,7 +66,7 @@ public:
    * \param pin GPIO pin number on the hardware device
    */
   GpioDriver( bosch_hardware_interface* hw, uint8_t pin );
- 
+
   // Destructor:
   ~GpioDriver();
 
@@ -77,25 +77,22 @@ public:
    * \param value 0 will set the GPIO pin to LOW and 1 will set it to HIGH
    * \return true if GPIO output was successful or false if not
    */
-	bool set( bool value );
-	
-	/**
+  bool set( bool value );
+  
+  /**
    * \brief Performs a digital read on the GPIO Pin returning the read value in \a value
    * \param mode configures the input pin to be either floating, add a pullup or a pulldown
    * \return Read value at given pin. 1 if selected Pin is HIGH and 0 if it is LOW
    */
-	bool get( gpio_input_mode mode );
-	
+  bool get( gpio_input_mode mode );
+  
   /**
    * \brief Initializes the driver and the connected hardware
    * 
    * \return a boolean indicating success
    */
   bool initialize();
-  
-private:
-  uint8_t _pin;
 };
 
-#endif // GPIO_Driver_H_
+#endif // GPIO_DRIVER_H_
 
