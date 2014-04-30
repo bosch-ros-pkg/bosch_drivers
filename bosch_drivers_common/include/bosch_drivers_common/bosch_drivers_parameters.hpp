@@ -52,24 +52,27 @@ namespace bosch_drivers_common
   {
   public:
     bosch_driver_parameters() {};
-    virtual ~bosch_driver_parameters() {};
+    ~bosch_driver_parameters() {};
 
     /**
-     * \brief The address of the sensor
+     * \brief The address or ID of the sensor.
+     *
+     * For devices such as GPIO or PWM drivers, this is the pin number on the hardware interface.
      *
      */
-    uint8_t device_address_;
+    uint8_t sensor_id;
+    uint8_t device_address; // propose change to "sensor_id"
     /**
      * \brief The protocol which the sensor is configured to transmit data.
      *
      * Some sensors support multiple protocols. See \link bma180 \endlink.
      */
-    interface_protocol protocol_;
+    interface_protocol protocol;
     
     /**
      * \brief The frequency at which data is being sent on the particular protocol.
      */
-    int frequency_;
+    unsigned int frequency;
 
     /**
      * \brief the pin on the hardware interface which the sensor has connected it's chip-select line.
@@ -84,7 +87,7 @@ namespace bosch_drivers_common
      * Packing this information into an 8-bit set of flags minimizes the number
      * of transmissions between the computer and the hardware interface.
      */
-    uint8_t flags_;   
+    uint8_t flags;   
   
     /**
      * \brief Sets the frequency of the sensor data transmissions between the hardware interface and the sensor.

@@ -42,6 +42,7 @@
 #include <string>
 
 #include "bosch_drivers_common.hpp"
+#include "bosch_drivers_parameters.hpp"
 
 namespace bosch_drivers_common
 {
@@ -105,8 +106,8 @@ namespace bosch_drivers_common
      */
     virtual ssize_t read( uint8_t device_address, 
                           interface_protocol protocol, 
-                          int frequency, 
-                          uint8_t* flags, // relevant for SPI communiction
+                          unsigned int frequency, 
+                          uint8_t flags, // relevant for SPI communiction
                           uint8_t reg_address, 
                           uint8_t* data, 
                           size_t num_bytes ) = 0;               
@@ -146,8 +147,8 @@ namespace bosch_drivers_common
      */
     virtual ssize_t write( uint8_t device_address, 
                            interface_protocol protocol, 
-                           int frequency,
-                           int* flags, 
+                           unsigned int frequency,
+                           uint8_t flags, 
                            uint8_t reg_address, 
                            uint8_t* data, 
                            size_t num_bytes ) = 0;

@@ -101,7 +101,12 @@ bool ArduinoInterface::initialize()
 /**********************************************************************/
 // Read
 /**********************************************************************/
-ssize_t ArduinoInterface::read( int device_address, interface_protocol protocol, int frequency, int* flags, uint8_t reg_address, uint8_t* data, size_t num_bytes )
+ssize_t ArduinoInterface::read( bosch_driver_parameters parameters, uint8_t reg_address, uint8_t* data, size_t num_bytes )
+{
+  return read( parameters.device_address, parameters.protocol, parameters.frequency, parameters.flags, reg_address, data, num_bytes );
+}
+
+ssize_t ArduinoInterface::read( uint8_t device_address, interface_protocol protocol, unsigned int frequency, uint8_t flags, uint8_t reg_address, uint8_t* data, size_t num_bytes )
 {
   int error_code = 0;
   
@@ -126,17 +131,17 @@ ssize_t ArduinoInterface::read( int device_address, interface_protocol protocol,
     }
     case SPI: 
     {
-      error_code = arduinoSpiRead( (uint8_t)frequency, (uint8_t)flags[0], reg_address, data, num_bytes );
+      error_code = arduinoSpiRead( (uint8_t)frequency, (uint8_t)flags, reg_address, data, num_bytes );
       break;
     } 
     case GPIO:
     {
-      error_code = arduinoGpioRead( (uint8_t)flags[0], reg_address, data );
+      error_code = arduinoGpioRead( (uint8_t)flags, reg_address, data );
       break;
     }
     case ENCODER:
     {
-      error_code = arduinoEncoderRead( device_address, flags, data );
+      error_code = arduinoEncoderRead( device_address, data );
       break;
     }
     case ADCONVERTER:
@@ -157,7 +162,12 @@ ssize_t ArduinoInterface::read( int device_address, interface_protocol protocol,
 /**********************************************************************/
 // Write
 /**********************************************************************/
-ssize_t ArduinoInterface::write( int device_address, interface_protocol protocol, int frequency, int* flags, uint8_t reg_address, uint8_t* data, size_t num_bytes )
+ssize_t ArduinoInterface::write( bosch_driver_parameters parameters, uint8_t reg_address, uint8_t* data, size_t num_bytes )
+{
+  return write( parameters.device_address, parameters.protocol, parameters.frequency, parameters.flags, reg_address, data, num_bytes );
+}
+
+ssize_t ArduinoInterface::write( uint8_t device_address, interface_protocol protocol, unsigned int frequency, uint8_t flags, uint8_t reg_address, uint8_t* data, size_t num_bytes )
 { 
   int error_code = 0;
   
@@ -183,13 +193,13 @@ ssize_t ArduinoInterface::write( int device_address, interface_protocol protocol
     }
     case SPI:
     {
-      error_code = arduinoSpiWrite ( (uint8_t)frequency, (uint8_t)flags[0], reg_address, data, num_bytes );
+      error_code = arduinoSpiWrite ( (uint8_t)frequency, flags, reg_address, data, num_bytes );
       break;
     }
     case PWM:
     {
       // Arduino only accepts 8 Bit PWM, so pass MSB only
-      error_code = arduinoPwmWrite( device_address_, (uint32_t)frequency, data[0] );
+      error_code = arduinoPwmWrite( device_address, (uint32_t)frequency, data[0] );
       break;
     }
     case GPIO:
@@ -199,7 +209,7 @@ ssize_t ArduinoInterface::write( int device_address, interface_protocol protocol
     }
     case ENCODER:
     {
-      error_code = arduinoEncoderWrite( device_address_, flags, data );
+      error_code = arduinoEncoderWrite( device_address, data );
       break;
     }
     case ADCONVERTER:
@@ -634,7 +644,7 @@ ssize_t ArduinoInterface::arduinoGpioRead( uint8_t flags, uint8_t pin, uint8_t* 
   // load it with setup parameters and data:
   write_packet[0] = data_packet_;
   write_packet[1] = flags;
-	write_packet[2] = pin;
+  write_packet[2] = pin;
    
   // send the data:
   if(! serial_port_->Write_Bytes( 3, write_packet ))
@@ -664,7 +674,7 @@ ssize_t ArduinoInterface::arduinoGpioRead( uint8_t flags, uint8_t pin, uint8_t* 
 /**********************************************************************/
 ssize_t ArduinoInterface::arduinoEncoderRead( uint8_t device_address, uint8_t* data )
 {
-  static const int num_bytes_encoder_transmission = 4;
+  const int num_bytes_encoder_transmission = 4;
   // construct array to send to Arduino:
   uint8_t write_packet[2];
   // load it with setup parameters and data:
@@ -697,9 +707,9 @@ ssize_t ArduinoInterface::arduinoEncoderRead( uint8_t device_address, uint8_t* d
 
 /**********************************************************************/
 /**********************************************************************/
-ssize_t ArduinoInterface::arduinoEncoderWrite( unit8_t device_address, uint8_t* data )
+ssize_t ArduinoInterface::arduinoEncoderWrite( uint8_t device_address, uint8_t* data )
 {  
-  static const int num_bytes_encoder_transmission = 4;
+  const int num_bytes_encoder_transmission = 4;
   // construct array to send to Arduino:
   uint8_t write_packet[6];
   // load it with setup parameters and data:

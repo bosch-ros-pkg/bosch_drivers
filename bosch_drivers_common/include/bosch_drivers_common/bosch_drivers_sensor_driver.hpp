@@ -125,6 +125,8 @@ namespace bosch_drivers_common
  
   protected:
     bosch_hardware_interface* hardware_;
+
+    // propose new name: communication_parameters
     bosch_driver_parameters* sensor_parameters_;
   };
 }
