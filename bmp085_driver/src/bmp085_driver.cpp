@@ -60,12 +60,13 @@
 BMP085::BMP085( bosch_hardware_interface* hw ) :
   sensor_driver( hw )
 {
-  sensor_parameters_ = new BMP085_parameters();
-  sensor_parameters_->device_address_ = DEVICE_ADDRESS; //fixed and defined in header
-  sensor_parameters_->frequency_ = 400000; // [Hz]
-  sensor_parameters_->protocol_ = I2C;
-  ((BMP085_parameters*)sensor_parameters_)->oss_ = BMP085_parameters::STANDARD;
-  //flags_ = 0;  // unused for this sensor since it does not support SPI.
+  sensor_parameters_ = new bosch_driver_parameters();
+  sensor_parameters_->device_address = DEVICE_ADDRESS; //fixed and defined in header
+  sensor_parameters_->protocol = I2C;
+  sensor_parameters_->frequency = 400000; // [Hz]
+  sensor_parameters_->flags = 0x00;
+  //((BMP085_parameters*)sensor_parameters_)->oss = BMP085_parameters::STANDARD;
+  oss_ = STANDARD;
 
   // set default pressure at sea level:
   pressure_at_sea_level_ = 101.325; // in [kPa]
@@ -100,9 +101,8 @@ bool BMP085::initialize()
     return false;
   }
   
-  // set oversampling setting:
-  oss = this->getSamplingMode(); 
-  ROS_INFO("Pressure Sensor Sampling Mode (oss): %d", oss);
+  // set oversampling setting: 
+  ROS_INFO("Pressure Sensor Sampling Mode (oss): %d", oss_);
 
   // Get all Calibration Constants.  
   // Luckily, they're all consecutively stored in memory, so we can just
@@ -159,7 +159,7 @@ bool BMP085::takeMeasurement()
 /**********************************************************************/
 uint8_t BMP085::getDeviceAddress()
 {
-  return sensor_parameters_->device_address_;
+  return sensor_parameters_->device_address;
 }
 
 
@@ -182,12 +182,12 @@ bool BMP085::getTemperatureData( void )
  
   usleep( 4500 ); // sleep for 4.5 [ms] while BMP085 processes temperature.
   
-  if( hardware_->read( this->getDeviceAddress(), this->getProtocol(), this->getFrequency(), this->getFlags(), MEAS_OUTPUT_MSB, &MSB, 1 ) < 0 )
+  if( hardware_->read( *sensor_parameters_, MEAS_OUTPUT_MSB, &MSB, 1 ) < 0 )
   {
     ROS_ERROR("BMP085::getTemperatureData(): Invalid data"); 
     return false;
   }
-  if( hardware_->read( this->getDeviceAddress(), this->getProtocol(), this->getFrequency(), this->getFlags(), MEAS_OUTPUT_LSB, &LSB, 1 ) < 0 )
+  if( hardware_->read( *sensor_parameters_, MEAS_OUTPUT_LSB, &LSB, 1 ) < 0 )
   {
     ROS_ERROR("BMP085::getTemperatureData(): Invalid data"); 
     return false;
@@ -216,7 +216,7 @@ bool BMP085::getPressureData()
    * We need to combine three 8-bit numbers and shift them accordingly.
    */  
 
-  uint8_t PressureRequest = PRESSURE_OSRS_0 + (oss<<6);
+  uint8_t PressureRequest = PRESSURE_OSRS_0 + (oss_<<6);
   
   if( writeToReg( INPUT_REG_ADDRESS, PressureRequest ) == false )
   {
@@ -226,18 +226,18 @@ bool BMP085::getPressureData()
  
   // Wait for the chip's pressure measurement to finish processing 
   // before accessing the data.  Wait time depends on the sampling mode.
-  switch( oss )
+  switch( oss_ )
   {
-  case 0:
+  case ULTRA_LOW_POWER:
     usleep( 4500 ); 
     break;
-  case 1:
+  case STANDARD:
     usleep( 7500 );
     break;
-  case 2:
+  case HIGH:
     usleep( 13500 );
     break;
-  case 3:
+  case ULTRA_HIGH_RESOLUTION:
     usleep( 25500 );
     break;
   default:
@@ -247,13 +247,13 @@ bool BMP085::getPressureData()
 
   unsigned char data[3]; 
   
-  if( hardware_->read( this->getDeviceAddress(), this->getProtocol(), this->getFrequency(), this->getFlags(), MEAS_OUTPUT_MSB, data, 3 ) < 0 )
+  if( hardware_->read( *sensor_parameters_, MEAS_OUTPUT_MSB, data, 3 ) < 0 )
   {
     ROS_ERROR("BMP085::getPressureData():Invalid data");
     return false;
   }
 
-  UP = (long)( ( ( (ulong)data[0]<<16) | ((ulong)data[1]<<8) | (ulong)data[2] ) >> (8-oss));
+  UP = (long)( ( ( (ulong)data[0]<<16) | ((ulong)data[1]<<8) | (ulong)data[2] ) >> (8-oss_));
   // ROS_INFO("UP: %dl",UP);  // sanity check.
   long B3, B6, X1, X2, X3;  // coefficients derived from existing coefficients. 
   // Note: we calculated B5 from the temperature!
@@ -263,14 +263,14 @@ bool BMP085::getPressureData()
   X1 = ( (B2 * ((B6 * B6)>>12)) >> 11 );
   X2 = ( ((long)AC2* B6) >> 11);
   X3 = X1 + X2;
-  B3 = ( ( ( ((long)AC1*4) + X3)<< oss) + 2) >> 2;
+  B3 = ( ( ( ((long)AC1*4) + X3)<< oss_) + 2) >> 2;
   
   X1 = (((long)AC3*B6) >> 13);
   X2 = ( B1*((B6*B6) >> 12) ) >> 16;
   X3 = ( (X1 + X2) + 2 ) >> 2;
   B4 = ((long)AC4* (ulong)(X3 + 32768)) >> 15;
   
-  B7 =  (ulong)(UP - B3)*(50000>>oss);
+  B7 =  (ulong)(UP - B3)*(50000>>oss_);
   if( B7 < 0x80000000 )
   {
     p = (B7 << 1)/B4;
@@ -348,9 +348,9 @@ bool BMP085::writeToReg( uint8_t reg, uint8_t value )
 
 /**********************************************************************/
 /**********************************************************************/
-bool BMP085::setSamplingMode( BMP085_parameters::sampling_mode mode )
+bool BMP085::setSamplingMode( sampling_mode mode )
 {
-  ((BMP085_parameters*)sensor_parameters_)->oss_ = mode;
+  oss_ = mode;
   return true;
 }
 
@@ -367,7 +367,7 @@ bool BMP085::setProtocol( interface_protocol protocol )
   }
   else
   {
-    sensor_parameters_->protocol_ = protocol;
+    sensor_parameters_->protocol = protocol;
   }
   return true;
 }
@@ -377,7 +377,7 @@ bool BMP085::setProtocol( interface_protocol protocol )
 /**********************************************************************/
 bool BMP085::setFrequency( int frequency )
 {
-  sensor_parameters_->frequency_ = frequency;
+  sensor_parameters_->frequency = frequency;
   return true;
 }
 
@@ -386,7 +386,7 @@ bool BMP085::setFrequency( int frequency )
 /**********************************************************************/
 interface_protocol BMP085::getProtocol()
 {
-  return sensor_parameters_->protocol_;
+  return sensor_parameters_->protocol;
 }
 
 
@@ -394,7 +394,7 @@ interface_protocol BMP085::getProtocol()
 /**********************************************************************/
 int BMP085::getFrequency()
 {
-  return sensor_parameters_->frequency_;
+  return sensor_parameters_->frequency;
 }
 
 
@@ -409,7 +409,7 @@ int BMP085::getFrequency()
 
 /**********************************************************************/
 /**********************************************************************/
-BMP085_parameters::sampling_mode BMP085::getSamplingMode()
+BMP085::sampling_mode BMP085::getSamplingMode()
 {
-  return ((BMP085_parameters*)sensor_parameters_)->oss_;
+  return oss_;
 }

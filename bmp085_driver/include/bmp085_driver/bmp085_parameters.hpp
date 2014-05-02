@@ -73,31 +73,6 @@ using namespace bosch_drivers_common;
 class BMP085_parameters: public bosch_driver_parameters
 {
 public:
-/*!
- * \enum sampling_mode
- * \brief configurable sampling mode. Higher resolution settings will
- *     result in a longer conversion time on the sensor before the 
- *     value can be read.
- */
-  enum sampling_mode
-  {
-/*! 
- * \var ULTRA_LOW_POWER
- * \note conversion_time: 4.5 [ms] */ 
-    ULTRA_LOW_POWER       = 0,
-/*! 
- * \var STANDARD
- * \note conversion_time: 7.5 [ms] */ 
-    STANDARD              = 1,
-/*! 
- * \var HIGH
- * \note conversion_time: 13.5 [ms] */ 
-    HIGH                  = 2,
-/*! 
- * \var ULTRA_HIGH_RESOLUTION
- * \note conversion_time: 25.5 [ms] */ 
-    ULTRA_HIGH_RESOLUTION = 3
-  };
  
   /*!
    * \fn BMP085bosch_driver_parameters()
@@ -206,14 +181,6 @@ public:
   // int frequency_;        //|
   // int pin_;           //|
   // int flags_;          //|
-
-/*!
- * \var oss_
- * \brief a class member used to store the user-defined sampling mode
- *     so that it can be passed to the driver with the
- *     \a getSamplingMode() method.
- */
-  sampling_mode oss_;
 
 };
 

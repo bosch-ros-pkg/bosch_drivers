@@ -36,8 +36,8 @@
 
 //\Author Kai Franke, Robert Bosch LLC
 
-#ifndef PWM_Driver_H_
-#define PWM_Driver_H_
+#ifndef PWM_DRIVER_H_
+#define PWM_DRIVER_H_
 
 #include <ros/console.h> // ROS headers for debugging output
 
@@ -76,19 +76,19 @@ public:
    * \param  value duty cycle as fraction [0..1] with 0 being constant LOW and 1 being constant HIGH
    * \return true if write was successful or false if not
    */
-	bool set( float value );
-	
+  bool set( float value );
+  
   /**
-  * \brief Initializes the driver and the connected hardware
-  * 
-  * \return a boolean indicating success
-  */
+   * \brief Initializes the driver and the connected hardware
+   * 
+   * \return a boolean indicating success
+   */
   bool initialize();
   
 private:
-  uint32_t _frequency;
-  uint8_t _pin;
+  //uint32_t _frequency;
+  //uint8_t _pin;
 };
 
-#endif // PWM_Driver_H_
+#endif // PWM_DRIVER_H_
 

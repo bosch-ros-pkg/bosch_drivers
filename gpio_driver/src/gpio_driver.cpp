@@ -41,17 +41,18 @@
 GpioDriver::GpioDriver( bosch_hardware_interface* hw, uint8_t pin ): sensor_driver( hw )
 {
   sensor_parameters_ = new bosch_driver_parameters();
-  sensor_parameters_->device_address_ = pin;  
+  sensor_parameters_->protocol = GPIO;
+  sensor_parameters_->device_address = pin;  
 }
 
 GpioDriver::~GpioDriver()
 {
-  delete sensor_driver_;
+  delete sensor_parameters_;
 }
 
 uint8_t GpioDriver::getDeviceAddress()
 {
-  return sensor_parameters_->device_address_;
+  return sensor_parameters_->device_address;
 }
 
 bool GpioDriver::initialize()
@@ -71,7 +72,7 @@ bool GpioDriver::set( bool value )
   int frequency = 0; // does not apply for GPIO
   uint8_t num_bytes = 1;
   uint8_t data[1] = {(bool)value};
-  if( hardware_->write( *sensor_parameters_, sensor_parameters_->device_address_, data, num_bytes ) < 0 )
+  if( hardware_->write( *sensor_parameters_, sensor_parameters_->device_address, data, num_bytes ) < 0 )
   {
     ROS_ERROR("GpioDriver::setOutput(): could not set output");
     return false;
@@ -86,7 +87,7 @@ bool GpioDriver::get( gpio_input_mode mode )
   uint8_t num_bytes = 1;
   uint8_t data[1];
   
-  if( hardware_->read( *sensor_parameters_, sensor_parameters_->device_address_, data, num_bytes ) < 0 )
+  if( hardware_->read( *sensor_parameters_, sensor_parameters_->device_address, data, num_bytes ) < 0 )
   {
     ROS_ERROR("GpioDriver::readInput(): could not read input");
     return false;

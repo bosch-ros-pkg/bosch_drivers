@@ -43,8 +43,9 @@ EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder1_pin
   // variable to automaticly define encoder object id starting with 0
   //static uint8_t encoder_id = 0;
   sensor_parameters_ = new bosch_driver_parameters();
-  sensor_parameters_->protocol_ = ENCODER; 
-  sensor_parameters_->frequency_ = 0; // does not apply for Encoder
+  sensor_parameters_->protocol = ENCODER; 
+  sensor_parameters_->frequency = 0; // does not apply for Encoder
+  sensor_parameters_->flags = 0x00;
   
   _encoder1_pin = encoder1_pin;
   _encoder2_pin = encoder2_pin;
@@ -53,7 +54,7 @@ EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder1_pin
   invert_ = 1;
   
 
-  if( getNextID( &(sensor_parameters_->device_address_) ) )
+  if( getNextID( &(sensor_parameters_->device_address) ) )
   {
     uint8_t reg = 0; // does not apply for Encoder
     uint8_t data[3] = { CREATE, _encoder1_pin, _encoder2_pin };  // indicates that we want to create the object on the hardware device
@@ -61,14 +62,14 @@ EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder1_pin
     if( _encoder1_pin == _encoder2_pin )
     {
       ROS_ERROR("EncoderDriver::EncoderDriver(): Encoder pins must be different");
-      encoders_[sensor_parameters_->device_address_] = false;
+      encoders_[sensor_parameters_->device_address] = false;
     }
     else
     {
       if( hardware_->write( *sensor_parameters_, reg, data, num_bytes ) < 0 )
       {
         ROS_ERROR("EncoderDriver::~EncoderDriver(): could not create object on hardware device");
-	encoders_[sensor_parameters_->device_address_] = false;
+	encoders_[sensor_parameters_->device_address] = false;
       }
     }
   }
@@ -81,10 +82,12 @@ EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder1_pin
 EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder_id ): sensor_driver( hw )
 {
   sensor_parameters_ = new bosch_driver_parameters;
-  sensor_parameters_->protocol_ = ENCODER; 
-  sensor_parameters_-> frequency_ = 0; // does not apply for Encoder
+  sensor_parameters_->protocol = ENCODER; 
+  sensor_parameters_->device_address = encoder_id;
+  sensor_parameters_->frequency = 0; // does not apply for Encoder
   // assign this instance to the desired instance on the serial device
-  sensor_parameters_->device_address_ = encoder_id;
+  sensor_parameters_->flags = 0x00;
+
   // set encoder pins to same value to indicate that there was no object created on the serial device
   _encoder1_pin = _encoder2_pin = 255;
  
@@ -93,7 +96,7 @@ EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder_id )
   invert_ = 1;
   
   // Determine encoder ID 
-  if( sensor_parameters_->device_address_ >= MAX_ENCODERS )
+  if( sensor_parameters_->device_address >= MAX_ENCODERS )
   {
     ROS_ERROR("Select an encoder_id [0..15] which was already created on the serial device");
   }
@@ -115,7 +118,7 @@ EncoderDriver::~EncoderDriver()
     }
     else
     {
-      encoders_[sensor_parameters_->device_address_] = false;
+      encoders_[sensor_parameters_->device_address] = false;
     }
   }
 
@@ -124,7 +127,7 @@ EncoderDriver::~EncoderDriver()
 
 uint8_t EncoderDriver::getDeviceAddress()
 {
-  return sensor_parameters_->device_address_;
+  return sensor_parameters_->device_address;
 }
 
 bool EncoderDriver::initialize()
@@ -150,7 +153,7 @@ bool EncoderDriver::initialize()
 
 uint8_t EncoderDriver::getEncoderID( )
 {
-  return sensor_parameters_->device_address_;
+  return sensor_parameters_->device_address;
 }
 
 int64_t EncoderDriver::getPosition()

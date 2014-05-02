@@ -38,20 +38,23 @@
 
 #include "pwm_driver/pwm_driver.h"
 
-PwmDriver::PwmDriver( bosch_hardware_interface* hw, uint32_t frequency, uint8_t pin ): sensor_driver( hw )
+PwmDriver::PwmDriver( bosch_hardware_interface* hw, unsigned int frequency, uint8_t pin ): sensor_driver( hw )
 {
-  _frequency = frequency;
-  _pin = pin;
+  sensor_parameters_ = new bosch_driver_parameters();
+  sensor_parameters_->protocol = PWM;
+  sensor_parameters_->frequency = frequency;
+  sensor_parameters_->device_address = pin;
+  sensor_parameters_->flags = 0x00;
 }
 
 PwmDriver::~PwmDriver()
 {
+  delete sensor_parameters_;
 }
 
 uint8_t PwmDriver::getDeviceAddress()
 {
-  // the answer to all questions
-  return 42;
+  return sensor_parameters_->device_address;
 }
 
 bool PwmDriver::initialize()
@@ -67,7 +70,6 @@ bool PwmDriver::initialize()
 
 bool PwmDriver::set( float value )
 {
-  int *flags = NULL; // not needed for PWM
   uint8_t num_bytes = 4;  // only set to make it look nice, not really needed
   uint8_t duty_cycle_chopped[4];
   uint32_t duty_cycle;
@@ -95,7 +97,7 @@ bool PwmDriver::set( float value )
   
   //std::cout << "duty_cycle: " << duty_cycle << "  chopped: " << duty_cycle_chopped[0] + 0 << " " << duty_cycle_chopped[1] + 0 << " " << duty_cycle_chopped[2] + 0 << " " << duty_cycle_chopped[3] + 0 << " " << std::endl;
 
-  if( hardware_->write( this->getDeviceAddress(), PWM, _frequency, flags, _pin, duty_cycle_chopped, num_bytes ) < 0 )
+  if( hardware_->write( *sensor_parameters_, 0x00, duty_cycle_chopped, num_bytes ) < 0 )
   {
     ROS_ERROR("PwmDriver::setPWM(): could not write PWM to serial device.");
     return false;
