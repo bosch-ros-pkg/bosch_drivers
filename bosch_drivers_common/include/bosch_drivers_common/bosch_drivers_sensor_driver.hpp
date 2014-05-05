@@ -83,12 +83,12 @@ namespace bosch_drivers_common
     /**
      * \brief Sets the frequency of the sensor data transmissions between the hardware interface and the sensor.
      */           
-    virtual bool setFrequency( int frequency ) = 0;
+    virtual bool setFrequency( unsigned int frequency ) = 0;
 
     /**
      * \brief Retrieve the frequency at which the sensor data transmissions take place.
      */
-    virtual int getFrequency() = 0;
+    virtual unsigned int getFrequency() = 0;
  
     /**
      * \brief Select the protocol that both the hardware interface and sensor use to communicate.
@@ -105,7 +105,7 @@ namespace bosch_drivers_common
     /**
      * \brief Retreive the flags for communication between hardware interface and sensor.
      */
-    virtual uint8_t* getFlags() = 0; // SPI only
+    virtual uint8_t getFlags() = 0; // SPI only
  
     /**
      * \brief Alert software driver to which pin the sensor's chip-select pin is connected to.

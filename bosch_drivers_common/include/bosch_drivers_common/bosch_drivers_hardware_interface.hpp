@@ -78,7 +78,7 @@ namespace bosch_drivers_common
      */
     virtual bool initialize() = 0;
 
-    virtual bool initialize( bosch_driver_parameters parameters ) = 0;
+    //virtual bool initialize( bosch_driver_parameters parameters ) = 0;
     
     /**
      * \brief Read a given number of bytes

@@ -375,7 +375,7 @@ bool BMP085::setProtocol( interface_protocol protocol )
 
 /**********************************************************************/
 /**********************************************************************/
-bool BMP085::setFrequency( int frequency )
+bool BMP085::setFrequency( unsigned int frequency )
 {
   sensor_parameters_->frequency = frequency;
   return true;
@@ -392,7 +392,7 @@ interface_protocol BMP085::getProtocol()
 
 /**********************************************************************/
 /**********************************************************************/
-int BMP085::getFrequency()
+unsigned int BMP085::getFrequency()
 {
   return sensor_parameters_->frequency;
 }
@@ -403,7 +403,7 @@ int BMP085::getFrequency()
 /**********************************************************************/
 //int* BMP085::getFlags()
 //{
-//  return sensor_parameters_->&flags_;
+//  return sensor_parameters_->flags;
 //}
 
 

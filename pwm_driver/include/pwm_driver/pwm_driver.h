@@ -56,38 +56,62 @@ using namespace bosch_drivers_common;
  */
 class PwmDriver: public sensor_driver
 {
-
+  
 public:
-   /** 
+  /** 
    * \brief Constructor:
    * \param  frequency PWM frequency
    * \param  pin pin number on the hardware device to apply the PWM to
    */
-  PwmDriver( bosch_hardware_interface* hw, uint32_t frequency, uint8_t pin );
- 
+  PwmDriver( bosch_hardware_interface* hw, uint32_t frequency, uint8_t pin, unsigned int resolution_in_bits );
+  
   // Destructor:
   ~PwmDriver();
+  
+  uint8_t getDeviceAddress( ); 
+  bool setDeviceAddress( uint8_t pin );
 
-  // Public Driver Methods:
-  uint8_t getDeviceAddress( void ); 
+  unsigned int getFrequency( );
+  bool setFrequency( unsigned int frequency );
+
+  interface_protocol getProtocol( );
+  bool setProtocol( interface_protocol protocol );
+
+  uint8_t getFlags( );
+  bool setFlags( uint8_t flags );
+
+  bosch_driver_parameters getParameters( );
 
   /**
    * \brief Sends the duty cycle \a value to a supported serial device
    * \param  value duty cycle as fraction [0..1] with 0 being constant LOW and 1 being constant HIGH
    * \return true if write was successful or false if not
    */
-  bool set( float value );
+  bool setDutyCycle( double value );
+
+  double getDutyCycle( );
   
+  bool setResolution( unsigned int bits );
+  unsigned int getResolution( );
+
   /**
    * \brief Initializes the driver and the connected hardware
    * 
    * \return a boolean indicating success
    */
   bool initialize();
-  
+
 private:
-  //uint32_t _frequency;
-  //uint8_t _pin;
+  typedef unsigned long long pwm_resolution_t;
+  unsigned int resolution_bits_;
+  size_t resolution_bytes_;
+
+  double duty_cycle_;
+  std::vector<uint8_t> duty_cycle_bytes_;  
+
+  bool convertDutyCycle();
+  bool sendUpdate();
+
 };
 
 #endif // PWM_DRIVER_H_

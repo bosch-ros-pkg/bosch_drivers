@@ -82,7 +82,7 @@ public:
 
  
   bool initialize();
-
+  //bool initialize( bosch_driver_parameters parameters );
   /**
    * \brief Reads \a num_bytes from the requested device on the specified \a protocol at the specified protocol \a frequency
    * \var   int device_address the way that the sensor identifies itself

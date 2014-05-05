@@ -38,13 +38,17 @@
 
 #include "pwm_driver/pwm_driver.h"
 
-PwmDriver::PwmDriver( bosch_hardware_interface* hw, unsigned int frequency, uint8_t pin ): sensor_driver( hw )
+PwmDriver::PwmDriver( bosch_hardware_interface* hw, unsigned int frequency, uint8_t pin, unsigned int resolution_in_bits ):
+  sensor_driver( hw ),
+  duty_cycle_( 0.0 )
 {
   sensor_parameters_ = new bosch_driver_parameters();
   sensor_parameters_->protocol = PWM;
   sensor_parameters_->frequency = frequency;
   sensor_parameters_->device_address = pin;
   sensor_parameters_->flags = 0x00;
+
+  setResolution( resolution_in_bits );
 }
 
 PwmDriver::~PwmDriver()
@@ -57,6 +61,48 @@ uint8_t PwmDriver::getDeviceAddress()
   return sensor_parameters_->device_address;
 }
 
+bool PwmDriver::setDeviceAddress( uint8_t new_pin )
+{
+  sensor_parameters_->device_address = new_pin;
+
+  // do some other stuff?
+
+  return true;
+}
+
+unsigned int PwmDriver::getFrequency()
+{
+  return sensor_parameters_->frequency;
+}
+
+bool PwmDriver::setFrequency( unsigned int new_frequency )
+{
+  sensor_parameters_->frequency = new_frequency;
+
+  return true;
+}
+
+bool PwmDriver::setResolution( unsigned int bits )
+{
+  resolution_bytes_ = ceil( bits / 8 );
+  if( resolution_bytes_ > sizeof( pwm_resolution_t ) )
+  {
+    ROS_ERROR("PwmDriver: The maximum resolution on this architecture is %ld bits. You have requested %ld bits.", 8*sizeof( pwm_resolution_t ), 8*resolution_bytes_ );
+    return false;
+  }
+
+  duty_cycle_bytes_.resize( resolution_bytes_ );
+  resolution_bits_ = bits;
+
+  return true;
+}
+
+unsigned int PwmDriver::getResolution()
+{
+  return resolution_bits_;
+}
+
+
 bool PwmDriver::initialize()
 {  
   // Initialize the hardware interface
@@ -68,38 +114,58 @@ bool PwmDriver::initialize()
   return true;
 }
 
-bool PwmDriver::set( float value )
-{
-  uint8_t num_bytes = 4;  // only set to make it look nice, not really needed
-  uint8_t duty_cycle_chopped[4];
-  uint32_t duty_cycle;
-  
+bool PwmDriver::setDutyCycle( double value )
+{ 
   if( value < 0.0 || value > 1.0 )
   {
     ROS_ERROR("PWM duty cycle must be between 0 and 1");
     return false;
   }
-  
-  // convert float to uint32
-  double convertion_helper = value;
-  duty_cycle = (uint32_t)(convertion_helper * 0xFFFFFFFF);
-  // write expects an uint_8 array, chopping uint32 to four uint8_t MSB first
-  uint32_t temp;
-  temp = (duty_cycle & (0xFF << 24)) >> 24;
-  duty_cycle_chopped[0] = (uint8_t)temp;
-  temp = (duty_cycle & (0xFF << 16)) >> 16;
-  duty_cycle_chopped[1] = (uint8_t)temp;
-  temp = (duty_cycle & (0xFF << 8)) >> 8;
-  duty_cycle_chopped[2] = (uint8_t)temp;
-  temp = (duty_cycle & (0xFF << 0));
-  duty_cycle_chopped[3] = (uint8_t)temp;
-  
-  
-  //std::cout << "duty_cycle: " << duty_cycle << "  chopped: " << duty_cycle_chopped[0] + 0 << " " << duty_cycle_chopped[1] + 0 << " " << duty_cycle_chopped[2] + 0 << " " << duty_cycle_chopped[3] + 0 << " " << std::endl;
+  duty_cycle_ = value;
 
-  if( hardware_->write( *sensor_parameters_, 0x00, duty_cycle_chopped, num_bytes ) < 0 )
+  convertDutyCycle();
+ 
+  if( !sendUpdate() )
   {
-    ROS_ERROR("PwmDriver::setPWM(): could not write PWM to serial device.");
+    ROS_WARN("PwmDriver: update not sent.");
+    return false;
+  }
+  return true;
+}
+
+bool PwmDriver::convertDutyCycle()
+{
+  // convert float to uint32
+  //double convertion_helper = value;
+  //uint32_t dc_fixed; 
+  //dc_fixed = (uint32_t)(convertion_helper * 0xFFFFFFFF);
+  // write expects an uint_8 array, chopping uint32 to four uint8_t MSB first
+  //uint32_t temp;
+  //temp = (dc_fixed & (0xFF << 24)) >> 24;
+  //duty_cycle_bytes_[0] = (uint8_t)temp;
+  //temp = (dc_fixed & (0xFF << 16)) >> 16;
+  //duty_cycle_bytes_[1] = (uint8_t)temp;
+  //temp = (dc_fixed & (0xFF << 8)) >> 8;
+  //duty_cycle_bytes_[2] = (uint8_t)temp;
+  //temp = (dc_fixed & (0xFF << 0));
+  //duty_cycle_bytes_[3] = (uint8_t)temp;
+
+ 
+  pwm_resolution_t temp = (duty_cycle_ * static_cast<double>( 1<<resolution_bits_) );
+  for( unsigned int i = 0; i < duty_cycle_bytes_.size(); i++ )
+  {
+    duty_cycle_bytes_[i] = static_cast<uint8_t>( temp  >> 8*(resolution_bytes_ - i) );
+  }
+  
+  //std::cout << "duty cycle: " << duty_cycle_ << "  chopped: " << duty_cycle_bytes_[0] + 0 << " " << duty_cycle_bytes_[1] + 0 << " " << duty_cycle_bytes_[2] + 0 << " " << duty_cycle_bytes[3] + 0 << " " << std::endl;
+  return true;
+}
+
+bool PwmDriver::sendUpdate()
+{
+  if( hardware_->write( *sensor_parameters_, 0x00, &duty_cycle_bytes_[0], duty_cycle_bytes_.size() ) < 0 )
+  {
+    ROS_ERROR("PwmDriver::sendUpdate(): could not write PWM to serial device.");
     return false;
   } 
   return true;

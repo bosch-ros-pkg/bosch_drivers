@@ -300,16 +300,16 @@ ssize_t ArduinoInterface::arduinoI2cWrite( uint8_t device_address, uint32_t freq
 	// lower 3 Bits are reserved for frequency
   switch( frequency )
   {
-		case 100000:
-			flags = FREQ_STANDARD;
-		  break;
-		case 400000:
-			// set Bit 2
-		  flags = FREQ_FAST;
-		  break;
-		default:
-		  ROS_ERROR("Arduino cannot write at this frequency.");
-		  return -1; // error code. 
+  case 100000:
+    flags = FREQ_STANDARD;
+    break;
+  case 400000:
+    // set Bit 2
+    flags = FREQ_FAST;
+    break;
+  default:
+    ROS_ERROR("Arduino cannot write at this frequency.");
+    return -1; // error code. 
   }
    
   uint8_t i2c_write_prompt[5] = { data_packet_, flags, (uint8_t)device_address, reg_address, num_bytes };
@@ -540,43 +540,41 @@ ssize_t ArduinoInterface::arduinoPwmWrite( uint8_t device_address, uint32_t freq
 ssize_t ArduinoInterface::arduinoGpioWrite( uint8_t pin, bool value )
 {
   /* 
-	 * the following block is Arduino Uno specific
-	 */
-  switch (pin)
+   * the following block is Arduino Uno specific
+   */
+  switch( pin )
   {
-    case 0:
-    case 1:
-    case 2:
-    case 3:
-    case 4:
-    case 5:
-    case 6:
-    case 7:
-    case 8:
-    case 9:
-    case 10:
-    case 11:
-    case 12:
-    case 13: break;
-    default:
-    {
-	    ROS_ERROR("The selected Pin number is not available for GPIO");
-	    ROS_ERROR("Select Pins 0 through 13 instead");
-	    return -1;
-	  }
+  case 0:
+  case 1:
+  case 2:
+  case 3:
+  case 4:
+  case 5:
+  case 6:
+  case 7:
+  case 8:
+  case 9:
+  case 10:
+  case 11:
+  case 12:
+  case 13: break;
+  default:
+    ROS_ERROR("The selected Pin number is not available for GPIO");
+    ROS_ERROR("Select Pins 0 through 13 instead");
+    return -1;
   }
   // construct array to send to Arduino:
   uint8_t write_packet[3];
   // load it with setup parameters and data:
   write_packet[0] = data_packet_;
   write_packet[1] = pin;
-	write_packet[2] = value;
-	
+  write_packet[2] = value;
+  
   // send the data:
   serial_port_->Write_Bytes( 3, write_packet );
   usleep( 5000 );    
   //Wait for verification:
-  if(!( waitOnBytes( 1 )))
+  if( !( waitOnBytes( 1 )) )
     return -1;
    
   uint8_t verification = serial_port_->Read();
@@ -594,50 +592,45 @@ ssize_t ArduinoInterface::arduinoGpioWrite( uint8_t pin, bool value )
 ssize_t ArduinoInterface::arduinoGpioRead( uint8_t flags, uint8_t pin, uint8_t* value )
 {
   /* 
-	 * the following block is Arduino Uno specific
-	 */
-  switch (pin)
+   * the following block is Arduino Uno specific
+   */
+  switch( pin )
   {
-    case 0:
-    case 1:
-    case 2:
-    case 3:
-    case 4:
-    case 5:
-    case 6:
-    case 7:
-    case 8:
-    case 9:
-    case 10:
-    case 11:
-    case 12:
-    case 13: break;
-    default:
-    {
-	    ROS_ERROR("The selected Pin number is not available for GPIO");
-	    ROS_ERROR("Select Pins 0 through 13 instead");
-	    return -1;
-	  }
+  case 0:
+  case 1:
+  case 2:
+  case 3:
+  case 4:
+  case 5:
+  case 6:
+  case 7:
+  case 8:
+  case 9:
+  case 10:
+  case 11:
+  case 12:
+  case 13: break;
+  default:
+    ROS_ERROR("The selected Pin number is not available for GPIO");
+    ROS_ERROR("Select Pins 0 through 13 instead");
+    return -1;
   }
   
-  switch ((gpio_input_mode) flags )
+  switch( (gpio_input_mode) flags )
   {
     /* 
-	   * PULLUP will only work with Arduino version 1.0.1 or greater!!!
-	   */
-    case FLOATING: 
-    case PULLUP: break;
-    case PULLDOWN:
-    {
-      ROS_ERROR("The selected input mode is not available for Arduino");
-	    ROS_ERROR("Select FLOATING instead");
-	    return -1;
-    }
-    default:
-    {
-      ROS_ERROR("ArduinoInterface::arduinoGpioRead The selected input mode is not known");
-      return -1;
-    }
+     * PULLUP will only work with Arduino version 1.0.1 or greater!!!
+     */
+  case FLOATING: 
+  case PULLUP:
+    break;
+  case PULLDOWN:
+    ROS_ERROR("The selected input mode is not available for Arduino");
+    ROS_ERROR("Select FLOATING instead");
+    return -1;
+  default:
+    ROS_ERROR("ArduinoInterface::arduinoGpioRead The selected input mode is not known");
+    return -1;
   }
   // construct array to send to Arduino:
   uint8_t write_packet[3];
@@ -647,7 +640,7 @@ ssize_t ArduinoInterface::arduinoGpioRead( uint8_t flags, uint8_t pin, uint8_t* 
   write_packet[2] = pin;
    
   // send the data:
-  if(! serial_port_->Write_Bytes( 3, write_packet ))
+  if( !serial_port_->Write_Bytes( 3, write_packet ) )
   {
     ROS_ERROR("ArduinoInterface::arduinoGpioRead(): Could not send data to Arduino");
     return -1;
@@ -682,7 +675,7 @@ ssize_t ArduinoInterface::arduinoEncoderRead( uint8_t device_address, uint8_t* d
   write_packet[1] = device_address;
   
   // send the data:
-  if(! serial_port_->Write_Bytes( 2, write_packet ))
+  if( !serial_port_->Write_Bytes( 2, write_packet ) )
   {
     ROS_ERROR("ArduinoInterface::arduinoEncoderRead(): Could not send data to Arduino");
     return -1;
@@ -826,7 +819,8 @@ ssize_t ArduinoInterface::arduinoAdcRead( uint8_t pin, uint8_t* data )
   case 2:
   case 3:
   case 4:
-  case 5: break;
+  case 5:
+    break;
   default:
     ROS_ERROR("The selected Pin number is not available for ADC");
     ROS_ERROR("Select Pins 0 through 5 instead");

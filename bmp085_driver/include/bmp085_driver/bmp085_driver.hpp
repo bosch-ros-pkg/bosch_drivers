@@ -213,8 +213,8 @@ public:
   bool setProtocol( interface_protocol protocol );
   interface_protocol getProtocol();
 
-  bool setFrequency( int frequency );
-  int getFrequency();
+  bool setFrequency( unsigned int frequency );
+  unsigned int getFrequency();
 
 private:
   // BMP085 Register Addresses
