@@ -42,7 +42,9 @@ GpioDriver::GpioDriver( bosch_hardware_interface* hw, uint8_t pin ): sensor_driv
 {
   sensor_parameters_ = new bosch_driver_parameters();
   sensor_parameters_->protocol = GPIO;
-  sensor_parameters_->device_address = pin;  
+  sensor_parameters_->device_address = pin;
+  sensor_parameters_->frequency = 0;
+  sensor_parameters_->flags = 0x00;
 }
 
 GpioDriver::~GpioDriver()
@@ -53,6 +55,46 @@ GpioDriver::~GpioDriver()
 uint8_t GpioDriver::getDeviceAddress()
 {
   return sensor_parameters_->device_address;
+}
+
+bool GpioDriver::setDeviceAddress( uint8_t address )
+{
+  sensor_parameters_->device_address = address;
+
+  return true;
+}
+
+unsigned int GpioDriver::getFrequency()
+{
+  return sensor_parameters_->frequency;
+}
+
+bool GpioDriver::setFrequency( unsigned int frequency )
+{
+  return false;
+}
+
+interface_protocol GpioDriver::getProtocol()
+{
+  return sensor_parameters_->protocol;
+}
+
+bool GpioDriver::setProtocol( interface_protocol protocol_name )
+{
+  if( protocol_name == GPIO )
+    return true;
+
+  return false;
+}
+
+uint8_t GpioDriver::getFlags()
+{
+  return sensor_parameters_->flags;
+}
+
+bosch_driver_parameters GpioDriver::getParameters()
+{
+  return *sensor_parameters_;
 }
 
 bool GpioDriver::initialize()
@@ -66,7 +108,7 @@ bool GpioDriver::initialize()
   return true;
 }
 
-bool GpioDriver::set( bool value )
+bool GpioDriver::setOutput( bool value )
 {
   int *flags = NULL; //not needed for output
   int frequency = 0; // does not apply for GPIO
@@ -80,7 +122,7 @@ bool GpioDriver::set( bool value )
   return true;
 }
 
-bool GpioDriver::get( gpio_input_mode mode )
+bool GpioDriver::getInput( gpio_input_mode mode )
 {
   int flags[1] = {mode};
   int frequency = 0; // does not apply for GPIO

@@ -70,21 +70,32 @@ public:
   // Destructor:
   ~GpioDriver();
 
+
   uint8_t getDeviceAddress( void ); 
+  bool setDeviceAddress( uint8_t address );
+
+  unsigned int getFrequency();
+  bool setFrequency( unsigned int frequency );
+
+  interface_protocol getProtocol();
+  bool setProtocol( interface_protocol protocol_name );
+  
+  uint8_t getFlags();
+  bosch_driver_parameters getParameters();
 
   /**
    * \brief Set a GPIO Pin to HIGH or LOW. It will always configure the pin as an output first.
    * \param value 0 will set the GPIO pin to LOW and 1 will set it to HIGH
    * \return true if GPIO output was successful or false if not
    */
-  bool set( bool value );
+  bool setOutput( bool value );
   
   /**
    * \brief Performs a digital read on the GPIO Pin returning the read value in \a value
    * \param mode configures the input pin to be either floating, add a pullup or a pulldown
    * \return Read value at given pin. 1 if selected Pin is HIGH and 0 if it is LOW
    */
-  bool get( gpio_input_mode mode );
+  bool getInput( gpio_input_mode mode );
   
   /**
    * \brief Initializes the driver and the connected hardware
