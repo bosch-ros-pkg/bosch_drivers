@@ -38,6 +38,8 @@
 
 #include "encoder_driver/encoder_driver.h"
 
+bool EncoderDriver::encoders_[MAX_ENCODERS];
+
 EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder1_pin, uint8_t encoder2_pin ): sensor_driver( hw )
 {
   // variable to automaticly define encoder object id starting with 0
@@ -62,14 +64,14 @@ EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder1_pin
     if( _encoder1_pin == _encoder2_pin )
     {
       ROS_ERROR("EncoderDriver::EncoderDriver(): Encoder pins must be different");
-      encoders_[sensor_parameters_->device_address] = false;
+      EncoderDriver::encoders_[sensor_parameters_->device_address] = false;
     }
     else
     {
       if( hardware_->write( *sensor_parameters_, reg, data, num_bytes ) < 0 )
       {
         ROS_ERROR("EncoderDriver::~EncoderDriver(): could not create object on hardware device");
-	encoders_[sensor_parameters_->device_address] = false;
+	EncoderDriver::encoders_[sensor_parameters_->device_address] = false;
       }
     }
   }
@@ -118,7 +120,7 @@ EncoderDriver::~EncoderDriver()
     }
     else
     {
-      encoders_[sensor_parameters_->device_address] = false;
+      EncoderDriver::encoders_[sensor_parameters_->device_address] = false;
     }
   }
 
@@ -230,6 +232,11 @@ bool EncoderDriver::setPosition( int32_t position )
   return true;
 }
 
+bool EncoderDriver::zero()
+{
+  return setPosition( 0 );
+}
+
 void EncoderDriver::invertOutput( )
 {
   invert_ *= -1;
@@ -239,12 +246,58 @@ bool EncoderDriver::getNextID( uint8_t* next )
 {
   for( int n = 0; n < MAX_ENCODERS; n++ )
   {
-    if( encoders_[n] == false )
+    if( EncoderDriver::encoders_[n] == false )
     {
-      encoders_[n] = true;
+      EncoderDriver::encoders_[n] = true;
       *next = n;
       return true;
     }
   }
   return false;
+}
+
+bool EncoderDriver::setDeviceAddress( uint8_t address)
+{
+  sensor_parameters_->device_address = address;
+  return true;
+}
+
+bool EncoderDriver::setFrequency( unsigned int frequency )
+{
+  sensor_parameters_->frequency = frequency;
+  return true;
+}
+ 
+unsigned int EncoderDriver::getFrequency()
+{
+  return sensor_parameters_->frequency;
+}
+  
+bool EncoderDriver::setProtocol( interface_protocol protocol_name )
+{
+  if( protocol_name != ENCODER )
+    return false;
+
+  sensor_parameters_->protocol = protocol_name;
+  return true;
+}
+
+interface_protocol EncoderDriver::getProtocol()
+{
+  return sensor_parameters_->protocol;
+}
+  
+uint8_t EncoderDriver::getFlags()
+{
+  return sensor_parameters_->flags;
+}
+ 
+bosch_driver_parameters EncoderDriver::getParameters()
+{
+  return *sensor_parameters_;
+}
+
+bool EncoderDriver::setParameters( bosch_driver_parameters parameters)
+{
+  *sensor_parameters_ = parameters;
 }

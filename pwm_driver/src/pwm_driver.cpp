@@ -170,3 +170,33 @@ bool PwmDriver::sendUpdate()
   } 
   return true;
 }
+
+  
+bool PwmDriver::setProtocol( interface_protocol protocol_name )
+{
+  if( protocol_name != PWM )
+    return false;
+
+  sensor_parameters_->protocol = protocol_name;
+  return true;
+}
+
+interface_protocol PwmDriver::getProtocol()
+{
+  return sensor_parameters_->protocol;
+}
+  
+uint8_t PwmDriver::getFlags()
+{
+  return sensor_parameters_->flags;
+}
+ 
+bosch_driver_parameters PwmDriver::getParameters()
+{
+  return *sensor_parameters_;
+}
+
+bool PwmDriver::setParameters( bosch_driver_parameters parameters)
+{
+  *sensor_parameters_ = parameters;
+}

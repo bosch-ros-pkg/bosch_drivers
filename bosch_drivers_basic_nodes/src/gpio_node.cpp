@@ -76,14 +76,14 @@ int main( int argc, char **argv )
 	
   while( nh.ok() )
   {
-    if( !gpio_output->set( value ) )
+    if( !gpio_output->setOutput( value ) )
     {
       return -1;
     }
       
     value = !value;
     
-    value2 = gpio_input->get( bosch_drivers_common::FLOATING );
+    value2 = gpio_input->getInput( bosch_drivers_common::FLOATING );
     ROS_INFO("Read value %i", value2);
       
     ros::spinOnce();

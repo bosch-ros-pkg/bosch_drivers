@@ -82,6 +82,7 @@ public:
   
   uint8_t getFlags();
   bosch_driver_parameters getParameters();
+  bool setParameters( bosch_driver_parameters parameters );
 
   /**
    * \brief Set a GPIO Pin to HIGH or LOW. It will always configure the pin as an output first.

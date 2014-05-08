@@ -97,6 +97,11 @@ bosch_driver_parameters GpioDriver::getParameters()
   return *sensor_parameters_;
 }
 
+bool GpioDriver::setParameters( bosch_driver_parameters parameters)
+{
+  *sensor_parameters_ = parameters;
+}
+
 bool GpioDriver::initialize()
 {  
   // Initialize the hardware interface

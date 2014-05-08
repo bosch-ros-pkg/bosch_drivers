@@ -85,7 +85,19 @@ public:
   ~EncoderDriver();
 
   // Public Driver Methods:
-  uint8_t getDeviceAddress( void ); 
+  uint8_t getDeviceAddress( void );
+  bool setDeviceAddress( uint8_t address);
+
+  bool setFrequency( unsigned int frequency );
+  unsigned int getFrequency();
+  
+  bool setProtocol( interface_protocol protocol_name );
+  interface_protocol getProtocol();
+  
+  uint8_t getFlags();
+ 
+  bosch_driver_parameters getParameters();
+  bool setParameters( bosch_driver_parameters parameters );
 
   /**
    * \brief Sets the current motor encoder position to \a position
@@ -100,6 +112,8 @@ public:
    * \return latest encoder position in encoder ticks
    */
   int64_t getPosition();
+
+  bool zero();
 
   /**
    * \brief Initializes the driver and the connected hardware

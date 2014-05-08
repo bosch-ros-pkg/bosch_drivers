@@ -64,7 +64,7 @@ int main( int argc, char **argv )
   encoder_driver->invertOutput();
   
   ROS_INFO("Initializing Encoder");
-  if( encoder_driver->initialize() == false)
+  if( encoder_driver->initialize() == false )
   {
     ROS_ERROR("Error initializing encoder driver");
     return -1;
@@ -75,7 +75,7 @@ int main( int argc, char **argv )
   EncoderDriver* encoder_driver2 = new EncoderDriver( &Arduino , 5, 6 ); 
 
   ROS_INFO("Initializing slow Encoder");
-  if( encoder_driver2->initialize() == false)
+  if( encoder_driver2->initialize() == false )
   {
     ROS_ERROR("Error initializing encoder driver");
     return -1;
@@ -84,9 +84,9 @@ int main( int argc, char **argv )
   ros::Rate loop_rate_Hz(1);
 
   int64_t position, position2;
-  ROS_INFO("Setting initial position");
-  encoder_driver->setPosition(0);
-  encoder_driver2->setPosition(0);
+  ROS_INFO( "Setting initial position" );
+  encoder_driver->setPosition( 0 );
+  encoder_driver2->setPosition( 0 );
 
   ROS_INFO("Start reading current position every second...");
 

@@ -81,6 +81,7 @@ public:
   bool setFlags( uint8_t flags );
 
   bosch_driver_parameters getParameters( );
+  bool setParameters( bosch_driver_parameters parameters);
 
   /**
    * \brief Sends the duty cycle \a value to a supported serial device

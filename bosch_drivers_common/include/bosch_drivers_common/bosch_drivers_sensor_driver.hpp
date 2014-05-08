@@ -107,21 +107,8 @@ namespace bosch_drivers_common
      */
     virtual uint8_t getFlags() = 0; // SPI only
  
-    /**
-     * \brief Alert software driver to which pin the sensor's chip-select pin is connected to.
-     *
-     * Relevant to SPI mode only.
-     */
-    //virtual bool setPin( uint8_t pin ) = 0; // SPI, GPIO only. In read/write methods, the pin is the input to the device_address.
- 
-    /**
-     * \brief Retrieve the hardware pin that the sensor's chip-select pin is connected to.
-     *
-     * Relevant to SPI mode only.
-     */
-    //virtual int getPin() = 0; // SPI, GPIO only
-
-    bosch_driver_parameters getParameters();
+    virtual bosch_driver_parameters getParameters() = 0;
+    virtual bool setParameters( bosch_driver_parameters parameters ) = 0;
  
   protected:
     bosch_hardware_interface* hardware_;

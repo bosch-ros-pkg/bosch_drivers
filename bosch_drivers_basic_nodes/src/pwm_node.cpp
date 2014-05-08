@@ -58,8 +58,9 @@ int main( int argc, char **argv )
   Arduino.initialize();
   
   uint8_t pwm_pin = 5;
-  uint32_t frequency = 490; //[Hz]
-  PwmDriver* pwm_driver = new PwmDriver( &Arduino, frequency, pwm_pin ); 
+  unsigned int frequency = 490; //[Hz]
+  unsigned int resolution = 32; //[bits]
+  PwmDriver* pwm_driver = new PwmDriver( &Arduino, frequency, pwm_pin, resolution ); 
   if( pwm_driver->initialize() == false)
   {
     ROS_ERROR("Error initializing PWM driver");
@@ -72,10 +73,10 @@ int main( int argc, char **argv )
 
   while( nh.ok() )
   {
-    pwm_driver->set(duty_cycle);
+    pwm_driver->setDutyCycle( duty_cycle );
 
     duty_cycle += 0.005;
-    if( duty_cycle > 1)
+    if( duty_cycle > 1 )
       duty_cycle = 0;
       
     ros::spinOnce();
