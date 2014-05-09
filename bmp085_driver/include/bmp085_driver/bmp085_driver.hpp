@@ -57,7 +57,7 @@
 #include <bosch_drivers_common/bosch_drivers_sensor_driver.hpp>
 #include <bosch_drivers_common/bosch_drivers_hardware_interface.hpp>
 
-#include "bmp085_parameters.hpp"
+//#include "bmp085_parameters.hpp"
 
 using namespace bosch_drivers_common;
 
@@ -70,7 +70,7 @@ using namespace bosch_drivers_common;
  * \warning   This class implements it's methods through a generic
  * hardware interface.
  */
-class BMP085: public sensor_driver, public BMP085Parameters
+class BMP085: public sensor_driver
 {
 public:
 
@@ -96,19 +96,38 @@ public:
   static const uint8_t MEAS_OUTPUT_LSB  = 0xF7;
   static const uint8_t MEAS_OUTPUT_XLSB = 0xF8;
 
+  /*!
+   * \enum sampling_mode
+   * \brief configurable sampling mode. Higher resolution settings will
+   *     result in a longer conversion time on the sensor before the 
+   *     value can be read.
+   */
   enum sampling_mode
   {
+    /*! 
+     * \var ULTRA_LOW_POWER
+     * \note conversion_time: 4.5 [ms] */ 
     ULTRA_LOW_POWER       = 0,
+    /*! 
+     * \var STANDARD
+     * \note conversion_time: 7.5 [ms] */ 
     STANDARD              = 1,
+    /*! 
+     * \var HIGH
+     * \note conversion_time: 13.5 [ms] */ 
     HIGH                  = 2,
+    /*! 
+     * \var ULTRA_HIGH_RESOLUTION
+     * \note conversion_time: 25.5 [ms] */ 
     ULTRA_HIGH_RESOLUTION = 3
   };
+
 
   BMP085( bosch_hardware_interface* hw );
   ~BMP085(); 
 
   // inheritted from sensor_driver
-  uint8_t getDeviceAddress(); // depends on protocol_.
+  //uint8_t getDeviceAddress(); // depends on protocol_.
   
   /**
    * \brief sends a prompt to initialize the connected hardware device so 
@@ -187,6 +206,16 @@ public:
    */
   void setPressureAtSeaLevel( double pressure );
 
+  bool setSamplingMode( sampling_mode mode );
+  sampling_mode getSamplingMode();
+
+  uint8_t getDeviceAddress();
+  bool setProtocol( interface_protocol protocol );
+  interface_protocol getProtocol();
+
+  bool setFrequency( unsigned int frequency );
+  unsigned int getFrequency();
+
 private:
   // BMP085 Register Addresses
   static const uint8_t DEVICE_ADDRESS = 0x77; // the address without the READ/WRITE bit.
@@ -229,7 +258,14 @@ private:
    * \note  if no value is called in the parameters, the oss mode is set 
    *     to the default value: \a STANDARD.
    */
-  short oss; // oversample setting, which is essentially sampling_mode.
+  /*!
+   * \var oss_
+   * \brief a class member used to store the user-defined sampling mode
+   *     so that it can be passed to the driver with the
+   *     \a getSamplingMode() method.
+   */
+  sampling_mode oss_;
+
 
   /**
    * \brief The following values are calibration constants specific to 

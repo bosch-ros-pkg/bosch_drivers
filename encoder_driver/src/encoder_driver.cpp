@@ -38,39 +38,42 @@
 
 #include "encoder_driver/encoder_driver.h"
 
+bool EncoderDriver::encoders_[MAX_ENCODERS];
+
 EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder1_pin, uint8_t encoder2_pin ): sensor_driver( hw )
 {
   // variable to automaticly define encoder object id starting with 0
-  static uint8_t encoder_id = 0;
+  //static uint8_t encoder_id = 0;
+  sensor_parameters_ = new bosch_driver_parameters();
+  sensor_parameters_->protocol = ENCODER; 
+  sensor_parameters_->frequency = 0; // does not apply for Encoder
+  sensor_parameters_->flags = 0x00;
   
   _encoder1_pin = encoder1_pin;
   _encoder2_pin = encoder2_pin;
-  _encoder_id = encoder_id;
   _last_position = 0;
   _overflow = 0;
   invert_ = 1;
   
-  // Determine encoder ID 
-  if (encoder_id < 16)
+
+  if( getNextID( &(sensor_parameters_->device_address) ) )
   {
-    int frequency = 0; // does not apply for Encoder
-    int flags[3] = { CREATE, _encoder1_pin, _encoder2_pin };  // indicates that we want to create the object on the hardware device
-    flags[0] |= encoder_id << 4; // writes the object id to the upper 4 bits. encoder_id will tell the hardware device which object to create
     uint8_t reg = 0; // does not apply for Encoder
-    uint8_t data[0]; // not needed for constructor
-    uint8_t num_bytes = 0; // will not be read
+    uint8_t data[3] = { CREATE, _encoder1_pin, _encoder2_pin };  // indicates that we want to create the object on the hardware device
+    uint8_t num_bytes = 3; // will not be read
     if( _encoder1_pin == _encoder2_pin )
     {
       ROS_ERROR("EncoderDriver::EncoderDriver(): Encoder pins must be different");
+      EncoderDriver::encoders_[sensor_parameters_->device_address] = false;
     }
     else
     {
-      if( hardware_->write( getDeviceAddress(), ENCODER, frequency, flags, reg, data, num_bytes ) < 0 )
+      if( hardware_->write( *sensor_parameters_, reg, data, num_bytes ) < 0 )
       {
         ROS_ERROR("EncoderDriver::~EncoderDriver(): could not create object on hardware device");
+	EncoderDriver::encoders_[sensor_parameters_->device_address] = false;
       }
     }
-    ++encoder_id; // increase number ob created objects
   }
   else
   {
@@ -80,16 +83,22 @@ EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder1_pin
 
 EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder_id ): sensor_driver( hw )
 {
+  sensor_parameters_ = new bosch_driver_parameters;
+  sensor_parameters_->protocol = ENCODER; 
+  sensor_parameters_->device_address = encoder_id;
+  sensor_parameters_->frequency = 0; // does not apply for Encoder
+  // assign this instance to the desired instance on the serial device
+  sensor_parameters_->flags = 0x00;
+
   // set encoder pins to same value to indicate that there was no object created on the serial device
   _encoder1_pin = _encoder2_pin = 255;
-  // assign this instance to the desired instance on the serial device
-  _encoder_id = encoder_id; 
+ 
   _last_position = 0;
   _overflow = 0;
   invert_ = 1;
   
   // Determine encoder ID 
-  if (encoder_id >= 16)
+  if( sensor_parameters_->device_address >= MAX_ENCODERS )
   {
     ROS_ERROR("Select an encoder_id [0..15] which was already created on the serial device");
   }
@@ -101,24 +110,26 @@ EncoderDriver::~EncoderDriver()
   // check if instance on serial device needs to be destroyed
   if( _encoder1_pin != _encoder2_pin )  // indicates that object was created on serial device
   {
-    int frequency = 0; // does not apply for Encoder
-    int flags[1] = { DESTROY }; // indicates that we want to destroy the object on the hardware device
-    flags[0] |= _encoder_id << 4; // writes the object id to the upper 4 bits. encoder_id will tell the hardware device which object to destroy
     uint8_t reg = 0; // does not apply for Encoder
-    uint8_t data[0]; // not needed for destructor
-    uint8_t num_bytes = 0; // will not be read
+    uint8_t data[1] = { DESTROY }; // indicates that we want to destroy the object on the hardware device
+    uint8_t num_bytes = 1;
     
-    if( hardware_->write( getDeviceAddress(), ENCODER, frequency, flags, reg, data, num_bytes ) < 0 )
+    if( hardware_->write( *sensor_parameters_, reg, data, num_bytes ) < 0 )
     {
       ROS_ERROR("EncoderDriver::~EncoderDriver(): could not destroy object on hardware device");
     }
+    else
+    {
+      EncoderDriver::encoders_[sensor_parameters_->device_address] = false;
+    }
   }
+
+  delete sensor_parameters_;
 }
 
 uint8_t EncoderDriver::getDeviceAddress()
 {
-  // the answer to all questions + 3
-  return 45;
+  return sensor_parameters_->device_address;
 }
 
 bool EncoderDriver::initialize()
@@ -136,7 +147,7 @@ bool EncoderDriver::initialize()
     return false;
   }
   // reset encoder position to 0
-  if(! EncoderDriver::setPosition(0) )
+  if( ! EncoderDriver::setPosition( 0 ) )
     return false;
   
   return true;
@@ -144,20 +155,17 @@ bool EncoderDriver::initialize()
 
 uint8_t EncoderDriver::getEncoderID( )
 {
-  return _encoder_id;
+  return sensor_parameters_->device_address;
 }
 
 int64_t EncoderDriver::getPosition()
 {
-  int frequency = 0; // does not apply for Encoder
-  int flags[1];
-  flags[0] = _encoder_id << 4; // writes the object id to the upper 4 bits. encoder_id will tell the hardware device which encoder object to read from
   uint8_t reg = 0; // does not apply for Encoder
   uint8_t data[4]; // will store the data after successful read call
   uint8_t num_bytes = 4; // will not be read because it is always 4 bytes
   int32_t position; // return value
   
-  if( hardware_->read( getDeviceAddress(), ENCODER, frequency, flags, reg, data, num_bytes ) < 0 )
+  if( hardware_->read( *sensor_parameters_, reg, data, num_bytes ) < 0 )
   {
     ROS_ERROR("EncoderDriver::getPosition(): could not read input");
     return false;
@@ -196,25 +204,27 @@ bool EncoderDriver::setPosition( int32_t position )
 {
   position *= invert_;  // invert if encoder values are inverted, too
   _overflow = 0;  // reset overflow
-  int frequency = 0; // does not apply for Encoder
-  int flags[3] = { SET_POSITION, _encoder1_pin, _encoder2_pin };
-  flags[0] |= _encoder_id << 4; // writes the object id to the upper 4 bits. encoder_id will tell the hardware device which encoder object to write to
+
   uint8_t reg = 0; // does not apply for Encoder
-  uint8_t data[4]; // will contain split up position
-  uint8_t num_bytes = 4; // will not be read because it is always 4 bytes
+  uint8_t data[7]; // will contain split up position
+  uint8_t num_bytes = 7; // will not be read because it is always 4 byte
+  
+  data[0] = SET_POSITION;
+  data[1] = _encoder1_pin;
+  data[2] = _encoder2_pin;
   
   // split position into 4 bytes for transmission
   uint32_t temp;
   temp = ((position & 0xFF000000) >> 24);
-  data[0] = (uint8_t)temp;
-  temp = ((position & 0x00FF0000) >> 16);
-  data[1] = (uint8_t)temp;
-  temp = ((position & 0x0000FF00) >> 8);
-  data[2] = (uint8_t)temp;
-  temp = ((position & 0x000000FF) >> 0);
   data[3] = (uint8_t)temp;
+  temp = ((position & 0x00FF0000) >> 16);
+  data[4] = (uint8_t)temp;
+  temp = ((position & 0x0000FF00) >> 8);
+  data[5] = (uint8_t)temp;
+  temp = ((position & 0x000000FF) >> 0);
+  data[6] = (uint8_t)temp;
   
-  if( hardware_->write( getDeviceAddress(), ENCODER, frequency, flags, reg, data, num_bytes ) < 0 )
+  if( hardware_->write( *sensor_parameters_, reg, data, num_bytes ) < 0 )
   {
     ROS_ERROR("EncoderDriver::setPosition(): could not write position");
     return false;
@@ -222,7 +232,72 @@ bool EncoderDriver::setPosition( int32_t position )
   return true;
 }
 
+bool EncoderDriver::zero()
+{
+  return setPosition( 0 );
+}
+
 void EncoderDriver::invertOutput( )
 {
   invert_ *= -1;
+}
+
+bool EncoderDriver::getNextID( uint8_t* next )
+{
+  for( int n = 0; n < MAX_ENCODERS; n++ )
+  {
+    if( EncoderDriver::encoders_[n] == false )
+    {
+      EncoderDriver::encoders_[n] = true;
+      *next = n;
+      return true;
+    }
+  }
+  return false;
+}
+
+bool EncoderDriver::setDeviceAddress( uint8_t address)
+{
+  sensor_parameters_->device_address = address;
+  return true;
+}
+
+bool EncoderDriver::setFrequency( unsigned int frequency )
+{
+  sensor_parameters_->frequency = frequency;
+  return true;
+}
+ 
+unsigned int EncoderDriver::getFrequency()
+{
+  return sensor_parameters_->frequency;
+}
+  
+bool EncoderDriver::setProtocol( interface_protocol protocol_name )
+{
+  if( protocol_name != ENCODER )
+    return false;
+
+  sensor_parameters_->protocol = protocol_name;
+  return true;
+}
+
+interface_protocol EncoderDriver::getProtocol()
+{
+  return sensor_parameters_->protocol;
+}
+  
+uint8_t EncoderDriver::getFlags()
+{
+  return sensor_parameters_->flags;
+}
+ 
+bosch_driver_parameters EncoderDriver::getParameters()
+{
+  return *sensor_parameters_;
+}
+
+bool EncoderDriver::setParameters( bosch_driver_parameters parameters)
+{
+  *sensor_parameters_ = parameters;
 }

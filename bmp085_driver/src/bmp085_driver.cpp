@@ -58,9 +58,16 @@
 // Constructor
 /**********************************************************************/
 BMP085::BMP085( bosch_hardware_interface* hw ) :
-  sensor_driver( hw ),
-  BMP085Parameters()
+  sensor_driver( hw )
 {
+  sensor_parameters_ = new bosch_driver_parameters();
+  sensor_parameters_->device_address = DEVICE_ADDRESS; //fixed and defined in header
+  sensor_parameters_->protocol = I2C;
+  sensor_parameters_->frequency = 400000; // [Hz]
+  sensor_parameters_->flags = 0x00;
+  //((BMP085_parameters*)sensor_parameters_)->oss = BMP085_parameters::STANDARD;
+  oss_ = STANDARD;
+
   // set default pressure at sea level:
   pressure_at_sea_level_ = 101.325; // in [kPa]
 }
@@ -71,6 +78,7 @@ BMP085::BMP085( bosch_hardware_interface* hw ) :
 /**********************************************************************/
 BMP085::~BMP085() 
 {
+  delete sensor_parameters_;
 }
 
 
@@ -93,9 +101,8 @@ bool BMP085::initialize()
     return false;
   }
   
-  // set oversampling setting:
-  oss = this->getSamplingMode(); 
-  ROS_INFO("Pressure Sensor Sampling Mode (oss): %d", oss);
+  // set oversampling setting: 
+  ROS_INFO("Pressure Sensor Sampling Mode (oss): %d", oss_);
 
   // Get all Calibration Constants.  
   // Luckily, they're all consecutively stored in memory, so we can just
@@ -104,7 +111,8 @@ bool BMP085::initialize()
    
   // Read 22 bytes of Calibration-constant data
  
-  if( hardware_->read( this->getDeviceAddress(), this->getProtocol(), this->getFrequency(), this->getFlags(), (uint8_t)ADDRESS_AC1_MSB, FullCalData, 22 ) < 0 )
+  //if( hardware_->read( this->getDeviceAddress(), this->getProtocol(), this->getFrequency(), this->getFlags(), (uint8_t)ADDRESS_AC1_MSB, FullCalData, 22 ) < 0 )
+  if( hardware_->read( *sensor_parameters_, (uint8_t)ADDRESS_AC1_MSB, FullCalData, 22 ) < 0 )
   {
     ROS_ERROR("BMP085::initialize(): Invalid Calibration data");
     return false;
@@ -151,17 +159,7 @@ bool BMP085::takeMeasurement()
 /**********************************************************************/
 uint8_t BMP085::getDeviceAddress()
 {
-  // I2C is the only way the sensor can be read.  
-  // Ensure I2C has been set:
-  switch( this->getProtocol() )
-  {
-  case I2C:
-    return DEVICE_ADDRESS;
-    break;
-  default:
-    ROS_ERROR("BMP085::getDeviceAddress(): Protocol not set in parameters. Please set a protocol, and recompile.");
-    return DEVICE_ADDRESS;
-  } 
+  return sensor_parameters_->device_address;
 }
 
 
@@ -184,12 +182,12 @@ bool BMP085::getTemperatureData( void )
  
   usleep( 4500 ); // sleep for 4.5 [ms] while BMP085 processes temperature.
   
-  if( hardware_->read( this->getDeviceAddress(), this->getProtocol(), this->getFrequency(), this->getFlags(), MEAS_OUTPUT_MSB, &MSB, 1 ) < 0 )
+  if( hardware_->read( *sensor_parameters_, MEAS_OUTPUT_MSB, &MSB, 1 ) < 0 )
   {
     ROS_ERROR("BMP085::getTemperatureData(): Invalid data"); 
     return false;
   }
-  if( hardware_->read( this->getDeviceAddress(), this->getProtocol(), this->getFrequency(), this->getFlags(), MEAS_OUTPUT_LSB, &LSB, 1 ) < 0 )
+  if( hardware_->read( *sensor_parameters_, MEAS_OUTPUT_LSB, &LSB, 1 ) < 0 )
   {
     ROS_ERROR("BMP085::getTemperatureData(): Invalid data"); 
     return false;
@@ -218,7 +216,7 @@ bool BMP085::getPressureData()
    * We need to combine three 8-bit numbers and shift them accordingly.
    */  
 
-  uint8_t PressureRequest = PRESSURE_OSRS_0 + (oss<<6);
+  uint8_t PressureRequest = PRESSURE_OSRS_0 + (oss_<<6);
   
   if( writeToReg( INPUT_REG_ADDRESS, PressureRequest ) == false )
   {
@@ -228,18 +226,18 @@ bool BMP085::getPressureData()
  
   // Wait for the chip's pressure measurement to finish processing 
   // before accessing the data.  Wait time depends on the sampling mode.
-  switch( oss )
+  switch( oss_ )
   {
-  case 0:
+  case ULTRA_LOW_POWER:
     usleep( 4500 ); 
     break;
-  case 1:
+  case STANDARD:
     usleep( 7500 );
     break;
-  case 2:
+  case HIGH:
     usleep( 13500 );
     break;
-  case 3:
+  case ULTRA_HIGH_RESOLUTION:
     usleep( 25500 );
     break;
   default:
@@ -249,13 +247,13 @@ bool BMP085::getPressureData()
 
   unsigned char data[3]; 
   
-  if( hardware_->read( this->getDeviceAddress(), this->getProtocol(), this->getFrequency(), this->getFlags(), MEAS_OUTPUT_MSB, data, 3 ) < 0 )
+  if( hardware_->read( *sensor_parameters_, MEAS_OUTPUT_MSB, data, 3 ) < 0 )
   {
     ROS_ERROR("BMP085::getPressureData():Invalid data");
     return false;
   }
 
-  UP = (long)( ( ( (ulong)data[0]<<16) | ((ulong)data[1]<<8) | (ulong)data[2] ) >> (8-oss));
+  UP = (long)( ( ( (ulong)data[0]<<16) | ((ulong)data[1]<<8) | (ulong)data[2] ) >> (8-oss_));
   // ROS_INFO("UP: %dl",UP);  // sanity check.
   long B3, B6, X1, X2, X3;  // coefficients derived from existing coefficients. 
   // Note: we calculated B5 from the temperature!
@@ -265,14 +263,14 @@ bool BMP085::getPressureData()
   X1 = ( (B2 * ((B6 * B6)>>12)) >> 11 );
   X2 = ( ((long)AC2* B6) >> 11);
   X3 = X1 + X2;
-  B3 = ( ( ( ((long)AC1*4) + X3)<< oss) + 2) >> 2;
+  B3 = ( ( ( ((long)AC1*4) + X3)<< oss_) + 2) >> 2;
   
   X1 = (((long)AC3*B6) >> 13);
   X2 = ( B1*((B6*B6) >> 12) ) >> 16;
   X3 = ( (X1 + X2) + 2 ) >> 2;
   B4 = ((long)AC4* (ulong)(X3 + 32768)) >> 15;
   
-  B7 =  (ulong)(UP - B3)*(50000>>oss);
+  B7 =  (ulong)(UP - B3)*(50000>>oss_);
   if( B7 < 0x80000000 )
   {
     p = (B7 << 1)/B4;
@@ -339,10 +337,79 @@ void BMP085::setPressureAtSeaLevel( double pressure )
 /**********************************************************************/
 bool BMP085::writeToReg( uint8_t reg, uint8_t value )
 {
-  if( hardware_->write( this->getDeviceAddress(), this->getProtocol(), this->getFrequency(), this->getFlags(), (uint8_t)reg, &value, 1 ) < 0 )
+  //if( hardware_->write( this->getDeviceAddress(), this->getProtocol(), this->getFrequency(), this->getFlags(), (uint8_t)reg, &value, 1 ) < 0 )
+  if( hardware_->write( *sensor_parameters_, (uint8_t)reg, &value, 1 ) < 0 )
   {
     ROS_ERROR("could not write value to register."); 
     return false;
   }
   return true;
+}
+
+/**********************************************************************/
+/**********************************************************************/
+bool BMP085::setSamplingMode( sampling_mode mode )
+{
+  oss_ = mode;
+  return true;
+}
+
+
+/**********************************************************************/
+/**********************************************************************/
+bool BMP085::setProtocol( interface_protocol protocol )
+{
+  // This function must exist since it is an inherited virtual function.
+  if( protocol != I2C )
+  {
+    ROS_ERROR( "Cannot change protocol from default: I2C.  No other protocols are supported.");
+    return false;
+  }
+  else
+  {
+    sensor_parameters_->protocol = protocol;
+  }
+  return true;
+}
+
+
+/**********************************************************************/
+/**********************************************************************/
+bool BMP085::setFrequency( unsigned int frequency )
+{
+  sensor_parameters_->frequency = frequency;
+  return true;
+}
+
+
+/**********************************************************************/
+/**********************************************************************/
+interface_protocol BMP085::getProtocol()
+{
+  return sensor_parameters_->protocol;
+}
+
+
+/**********************************************************************/
+/**********************************************************************/
+unsigned int BMP085::getFrequency()
+{
+  return sensor_parameters_->frequency;
+}
+
+
+
+/**********************************************************************/
+/**********************************************************************/
+//int* BMP085::getFlags()
+//{
+//  return sensor_parameters_->flags;
+//}
+
+
+/**********************************************************************/
+/**********************************************************************/
+BMP085::sampling_mode BMP085::getSamplingMode()
+{
+  return oss_;
 }

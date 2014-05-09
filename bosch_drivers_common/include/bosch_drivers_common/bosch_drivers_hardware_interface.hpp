@@ -42,6 +42,7 @@
 #include <string>
 
 #include "bosch_drivers_common.hpp"
+#include "bosch_drivers_parameters.hpp"
 
 namespace bosch_drivers_common
 {
@@ -75,7 +76,9 @@ namespace bosch_drivers_common
      * Some things to configure include the clock/data polarity for SPI and
      * the byte order: little endian or big endian.
      */
-    virtual bool initialize () = 0;
+    virtual bool initialize() = 0;
+
+    //virtual bool initialize( bosch_driver_parameters parameters ) = 0;
     
     /**
      * \brief Read a given number of bytes
@@ -101,14 +104,20 @@ namespace bosch_drivers_common
      * read from the bus without changing any chip select lines.
      * \note  For GPIO transactions, the \p device_address is the pin or port.
      */
-    virtual ssize_t read( int device_address, 
+    virtual ssize_t read( uint8_t device_address, 
                           interface_protocol protocol, 
-                          int frequency, 
-                          int* flags, // relevant for SPI communiction
+                          unsigned int frequency, 
+                          uint8_t flags, // relevant for SPI communiction
                           uint8_t reg_address, 
                           uint8_t* data, 
                           size_t num_bytes ) = 0;               
         
+    virtual ssize_t read( bosch_driver_parameters parameters,
+                          uint8_t reg_address, 
+                          uint8_t* data, 
+                          size_t num_bytes ) = 0;               
+
+
     /**
      * \brief Write the provided data, as bytes
      * 
@@ -136,13 +145,18 @@ namespace bosch_drivers_common
      * read from the bus without changing any chip select lines.
      * \note  For GPIO transactions, the \p device_address is the pin or port.
      */
-    virtual ssize_t write( int device_address, 
+    virtual ssize_t write( uint8_t device_address, 
                            interface_protocol protocol, 
-                           int frequency,
-                           int* flags, 
+                           unsigned int frequency,
+                           uint8_t flags, 
                            uint8_t reg_address, 
                            uint8_t* data, 
-                           size_t num_bytes ) = 0;      
+                           size_t num_bytes ) = 0;
+
+    virtual ssize_t write( bosch_driver_parameters device_parameters,
+                           uint8_t reg_address, 
+                           uint8_t* data, 
+                           size_t num_bytes ) = 0;
 
     /**
      * \brief Check if a communication protocol is supported by this hardware interface.

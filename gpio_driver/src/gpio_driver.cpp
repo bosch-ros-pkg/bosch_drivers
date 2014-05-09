@@ -40,17 +40,66 @@
 
 GpioDriver::GpioDriver( bosch_hardware_interface* hw, uint8_t pin ): sensor_driver( hw )
 {
-  _pin = pin;  
+  sensor_parameters_ = new bosch_driver_parameters();
+  sensor_parameters_->protocol = GPIO;
+  sensor_parameters_->device_address = pin;
+  sensor_parameters_->frequency = 0;
+  sensor_parameters_->flags = 0x00;
 }
 
 GpioDriver::~GpioDriver()
 {
+  delete sensor_parameters_;
 }
 
 uint8_t GpioDriver::getDeviceAddress()
 {
-  // the answer to all questions and one more
-  return 43;
+  return sensor_parameters_->device_address;
+}
+
+bool GpioDriver::setDeviceAddress( uint8_t address )
+{
+  sensor_parameters_->device_address = address;
+
+  return true;
+}
+
+unsigned int GpioDriver::getFrequency()
+{
+  return sensor_parameters_->frequency;
+}
+
+bool GpioDriver::setFrequency( unsigned int frequency )
+{
+  return false;
+}
+
+interface_protocol GpioDriver::getProtocol()
+{
+  return sensor_parameters_->protocol;
+}
+
+bool GpioDriver::setProtocol( interface_protocol protocol_name )
+{
+  if( protocol_name == GPIO )
+    return true;
+
+  return false;
+}
+
+uint8_t GpioDriver::getFlags()
+{
+  return sensor_parameters_->flags;
+}
+
+bosch_driver_parameters GpioDriver::getParameters()
+{
+  return *sensor_parameters_;
+}
+
+bool GpioDriver::setParameters( bosch_driver_parameters parameters)
+{
+  *sensor_parameters_ = parameters;
 }
 
 bool GpioDriver::initialize()
@@ -64,13 +113,13 @@ bool GpioDriver::initialize()
   return true;
 }
 
-bool GpioDriver::set( bool value )
+bool GpioDriver::setOutput( bool value )
 {
   int *flags = NULL; //not needed for output
   int frequency = 0; // does not apply for GPIO
   uint8_t num_bytes = 1;
   uint8_t data[1] = {(bool)value};
-  if( hardware_->write( this->getDeviceAddress(), GPIO, frequency, flags, _pin, data, num_bytes ) < 0 )
+  if( hardware_->write( *sensor_parameters_, sensor_parameters_->device_address, data, num_bytes ) < 0 )
   {
     ROS_ERROR("GpioDriver::setOutput(): could not set output");
     return false;
@@ -78,14 +127,14 @@ bool GpioDriver::set( bool value )
   return true;
 }
 
-bool GpioDriver::get( gpio_input_mode mode )
+bool GpioDriver::getInput( gpio_input_mode mode )
 {
   int flags[1] = {mode};
   int frequency = 0; // does not apply for GPIO
   uint8_t num_bytes = 1;
   uint8_t data[1];
   
-  if( hardware_->read( this->getDeviceAddress(), GPIO, frequency, flags, _pin, data, num_bytes ) < 0 )
+  if( hardware_->read( *sensor_parameters_, sensor_parameters_->device_address, data, num_bytes ) < 0 )
   {
     ROS_ERROR("GpioDriver::readInput(): could not read input");
     return false;

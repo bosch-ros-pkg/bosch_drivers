@@ -48,7 +48,7 @@ ArduinoInterface::ArduinoInterface( std::string port_name ) :
   timeout_( 0.5 ), // delay in seconds before we declare Serial communication lost.
   is_initialized_( false ),
   data_packet_( 0 ),
-  _reference_voltage(5000)  // set adc reference voltage to 5V, this is Arduino Uno specific
+  _reference_voltage( 5000 )  // set adc reference voltage to 5V, this is Arduino Uno specific
 {
   // Create a serial port and assign it the class name: 
   serial_port_ = new uniserial();
@@ -101,7 +101,12 @@ bool ArduinoInterface::initialize()
 /**********************************************************************/
 // Read
 /**********************************************************************/
-ssize_t ArduinoInterface::read( int device_address, interface_protocol protocol, int frequency, int* flags, uint8_t reg_address, uint8_t* data, size_t num_bytes )
+ssize_t ArduinoInterface::read( bosch_driver_parameters parameters, uint8_t reg_address, uint8_t* data, size_t num_bytes )
+{
+  return read( parameters.device_address, parameters.protocol, parameters.frequency, parameters.flags, reg_address, data, num_bytes );
+}
+
+ssize_t ArduinoInterface::read( uint8_t device_address, interface_protocol protocol, unsigned int frequency, uint8_t flags, uint8_t reg_address, uint8_t* data, size_t num_bytes )
 {
   int error_code = 0;
   
@@ -114,8 +119,8 @@ ssize_t ArduinoInterface::read( int device_address, interface_protocol protocol,
   // Specify data package as read command
   data_packet_ = READ;
 
-	// Specify data package protocol
-	data_packet_ |= (protocol << 1);
+  // Specify data package protocol
+  data_packet_ |= (protocol << 1);
  
   switch( protocol )
   {
@@ -126,17 +131,17 @@ ssize_t ArduinoInterface::read( int device_address, interface_protocol protocol,
     }
     case SPI: 
     {
-      error_code = arduinoSpiRead( (uint8_t)frequency, (uint8_t)flags[0], reg_address, data, num_bytes );
+      error_code = arduinoSpiRead( (uint8_t)frequency, (uint8_t)flags, reg_address, data, num_bytes );
       break;
     } 
     case GPIO:
     {
-      error_code = arduinoGpioRead( (uint8_t)flags[0], reg_address, data );
+      error_code = arduinoGpioRead( (uint8_t)flags, reg_address, data );
       break;
     }
     case ENCODER:
     {
-      error_code = arduinoEncoderRead( flags, data );
+      error_code = arduinoEncoderRead( device_address, data );
       break;
     }
     case ADCONVERTER:
@@ -157,7 +162,12 @@ ssize_t ArduinoInterface::read( int device_address, interface_protocol protocol,
 /**********************************************************************/
 // Write
 /**********************************************************************/
-ssize_t ArduinoInterface::write( int device_address, interface_protocol protocol, int frequency, int* flags, uint8_t reg_address, uint8_t* data, size_t num_bytes )
+ssize_t ArduinoInterface::write( bosch_driver_parameters parameters, uint8_t reg_address, uint8_t* data, size_t num_bytes )
+{
+  return write( parameters.device_address, parameters.protocol, parameters.frequency, parameters.flags, reg_address, data, num_bytes );
+}
+
+ssize_t ArduinoInterface::write( uint8_t device_address, interface_protocol protocol, unsigned int frequency, uint8_t flags, uint8_t reg_address, uint8_t* data, size_t num_bytes )
 { 
   int error_code = 0;
   
@@ -183,13 +193,13 @@ ssize_t ArduinoInterface::write( int device_address, interface_protocol protocol
     }
     case SPI:
     {
-      error_code = arduinoSpiWrite ( (uint8_t)frequency, (uint8_t)flags[0], reg_address, data, num_bytes );
+      error_code = arduinoSpiWrite ( (uint8_t)frequency, flags, reg_address, data, num_bytes );
       break;
     }
     case PWM:
     {
       // Arduino only accepts 8 Bit PWM, so pass MSB only
-      error_code = arduinoPwmWrite( (uint32_t)frequency, reg_address, data[0] );
+      error_code = arduinoPwmWrite( device_address, (uint32_t)frequency, data[0] );
       break;
     }
     case GPIO:
@@ -199,7 +209,7 @@ ssize_t ArduinoInterface::write( int device_address, interface_protocol protocol
     }
     case ENCODER:
     {
-      error_code = arduinoEncoderWrite( flags, data );
+      error_code = arduinoEncoderWrite( device_address, data );
       break;
     }
     case ADCONVERTER:
@@ -290,16 +300,16 @@ ssize_t ArduinoInterface::arduinoI2cWrite( uint8_t device_address, uint32_t freq
 	// lower 3 Bits are reserved for frequency
   switch( frequency )
   {
-		case 100000:
-			flags = FREQ_STANDARD;
-		  break;
-		case 400000:
-			// set Bit 2
-		  flags = FREQ_FAST;
-		  break;
-		default:
-		  ROS_ERROR("Arduino cannot write at this frequency.");
-		  return -1; // error code. 
+  case 100000:
+    flags = FREQ_STANDARD;
+    break;
+  case 400000:
+    // set Bit 2
+    flags = FREQ_FAST;
+    break;
+  default:
+    ROS_ERROR("Arduino cannot write at this frequency.");
+    return -1; // error code. 
   }
    
   uint8_t i2c_write_prompt[5] = { data_packet_, flags, (uint8_t)device_address, reg_address, num_bytes };
@@ -405,10 +415,10 @@ ssize_t ArduinoInterface::arduinoSpiRead( uint8_t frequency, uint8_t flags, uint
 
   // Read num_bytes bytes off the serial line:
   if( serial_port_->Read_Bytes( num_bytes, data ) == false )
-	{
-		ROS_ERROR("Read_Bytes Error");
+  {
+    ROS_ERROR("Read_Bytes Error");
     return -1; // error code.
-	}
+  }
   else
     return num_bytes;
 }
@@ -420,35 +430,35 @@ ssize_t ArduinoInterface::arduinoI2cRead(uint8_t device_address, uint32_t freque
 {
 
 // the only flag for I2C is the frequency, so no external argument accepted
-	uint8_t flags;
+  uint8_t flags;
 
   // Encode i2c frequency data into flags
-	// lower 3 Bits are reserved for frequency
+  // lower 3 Bits are reserved for frequency
   switch( frequency )
   {
-		case 100000:
-			flags = FREQ_STANDARD;
-		  break;
-		case 400000:
-			// set Bit 2
-		  flags = FREQ_FAST;
-		  break;
-		default:
-		  ROS_ERROR("Arduino cannot read at this frequency.");
-		  return -1; // error code. 
+  case 100000:
+    flags = FREQ_STANDARD;
+    break;
+  case 400000:
+    // set Bit 2
+    flags = FREQ_FAST;
+    break;
+  default:
+    ROS_ERROR("Arduino cannot read at this frequency.");
+    return -1; // error code. 
   }
 
   uint8_t i2c_read_prompt[5] = { data_packet_, flags, (uint8_t)device_address, reg_address, num_bytes };
-                
+  
   serial_port_->Write_Bytes( 5, i2c_read_prompt );  
-   
+  
   // wait for the Arduino to verify these commands:
   while( serial_port_->Available() < 1 )
     ;
 
   // Verify:
   int verification = serial_port_->Read();
-
+  
   if( verification != VERIFY )
   {
     ROS_ERROR("ArduinoInterface::arduinoI2cRead(): No response to I2C read prompt. Instead:  0x%x", verification);
@@ -473,39 +483,40 @@ ssize_t ArduinoInterface::arduinoI2cRead(uint8_t device_address, uint32_t freque
 
 /**********************************************************************/
 /**********************************************************************/
-ssize_t ArduinoInterface::arduinoPwmWrite( uint32_t frequency, uint8_t reg_address, uint8_t data )
+ssize_t ArduinoInterface::arduinoPwmWrite( uint8_t device_address, uint32_t frequency, uint8_t data )
 {
-	if( frequency != 490)
-	{
-		ROS_ERROR("Only frequency 490Hz suppported for Arduino");
-		return -1;
-	}
-	/* 
-	 * the following block is Arduino Uno specific
-	 */
-	switch (reg_address)
-	{
-	  case 3:
-	  case 5:
-	  case 6:
-	  case 9:
-	  case 10:
-	  case 11: break;
-	  default:
-	  {
-	    ROS_ERROR("The selected Pin number (reg_address) is not available for PWM");
-	    ROS_ERROR("Select Pins 3,5,6,9,10,11 instead");
-	    return -1;
-	  }
-	}
-	
+  if( frequency != 490 )
+  {
+    ROS_ERROR("Only frequency 490Hz suppported for Arduino");
+    return -1;
+  }
+  /* 
+   * the following block is Arduino Uno specific
+   */
+  switch( device_address )
+  {
+  case 3:
+  case 5:
+  case 6:
+  case 9:
+  case 10:
+  case 11:
+    break;
+  default:
+  {
+    ROS_ERROR("The selected Pin number (reg_address) is not available for PWM");
+    ROS_ERROR("Select Pins 3,5,6,9,10,11 instead");
+    return -1;
+  }
+  }
+  
   // construct array to send to Arduino:
   uint8_t write_packet[3];
   // load it with setup parameters and data:
   write_packet[0] = data_packet_;
-  write_packet[1] = reg_address;
-	write_packet[2] = data;
-   
+  write_packet[1] = device_address;
+  write_packet[2] = data;
+  
   // send the data:
   serial_port_->Write_Bytes( 3, write_packet );
    
@@ -529,43 +540,41 @@ ssize_t ArduinoInterface::arduinoPwmWrite( uint32_t frequency, uint8_t reg_addre
 ssize_t ArduinoInterface::arduinoGpioWrite( uint8_t pin, bool value )
 {
   /* 
-	 * the following block is Arduino Uno specific
-	 */
-  switch (pin)
+   * the following block is Arduino Uno specific
+   */
+  switch( pin )
   {
-    case 0:
-    case 1:
-    case 2:
-    case 3:
-    case 4:
-    case 5:
-    case 6:
-    case 7:
-    case 8:
-    case 9:
-    case 10:
-    case 11:
-    case 12:
-    case 13: break;
-    default:
-    {
-	    ROS_ERROR("The selected Pin number is not available for GPIO");
-	    ROS_ERROR("Select Pins 0 through 13 instead");
-	    return -1;
-	  }
+  case 0:
+  case 1:
+  case 2:
+  case 3:
+  case 4:
+  case 5:
+  case 6:
+  case 7:
+  case 8:
+  case 9:
+  case 10:
+  case 11:
+  case 12:
+  case 13: break;
+  default:
+    ROS_ERROR("The selected Pin number is not available for GPIO");
+    ROS_ERROR("Select Pins 0 through 13 instead");
+    return -1;
   }
   // construct array to send to Arduino:
   uint8_t write_packet[3];
   // load it with setup parameters and data:
   write_packet[0] = data_packet_;
   write_packet[1] = pin;
-	write_packet[2] = value;
-	
+  write_packet[2] = value;
+  
   // send the data:
   serial_port_->Write_Bytes( 3, write_packet );
   usleep( 5000 );    
   //Wait for verification:
-  if(!( waitOnBytes( 1 )))
+  if( !( waitOnBytes( 1 )) )
     return -1;
    
   uint8_t verification = serial_port_->Read();
@@ -583,60 +592,55 @@ ssize_t ArduinoInterface::arduinoGpioWrite( uint8_t pin, bool value )
 ssize_t ArduinoInterface::arduinoGpioRead( uint8_t flags, uint8_t pin, uint8_t* value )
 {
   /* 
-	 * the following block is Arduino Uno specific
-	 */
-  switch (pin)
+   * the following block is Arduino Uno specific
+   */
+  switch( pin )
   {
-    case 0:
-    case 1:
-    case 2:
-    case 3:
-    case 4:
-    case 5:
-    case 6:
-    case 7:
-    case 8:
-    case 9:
-    case 10:
-    case 11:
-    case 12:
-    case 13: break;
-    default:
-    {
-	    ROS_ERROR("The selected Pin number is not available for GPIO");
-	    ROS_ERROR("Select Pins 0 through 13 instead");
-	    return -1;
-	  }
+  case 0:
+  case 1:
+  case 2:
+  case 3:
+  case 4:
+  case 5:
+  case 6:
+  case 7:
+  case 8:
+  case 9:
+  case 10:
+  case 11:
+  case 12:
+  case 13: break;
+  default:
+    ROS_ERROR("The selected Pin number is not available for GPIO");
+    ROS_ERROR("Select Pins 0 through 13 instead");
+    return -1;
   }
   
-  switch ((gpio_input_mode) flags )
+  switch( (gpio_input_mode) flags )
   {
     /* 
-	   * PULLUP will only work with Arduino version 1.0.1 or greater!!!
-	   */
-    case FLOATING: 
-    case PULLUP: break;
-    case PULLDOWN:
-    {
-      ROS_ERROR("The selected input mode is not available for Arduino");
-	    ROS_ERROR("Select FLOATING instead");
-	    return -1;
-    }
-    default:
-    {
-      ROS_ERROR("ArduinoInterface::arduinoGpioRead The selected input mode is not known");
-      return -1;
-    }
+     * PULLUP will only work with Arduino version 1.0.1 or greater!!!
+     */
+  case FLOATING: 
+  case PULLUP:
+    break;
+  case PULLDOWN:
+    ROS_ERROR("The selected input mode is not available for Arduino");
+    ROS_ERROR("Select FLOATING instead");
+    return -1;
+  default:
+    ROS_ERROR("ArduinoInterface::arduinoGpioRead The selected input mode is not known");
+    return -1;
   }
   // construct array to send to Arduino:
   uint8_t write_packet[3];
   // load it with setup parameters and data:
   write_packet[0] = data_packet_;
   write_packet[1] = flags;
-	write_packet[2] = pin;
+  write_packet[2] = pin;
    
   // send the data:
-  if(! serial_port_->Write_Bytes( 3, write_packet ))
+  if( !serial_port_->Write_Bytes( 3, write_packet ) )
   {
     ROS_ERROR("ArduinoInterface::arduinoGpioRead(): Could not send data to Arduino");
     return -1;
@@ -661,17 +665,17 @@ ssize_t ArduinoInterface::arduinoGpioRead( uint8_t flags, uint8_t pin, uint8_t* 
 
 /**********************************************************************/
 /**********************************************************************/
-ssize_t ArduinoInterface::arduinoEncoderRead( int* flags, uint8_t* data )
+ssize_t ArduinoInterface::arduinoEncoderRead( uint8_t device_address, uint8_t* data )
 {
-  static const int num_bytes_encoder_transmission = 4;
+  const int num_bytes_encoder_transmission = 4;
   // construct array to send to Arduino:
   uint8_t write_packet[2];
   // load it with setup parameters and data:
   write_packet[0] = data_packet_;
-  write_packet[1] = flags[0];
+  write_packet[1] = device_address;
   
   // send the data:
-  if(! serial_port_->Write_Bytes( 2, write_packet ))
+  if( !serial_port_->Write_Bytes( 2, write_packet ) )
   {
     ROS_ERROR("ArduinoInterface::arduinoEncoderRead(): Could not send data to Arduino");
     return -1;
@@ -696,109 +700,102 @@ ssize_t ArduinoInterface::arduinoEncoderRead( int* flags, uint8_t* data )
 
 /**********************************************************************/
 /**********************************************************************/
-ssize_t ArduinoInterface::arduinoEncoderWrite( int* flags, uint8_t* data )
+ssize_t ArduinoInterface::arduinoEncoderWrite( uint8_t device_address, uint8_t* data )
 {  
-  static const int num_bytes_encoder_transmission = 4;
+  const int num_bytes_encoder_transmission = 4;
   // construct array to send to Arduino:
   uint8_t write_packet[6];
   // load it with setup parameters and data:
   write_packet[0] = data_packet_;
-  write_packet[1] = flags[0];  // command byte containing object_id in upper 4 bits and command in lower 4 bits
+  write_packet[1] = device_address;  // command byte containing object_id in upper 4 bits and command in lower 4 bits
   
-  switch( flags[0] & 0x0F) // read lower 4 bits to decrypt command
+  switch( data[0] ) // read command
   {
-    case CREATE:  // creates new object on arduino
+  case CREATE:  // creates new object on arduino
+    /* 
+     * the following block is Arduino Uno specific
+     */
+    //check for correct input
+    switch( data[1] ) // first encoder pin
     {
-      /* 
-	     * the following block is Arduino Uno specific
-	     */
-	    //check for correct input
-      switch(flags[1])  // first encoder pin
-      {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-        case 8:
-        case 9:
-        case 10:
-        case 11:
-        case 12:
-        case 13: break;
-        default:
-        {
-	        ROS_ERROR("The selected Pin number is not available for Encoder");
-	        ROS_ERROR("Select Pins 0 through 13 instead");
-	        return -1;
-	      }
-      }
-	    switch(flags[2])  // second encoder pin
-      {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-        case 8:
-        case 9:
-        case 10:
-        case 11:
-        case 12:
-        case 13: break;
-        default:
-        {
-	        ROS_ERROR("The selected Pin number is not available for Encoder");
-	        ROS_ERROR("Select Pins 0 through 13 instead");
-	        return -1;
-	      }
-      } 
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+      break;
+    default:
+      ROS_ERROR("The selected Pin number is not available for Encoder");
+      ROS_ERROR("Select Pins 0 through 13 instead");
+      return -1;
+    }
+    switch( data[2] ) // second encoder pin
+    {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+      break;
+    default:
+      ROS_ERROR("The selected Pin number is not available for Encoder");
+      ROS_ERROR("Select Pins 0 through 13 instead");
+      return -1;
+    } 
+    
+    write_packet[2] = data[1];  // encoder pin 1
+    write_packet[3] = data[2];  // encoder pin 2
+    // send the data:
+    if(! serial_port_->Write_Bytes( 4, write_packet ))
+    {
+      ROS_ERROR("ArduinoInterface::arduinoEncoderWrite(): Could not send data to Arduino");
+      return -1;
+    }
+    break;
       
-      write_packet[2] = flags[1];  // encoder pin 1
-      write_packet[3] = flags[2];  // encoder pin 2
-      // send the data:
-      if(! serial_port_->Write_Bytes( 4, write_packet ))
-      {
-        ROS_ERROR("ArduinoInterface::arduinoEncoderWrite(): Could not send data to Arduino");
-        return -1;
-      }
-    }break;
-    
-    
-    case DESTROY: // destroys object on hardware device
+  case DESTROY: // destroys object on hardware device
+    // send the data:
+    if(! serial_port_->Write_Bytes( 2, write_packet ))
     {
-      // send the data:
-      if(! serial_port_->Write_Bytes( 2, write_packet ))
-      {
-        ROS_ERROR("ArduinoInterface::arduinoEncoderWrite(): Could not send data to Arduino");
-        return -1;
-      }
-    }break;
-    
-    
-    case SET_POSITION:  // sets new position for encoder object
-    {
-      write_packet[2] = data[0];  // position MSB
-      write_packet[3] = data[1];
-      write_packet[4] = data[2];
-      write_packet[5] = data[3];  // position LSB
-      // send the data:
-      if(! serial_port_->Write_Bytes( 6, write_packet ))
-      {
-        ROS_ERROR("ArduinoInterface::arduinoEncoderWrite(): Could not send data to Arduino");
-        return -1;
-      }
-    }break;
-  }
+      ROS_ERROR("ArduinoInterface::arduinoEncoderWrite(): Could not send data to Arduino");
+      return -1;
+    }
+    break;
   
+  case SET_POSITION:  // sets new position for encoder object
+    write_packet[2] = data[3];  // position MSB
+    write_packet[3] = data[4];
+    write_packet[4] = data[5];
+    write_packet[5] = data[6];  // position LSB
+    // send the data:
+    if(! serial_port_->Write_Bytes( 6, write_packet ))
+    {
+      ROS_ERROR("ArduinoInterface::arduinoEncoderWrite(): Could not send data to Arduino");
+      return -1;
+    }
+    break;
+  }
+
   //Wait for verification:
-  if(!( waitOnBytes( 1 )))
+  if( !( waitOnBytes( 1 )) )
     return -1;
   uint8_t verification = serial_port_->Read();
    
@@ -812,31 +809,30 @@ ssize_t ArduinoInterface::arduinoEncoderWrite( int* flags, uint8_t* data )
 
 ssize_t ArduinoInterface::arduinoAdcRead( uint8_t pin, uint8_t* data )
 {
-/* 
-	 * the following block is Arduino Uno specific
-	 */
-  switch (pin)
+  /* 
+   * the following block is Arduino Uno specific
+   */
+  switch( pin )
   {
-    case 0:
-    case 1:
-    case 2:
-    case 3:
-    case 4:
-    case 5: break;
-    default:
-    {
-	    ROS_ERROR("The selected Pin number is not available for ADC");
-	    ROS_ERROR("Select Pins 0 through 5 instead");
-	    return -1;
-	  }
+  case 0:
+  case 1:
+  case 2:
+  case 3:
+  case 4:
+  case 5:
+    break;
+  default:
+    ROS_ERROR("The selected Pin number is not available for ADC");
+    ROS_ERROR("Select Pins 0 through 5 instead");
+    return -1;
   }
   
   // construct array to send to Arduino:
   uint8_t write_packet[2];
   // load it with setup parameters and data:
   write_packet[0] = data_packet_;
-	write_packet[1] = pin;
-   
+  write_packet[1] = pin;
+  
   // send the data:
   if(! serial_port_->Write_Bytes( 2, write_packet ))
   {
@@ -898,9 +894,9 @@ ssize_t ArduinoInterface::arduinoAdcWrite( uint8_t* voltage )
   _reference_voltage |= temp[3] << 0;
   
   /* 
-	 * the following block is Arduino Uno specific
-	 */
-  switch (_reference_voltage)
+   * the following block is Arduino Uno specific
+   */
+  switch( _reference_voltage )
   {
   case 0:
   case 1:  
