@@ -56,19 +56,39 @@ namespace bosch_drivers_common
    */
   class sensor_driver    
   {
+  protected:
+    bosch_hardware_interface* hardware_;
+    
+    // propose new name: communication_parameters
+    bosch_driver_parameters* sensor_parameters_;
+    
 
   public:
     /**
      * Constructor: ties the sensor to its hardware interface
      */
-    sensor_driver( bosch_hardware_interface* hw )
+    sensor_driver( bosch_hardware_interface* hw ):
+      hardware_( hw ),
+      sensor_parameters_( new bosch_driver_parameters )
     {
-      hardware_ = hw;
     }
-  
-    // Destructor
-    virtual ~sensor_driver() {}; 
 
+    /**
+     * Constructor: ties the sensor to its hardware interface
+     */
+    sensor_driver( bosch_hardware_interface* hw, bosch_driver_parameters* parameters ):
+      hardware_( hw ),
+      sensor_parameters_( parameters )
+    {
+    }
+
+    
+    // Destructor
+    virtual ~sensor_driver()
+    {
+      delete sensor_parameters_;
+    }
+    
     /**
      * \brief Retrieve the address of the sensor
      *
@@ -77,44 +97,56 @@ namespace bosch_drivers_common
      * read from the bus without changing any chip select lines.
      * \note  For GPIO transactions, the \p device_address is the pin or port.
      */
-    virtual uint8_t getDeviceAddress() = 0;
-
+    virtual uint8_t getDeviceAddress()
+    {
+      return sensor_parameters_->device_address;
+    }
+    
     virtual bool setDeviceAddress( uint8_t address ) = 0;
+
     /**
      * \brief Sets the frequency of the sensor data transmissions between the hardware interface and the sensor.
      */           
     virtual bool setFrequency( unsigned int frequency ) = 0;
-
+    
     /**
      * \brief Retrieve the frequency at which the sensor data transmissions take place.
      */
-    virtual unsigned int getFrequency() = 0;
- 
+    virtual unsigned int getFrequency()
+    {
+      return sensor_parameters_->frequency;
+    }
+    
     /**
      * \brief Select the protocol that both the hardware interface and sensor use to communicate.
      *
      * \p interface_protocol is an enumerated datatype from bosch_drivers_common.
      */
     virtual bool setProtocol( interface_protocol protocol_name ) = 0;
- 
+    
     /**
      * \brief Retrieve the communication protocol.
      */
-    virtual interface_protocol getProtocol() = 0;
-
+    virtual interface_protocol getProtocol()
+    {
+      return sensor_parameters_->protocol;
+    }
+    
     /**
      * \brief Retreive the flags for communication between hardware interface and sensor.
      */
-    virtual uint8_t getFlags() = 0; // SPI only
- 
-    virtual bosch_driver_parameters getParameters() = 0;
-    virtual bool setParameters( bosch_driver_parameters parameters ) = 0;
- 
-  protected:
-    bosch_hardware_interface* hardware_;
+    virtual uint8_t getFlags()
+    {
+      return sensor_parameters_->flags;
+    }
+    
+    virtual bosch_driver_parameters getParameters()
+    {
+      return *sensor_parameters_;
+    }
 
-    // propose new name: communication_parameters
-    bosch_driver_parameters* sensor_parameters_;
+    virtual bool setParameters( bosch_driver_parameters parameters ) = 0;
   };
+  
 }
 #endif //BOSCH_DRIVERS_SENSOR_DRIVER_H_

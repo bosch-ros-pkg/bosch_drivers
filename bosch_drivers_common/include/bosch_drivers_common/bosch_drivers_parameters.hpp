@@ -51,8 +51,6 @@ namespace bosch_drivers_common
   class bosch_driver_parameters   
   {
   public:
-    bosch_driver_parameters() {};
-    ~bosch_driver_parameters() {};
 
     /**
      * \brief The address or ID of the sensor.
@@ -129,6 +127,18 @@ namespace bosch_drivers_common
      * Relevant to SPI mode only.
      */
     //virtual int getPin() = 0; // SPI, GPIO only
+
+    bosch_driver_parameters():
+      sensor_id( 0 ),
+      device_address( 0 ),
+      protocol( RS232 ),
+      frequency( 0 ),
+      flags( 0x00 )
+    {
+    }
+    
+    ~bosch_driver_parameters() {};
+
   };
 }
 #endif //BOSCH_DRIVERS_PARAMETERS_H_
