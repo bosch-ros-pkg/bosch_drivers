@@ -59,13 +59,13 @@ namespace bosch_drivers_common
         
 
   /**
-   * \brief the name of the protocol that both the hardware interface and the sensor are using to transmit data.
+   * \brief the communication protocol that both the hardware interface and the sensor are using to transmit data.
    *
    * This enumeration is used on the Arduino and on the host PC. To optimize the
    * arduino code, compile with the -fshort-enums flag.
    */
-  enum interface_protocol { I2C, SPI, GPIO, RS232, RS485, ETHERNET, ETHERCAT, CAN, JTAG, PROFIBUS, MODBUS, USB, PWM, ENCODER, ADCONVERTER };
-  
+  enum interface_protocol { I2C, SPI, GPIO, RS232, RS485, ETHERNET, ETHERCAT, CAN, JTAG, PROFIBUS, MODBUS, USB };
+//PWM, ENCODER, ADCONVERTER };  
 
         
   /**
@@ -110,6 +110,12 @@ namespace bosch_drivers_common
     
   // \brief This constant is used to specify an SPI device with no chip select.
   static const uint8_t NULL_DEVICE = 0xFF;
+
+  /**
+   * \brief
+   *
+   */
+  enum device_location { INTERNAL, EXTERNAL };
 
 
   /**
