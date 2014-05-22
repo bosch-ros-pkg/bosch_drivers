@@ -42,7 +42,7 @@
 // ROS headers for debugging output
 #include <ros/console.h>
 #include <bosch_drivers_common/bosch_drivers_common.hpp>
-#include <bosch_drivers_common/bosch_drivers_sensor_driver.hpp>
+#include <bosch_drivers_common/bosch_drivers_sensor_driver_internal.hpp>
 #include <bosch_drivers_common/bosch_drivers_hardware_interface.hpp>
 
 using namespace bosch_drivers_common;
@@ -56,7 +56,7 @@ using namespace bosch_drivers_common;
  * Once the GPIO is configured it can be set to HIGH or LOW if output
  * or can be read if configured as an input
  */
-class GpioDriver: public sensor_driver
+class GpioDriver: public sensor_driver_internal
 {
 
 public:
@@ -74,13 +74,6 @@ public:
   uint8_t getDeviceAddress( void ); 
   bool setDeviceAddress( uint8_t address );
 
-  unsigned int getFrequency();
-  bool setFrequency( unsigned int frequency );
-
-  interface_protocol getProtocol();
-  bool setProtocol( interface_protocol protocol_name );
-  
-  uint8_t getFlags();
   bosch_driver_parameters getParameters();
   bool setParameters( bosch_driver_parameters parameters );
 
