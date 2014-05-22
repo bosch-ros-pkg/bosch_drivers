@@ -64,8 +64,7 @@ namespace bosch_drivers_common
    * This enumeration is used on the Arduino and on the host PC. To optimize the
    * arduino code, compile with the -fshort-enums flag.
    */
-  enum interface_protocol { I2C, SPI, GPIO, RS232, RS485, ETHERNET, ETHERCAT, CAN, JTAG, PROFIBUS, MODBUS, USB };
-//PWM, ENCODER, ADCONVERTER };  
+  enum interface_protocol { INTERNAL, GPIO, I2C, SPI, RS232, RS485, USB, ETHERNET, ETHERCAT, CAN, JTAG, PROFIBUS, MODBUS };
 
         
   /**
