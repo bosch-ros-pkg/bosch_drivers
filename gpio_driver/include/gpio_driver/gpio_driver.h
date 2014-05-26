@@ -34,7 +34,7 @@
  *
  *********************************************************************/
 
-//\Author Kai Franke, Robert Bosch LLC
+//\Author Kai Franke and Philip Roan, Robert Bosch LLC
 
 #ifndef GPIO_DRIVER_H_
 #define GPIO_DRIVER_H_

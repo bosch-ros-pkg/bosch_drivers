@@ -34,13 +34,12 @@
  *
  *********************************************************************/
 
-//\Author Kai Franke, Robert Bosch LLC
+//\Author Kai Franke and Philip Roan, Robert Bosch LLC
 
 #include "gpio_driver/gpio_driver.h"
 
 GpioDriver::GpioDriver( bosch_hardware_interface* hw, uint8_t pin ): sensor_driver_internal( hw )
 {
-  //sensor_parameters_->protocol = GPIO;
   sensor_parameters_->device_address = pin; 
 }
 
@@ -84,9 +83,10 @@ bool GpioDriver::initialize()
 
 bool GpioDriver::setOutput( bool value )
 {
-  uint8_t num_bytes = 1;
-  uint8_t data[1] = {(bool)value};
-  if( hardware_->write( *sensor_parameters_, sensor_parameters_->device_address, data, num_bytes ) < 0 )
+  std::vector<uint8_t> data;
+
+  data.push_back( value );
+  if( hardware_->write_internal( *sensor_parameters_, GPIO, data ) < 0 )
   {
     ROS_ERROR("GpioDriver::setOutput(): could not set output");
     return false;
@@ -96,10 +96,11 @@ bool GpioDriver::setOutput( bool value )
 
 bool GpioDriver::getInput( gpio_input_mode mode )
 {
-  uint8_t num_bytes = 1;
-  uint8_t data[1];
-  
-  if( hardware_->read( *sensor_parameters_, sensor_parameters_->device_address, data, num_bytes ) < 0 )
+  std::vector<uint8_t>data( 1,0 );
+
+  sensor_parameters_->flags = mode;
+
+  if( hardware_->read_internal( *sensor_parameters_, GPIO, data ) < 0 )
   {
     ROS_ERROR("GpioDriver::readInput(): could not read input");
     return false;
