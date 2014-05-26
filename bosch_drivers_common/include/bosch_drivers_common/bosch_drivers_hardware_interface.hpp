@@ -101,7 +101,7 @@ namespace bosch_drivers_common
                           uint8_t flags, // relevant for SPI communiction
                           uint8_t register_address, 
                           uint8_t* data, 
-                          size_t num_bytes ) = 0; //__attribute__((deprecated))             
+                          size_t num_bytes ) = 0; __attribute__((deprecated))
         
     virtual ssize_t read( bosch_driver_parameters parameters,
                           uint8_t register_address, 
@@ -132,12 +132,12 @@ namespace bosch_drivers_common
                            interface_protocol protocol, 
                            unsigned int frequency,
                            uint8_t flags, 
-                           uint8_t reg_address, 
+                           uint8_t register_address, 
                            uint8_t* data, 
-                           size_t num_bytes ) = 0;
+                           size_t num_bytes ) = 0; __attribute__((deprecated))
 
     virtual ssize_t write( bosch_driver_parameters device_parameters,
-                           uint8_t reg_address_or_type, 
+                           uint8_t register_address, 
                            std::vector<uint8_t> data ) = 0;
 
     virtual ssize_t write( bosch_driver_parameters parameters, internal_device_type device_type, std::vector<uint8_t> data )
