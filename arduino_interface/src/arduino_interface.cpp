@@ -100,7 +100,7 @@ bool ArduinoInterface::initialize()
 /**********************************************************************/
 // Read
 /**********************************************************************/
-ssize_t ArduinoInterface::read( bosch_driver_parameters parameters, uint8_t reg_address, std::vector<uint8_t> data )
+ssize_t ArduinoInterface::read( bosch_driver_parameters parameters, uint8_t register_address, std::vector<uint8_t> data )
 {
   int error_code = 0;
   
@@ -119,13 +119,13 @@ ssize_t ArduinoInterface::read( bosch_driver_parameters parameters, uint8_t reg_
   switch( parameters.protocol )
   {
   case I2C:
-    error_code = arduinoI2cRead( parameters, reg_address, data );               
+    error_code = arduinoI2cRead( parameters, register_address, data );               
     break;
   case SPI: 
-    error_code = arduinoSpiRead( parameters, reg_address, data );
+    error_code = arduinoSpiRead( parameters, register_address, data );
       break;
   case INTERNAL:
-    error_code = arduinoInternalRead( parameters, static_cast<internal_device_type>(reg_address), data );
+    error_code = arduinoInternalRead( parameters, static_cast<internal_device_type>(register_address), data );
     default:
       ROS_ERROR("Arduino does not support reading through this protocol.");
       return -1;
@@ -137,7 +137,7 @@ ssize_t ArduinoInterface::read( bosch_driver_parameters parameters, uint8_t reg_
 /**********************************************************************/
 // Write
 /**********************************************************************/
-ssize_t ArduinoInterface::write( bosch_driver_parameters parameters, uint8_t reg_address, std::vector<uint8_t> data )
+ssize_t ArduinoInterface::write( bosch_driver_parameters parameters, uint8_t register_address, std::vector<uint8_t> data )
 { 
   int error_code = 0;
   
@@ -157,18 +157,14 @@ ssize_t ArduinoInterface::write( bosch_driver_parameters parameters, uint8_t reg
   switch( parameters.protocol )
   {
   case I2C:
-    error_code = arduinoI2cWrite( parameters, reg_address, data );
+    error_code = arduinoI2cWrite( parameters, register_address, data );
     break;
   case SPI:
-    error_code = arduinoSpiWrite ( parameters, reg_address, data );
+    error_code = arduinoSpiWrite ( parameters, register_address, data );
     break;
   case INTERNAL:
-    error_code = arduinoInternalWrite( parameters, static_cast<internal_device_type>(reg_address), data );
+    error_code = arduinoInternalWrite( parameters, static_cast<internal_device_type>(register_address), data );
     break;
-    //case PWM:
-      // Arduino only accepts 8 Bit PWM, so pass MSB only
-      //error_code = arduinoPwmWrite( device_address, (uint32_t)frequency, data[0] );
-      //break;
     default:
     {
       ROS_ERROR( "Arduino does not support writing through this protocol." );
@@ -453,7 +449,7 @@ ssize_t ArduinoInterface::arduinoPwmWrite( bosch_driver_parameters parameters, s
   // load it with setup parameters and data:
   write_packet[0] = data_packet_;
   write_packet[1] = parameters.device_address;
-  write_packet[2] = data[0];
+  write_packet[2] = data[0]; // Arduino only accepts 8 Bit PWM, so pass MSB only
   
   // send the data:
   serial_port_->Write_Bytes( 3, write_packet );

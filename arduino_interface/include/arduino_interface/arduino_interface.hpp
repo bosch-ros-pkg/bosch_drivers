@@ -85,19 +85,6 @@ public:
   //bool initialize( bosch_driver_parameters parameters );
 
 
-  /**
-   * \brief  Returns true if the input protocol is supported by the hardware interface.
-   * \param  interface_protocol protocol the input protocol.
-   * \return true, if the hardware interface supports reading and writing on that particular protocol.
-   */
-  bool supportedProtocol( interface_protocol protocol );
-  
-  /**
-   * \return  the way the sensor identifies itself
-   */
-  std::string getID();
-
-private:
 
   /**
    * \brief Reads \a num_bytes from the requested device on the specified \a protocol at the specified protocol \a frequency
@@ -111,7 +98,7 @@ private:
    * \return \a num_bytes or a value less than zero, if the read failed.
    */
   ssize_t read( bosch_driver_parameters parameters,
-		uint8_t reg_address_or_type,
+		uint8_t register_address,
 		std::vector<uint8_t> data );
 
 
@@ -127,11 +114,23 @@ private:
    * \return \a num_bytes or a value less than zero, if the write failed.
    */
   ssize_t write( bosch_driver_parameters parameters,
-		 uint8_t reg_address_or_type,
+		 uint8_t register_address,
 		 std::vector<uint8_t> data );
 
 
+  /**
+   * \brief  Returns true if the input protocol is supported by the hardware interface.
+   * \param  interface_protocol protocol the input protocol.
+   * \return true, if the hardware interface supports reading and writing on that particular protocol.
+   */
+  bool supportedProtocol( interface_protocol protocol );
+  
+  /**
+   * \return  the way the sensor identifies itself
+   */
+  std::string getID();
 
+private:
   ssize_t arduinoSpiRead( bosch_driver_parameters parameters, uint8_t reg_address, std::vector<uint8_t> data );
   ssize_t arduinoSpiWrite( bosch_driver_parameters parameters, uint8_t reg_address, std::vector<uint8_t> data );
   ssize_t arduinoI2cRead( bosch_driver_parameters parameters, uint8_t reg_address, std::vector<uint8_t> data );                
