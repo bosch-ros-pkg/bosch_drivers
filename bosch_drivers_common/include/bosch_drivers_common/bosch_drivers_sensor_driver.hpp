@@ -65,7 +65,7 @@ namespace bosch_drivers_common
     /**
      * \brief The location of the device.
      *
-     * If the device is integrated into the hardware interface, then this should be INTERNAL. If the device uses wires to connect to the hardware interface, then this should be EXTERNAL.
+     * If the device is integrated into the hardware interface, then this should be INTERNAL_DEVICE. If the device uses wires to connect to the hardware interface, then this should be EXTERNAL_DEVICE.
      */
     const device_location location_;
 

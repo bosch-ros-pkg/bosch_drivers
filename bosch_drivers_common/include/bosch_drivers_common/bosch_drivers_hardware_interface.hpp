@@ -80,6 +80,43 @@ namespace bosch_drivers_common
 
     //virtual bool initialize( bosch_driver_parameters parameters ) = 0;
     
+
+
+    virtual ssize_t read_internal( bosch_driver_parameters parameters, internal_device_type device_type, std::vector<uint8_t> data )
+    {
+      return read( parameters, static_cast<uint8_t>(device_type), data );
+    }
+
+    virtual ssize_t read_external( bosch_driver_parameters parameters, uint8_t register_address, std::vector<uint8_t> data )
+    {
+      return read( parameters, register_address, data );
+    }
+
+
+    virtual ssize_t write_internal( bosch_driver_parameters parameters, internal_device_type device_type, std::vector<uint8_t> data )
+    {
+      return write( parameters, static_cast<uint8_t>(device_type), data );
+    }
+
+    virtual ssize_t write_external( bosch_driver_parameters parameters, uint8_t register_address, std::vector<uint8_t> data )
+    {
+      return write( parameters, register_address, data );
+    }
+
+    /**
+     * \brief Check if a communication protocol is supported by this hardware interface.
+     */
+    virtual bool supportedProtocol( interface_protocol protocol ) = 0;
+  
+    /**
+     * \brief Return an identifier for this hardware interface.
+     *
+     * This identifier should be able to uniquely identify this interface when
+     * multiple copies of this interface exist.
+     */
+    virtual std::string getID() = 0;
+
+  protected:
     /**
      * \brief Read a given number of bytes
      *
@@ -110,12 +147,13 @@ namespace bosch_drivers_common
                           uint8_t flags, // relevant for SPI communiction
                           uint8_t reg_address, 
                           uint8_t* data, 
-                          size_t num_bytes ) = 0;               
+                          size_t num_bytes ) = 0; //__attribute__((deprecated))             
         
     virtual ssize_t read( bosch_driver_parameters parameters,
-                          uint8_t reg_address, 
-                          uint8_t* data, 
-                          size_t num_bytes ) = 0;               
+                          uint8_t reg_address_or_type, 
+                          std::vector<uint8_t> data ) = 0;               
+
+
 
 
     /**
@@ -154,22 +192,10 @@ namespace bosch_drivers_common
                            size_t num_bytes ) = 0;
 
     virtual ssize_t write( bosch_driver_parameters device_parameters,
-                           uint8_t reg_address, 
-                           uint8_t* data, 
-                           size_t num_bytes ) = 0;
+                           uint8_t reg_address_or_type, 
+                           std::vector<uint8_t> data ) = 0;
 
-    /**
-     * \brief Check if a communication protocol is supported by this hardware interface.
-     */
-    virtual bool supportedProtocol( interface_protocol protocol ) = 0;
-  
-    /**
-     * \brief Return an identifier for this hardware interface.
-     *
-     * This identifier should be able to uniquely identify this interface when
-     * multiple copies of this interface exist.
-     */
-    virtual std::string getID() = 0;                  
+                
   };
 }
 

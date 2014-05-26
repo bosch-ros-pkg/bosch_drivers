@@ -62,7 +62,7 @@ namespace bosch_drivers_common
      * Constructor: ties the sensor to its hardware interface
      */
     sensor_driver_internal( bosch_hardware_interface* hw ):
-      sensor_driver( hw, INTERNAL )
+      sensor_driver( hw, INTERNAL_DEVICE )
     {
     }
 
@@ -70,7 +70,7 @@ namespace bosch_drivers_common
      * Constructor: ties the sensor to its hardware interface
      */
     sensor_driver_internal( bosch_hardware_interface* hw, bosch_driver_parameters* parameters ):
-      sensor_driver( hw, INTERNAL, parameters )
+      sensor_driver( hw, INTERNAL_DEVICE, parameters )
     {
     }
 
