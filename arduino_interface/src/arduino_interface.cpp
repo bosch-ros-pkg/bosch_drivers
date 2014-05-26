@@ -527,7 +527,7 @@ ssize_t ArduinoInterface::arduinoGpioWrite( uint8_t pin, bool value )
 
 /**********************************************************************/
 /**********************************************************************/
-ssize_t ArduinoInterface::arduinoGpioRead( uint8_t flags, uint8_t pin, uint8_t* value )
+ssize_t ArduinoInterface::arduinoGpioRead( uint8_t pin, gpio_input_mode input_mode, uint8_t* value )
 {
   /* 
    * the following block is Arduino Uno specific
@@ -554,7 +554,7 @@ ssize_t ArduinoInterface::arduinoGpioRead( uint8_t flags, uint8_t pin, uint8_t* 
     return -1;
   }
   
-  switch( (gpio_input_mode) flags )
+  switch( input_mode )
   {
     /* 
      * PULLUP will only work with Arduino version 1.0.1 or greater!!!
@@ -574,7 +574,7 @@ ssize_t ArduinoInterface::arduinoGpioRead( uint8_t flags, uint8_t pin, uint8_t* 
   uint8_t write_packet[3];
   // load it with setup parameters and data:
   write_packet[0] = data_packet_;
-  write_packet[1] = flags;
+  write_packet[1] = input_mode;
   write_packet[2] = pin;
    
   // send the data:
@@ -595,7 +595,7 @@ ssize_t ArduinoInterface::arduinoGpioRead( uint8_t flags, uint8_t pin, uint8_t* 
     return -1; // error code.
   } 
   // Read value off the serial line:
-  if( serial_port_->Read_Bytes( 1, value) == false )
+  if( serial_port_->Read_Bytes( 1, value ) == false )
     return -1; // error code.
   else
     return 1;
@@ -879,7 +879,7 @@ ssize_t ArduinoInterface::arduinoInternalRead( bosch_driver_parameters parameter
   switch( type )
   {
   case GPIO:
-    error_code = arduinoGpioRead( parameters.flags, parameters.device_address, &data[0] );
+    error_code = arduinoGpioRead( parameters.device_address, static_cast<gpio_input_mode>(parameters.flags), &data[0] );
     break;
   case PWM:
     ROS_ERROR("Arduino does not support reading from an internal PWM device.");

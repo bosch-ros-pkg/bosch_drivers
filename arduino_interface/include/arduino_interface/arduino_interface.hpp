@@ -141,7 +141,7 @@ private:
   ssize_t arduinoInternalWrite( bosch_driver_parameters parameters, internal_device_type type, std::vector<uint8_t> data );
 
     ssize_t arduinoPwmWrite( bosch_driver_parameters, std::vector<uint8_t> data );
-  ssize_t arduinoGpioRead( uint8_t flags, uint8_t pin, uint8_t* value );
+  ssize_t arduinoGpioRead( uint8_t pin, gpio_input_mode input_mode, uint8_t* value );
   ssize_t arduinoGpioWrite( uint8_t pin, bool value );
   ssize_t arduinoEncoderRead( uint8_t device_address, uint8_t* data );
   ssize_t arduinoEncoderWrite( uint8_t device_address, uint8_t* data );
