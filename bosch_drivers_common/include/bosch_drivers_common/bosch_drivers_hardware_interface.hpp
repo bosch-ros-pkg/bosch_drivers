@@ -95,13 +95,14 @@ namespace bosch_drivers_common
      * the device address is \p NULL_DEVICE, then the hardware interface should
      * read from the bus without changing any chip select lines.
      */
+    __attribute__((deprecated))
     virtual ssize_t read( uint8_t device_address, 
                           interface_protocol protocol, 
                           unsigned int frequency, 
                           uint8_t flags, // relevant for SPI communiction
                           uint8_t register_address, 
                           uint8_t* data, 
-                          size_t num_bytes ) = 0; __attribute__((deprecated))
+                          size_t num_bytes ) = 0;
         
     virtual ssize_t read( bosch_driver_parameters parameters,
                           uint8_t register_address, 
@@ -128,13 +129,14 @@ namespace bosch_drivers_common
      * the device address is \p NULL_DEVICE, then the hardware interface should
      * read from the bus without changing any chip select lines.
      */
+    __attribute__((deprecated))
     virtual ssize_t write( uint8_t device_address, 
                            interface_protocol protocol, 
                            unsigned int frequency,
                            uint8_t flags, 
                            uint8_t register_address, 
                            uint8_t* data, 
-                           size_t num_bytes ) = 0; __attribute__((deprecated))
+                           size_t num_bytes ) = 0;
 
     virtual ssize_t write( bosch_driver_parameters device_parameters,
                            uint8_t register_address, 
