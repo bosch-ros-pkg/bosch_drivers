@@ -86,7 +86,7 @@ bool GpioDriver::setOutput( bool value )
   std::vector<uint8_t> data;
 
   data.push_back( value );
-  if( hardware_->write_internal( *sensor_parameters_, GPIO, data ) < 0 )
+  if( hardware_->write( *sensor_parameters_, GPIO, data ) < 0 )
   {
     ROS_ERROR("GpioDriver::setOutput(): could not set output");
     return false;
@@ -100,7 +100,7 @@ bool GpioDriver::getInput( gpio_input_mode mode )
 
   sensor_parameters_->flags = mode;
 
-  if( hardware_->read_internal( *sensor_parameters_, GPIO, data ) < 0 )
+  if( hardware_->read( *sensor_parameters_, GPIO, data ) < 0 )
   {
     ROS_ERROR("GpioDriver::readInput(): could not read input");
     return false;
