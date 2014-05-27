@@ -34,7 +34,7 @@
  *
  *********************************************************************/
 
-//\Author Kai Franke, Robert Bosch LLC
+//\Author Kai Franke and Philip Roan, Robert Bosch LLC
 
 #ifndef ADC_DRIVER_H_
 #define ADC_DRIVER_H_
@@ -42,7 +42,7 @@
 // ROS headers for debugging output
 #include <ros/console.h>
 #include <bosch_drivers_common/bosch_drivers_common.hpp>
-#include <bosch_drivers_common/bosch_drivers_sensor_driver.hpp>
+#include <bosch_drivers_common/bosch_drivers_sensor_driver_internal.hpp>
 #include <bosch_drivers_common/bosch_drivers_hardware_interface.hpp>
 
 using namespace bosch_drivers_common;
@@ -52,7 +52,7 @@ using namespace bosch_drivers_common;
  *
  * This class lets the user access the ADC pins of any supported hardware
  */
-class AdcDriver: public sensor_driver
+class AdcDriver: public sensor_driver_internal
 {
 
 public:
@@ -70,14 +70,15 @@ public:
   // Public Driver Methods:
   bool setDeviceAddress( uint8_t new_pin );
   bool setFrequency(unsigned int frequency);
-  bool setProtocol( interface_protocol protocol );
+
+  bosch_driver_parameters getParameters();
   bool setParameters( bosch_driver_parameters parameters );
   
   /**
    * \brief Reads the analog voltage from the connected hardware device
    * \return The read voltage in micro volts [µV]
    */
-  uint32_t read();
+  uint32_t getVoltage();
   
   /**
    * \brief Sets the reference voltage on the hardware for all analog pins
