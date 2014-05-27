@@ -40,27 +40,21 @@
 
 bool EncoderDriver::encoders_[MAX_ENCODERS];
 
-EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder1_pin, uint8_t encoder2_pin ): sensor_driver( hw )
-{
-  // variable to automaticly define encoder object id starting with 0
-  //static uint8_t encoder_id = 0;
-  sensor_parameters_ = new bosch_driver_parameters();
-  sensor_parameters_->protocol = ENCODER; 
-  sensor_parameters_->frequency = 0; // does not apply for Encoder
-  sensor_parameters_->flags = 0x00;
-  
-  _encoder1_pin = encoder1_pin;
-  _encoder2_pin = encoder2_pin;
-  _last_position = 0;
-  _overflow = 0;
-  invert_ = 1;
-  
-
+EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder1_pin, uint8_t encoder2_pin ):
+  sensor_driver_internal( hw ),
+  _encoder1_pin( encoder1_pin ),
+  _encoder2_pin(encoder2_pin ),
+  _last_position( 0 ),
+  _overflow( 0 ),
+  invert_( 1 )  
+{  
   if( getNextID( &(sensor_parameters_->device_address) ) )
   {
-    uint8_t reg = 0; // does not apply for Encoder
-    uint8_t data[3] = { CREATE, _encoder1_pin, _encoder2_pin };  // indicates that we want to create the object on the hardware device
-    uint8_t num_bytes = 3; // will not be read
+    std::vector<uint8_t> data(3);
+
+    data[0] = CREATE ;
+    data[1] = _encoder1_pin;
+    data[2] = _encoder2_pin;  // indicates that we want to create the object on the hardware device
     if( _encoder1_pin == _encoder2_pin )
     {
       ROS_ERROR("EncoderDriver::EncoderDriver(): Encoder pins must be different");
@@ -68,7 +62,7 @@ EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder1_pin
     }
     else
     {
-      if( hardware_->write( *sensor_parameters_, reg, data, num_bytes ) < 0 )
+      if( hardware_->write( *sensor_parameters_, ENCODER, data ) < 0 )
       {
         ROS_ERROR("EncoderDriver::~EncoderDriver(): could not create object on hardware device");
 	EncoderDriver::encoders_[sensor_parameters_->device_address] = false;
@@ -81,22 +75,14 @@ EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder1_pin
   }
 }
 
-EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder_id ): sensor_driver( hw )
-{
-  sensor_parameters_ = new bosch_driver_parameters;
-  sensor_parameters_->protocol = ENCODER; 
-  sensor_parameters_->device_address = encoder_id;
-  sensor_parameters_->frequency = 0; // does not apply for Encoder
-  // assign this instance to the desired instance on the serial device
-  sensor_parameters_->flags = 0x00;
-
-  // set encoder pins to same value to indicate that there was no object created on the serial device
-  _encoder1_pin = _encoder2_pin = 255;
- 
-  _last_position = 0;
-  _overflow = 0;
-  invert_ = 1;
-  
+EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder_id ):
+  sensor_driver_internal( hw ),
+  _encoder1_pin( 255 ),
+  _encoder2_pin( 255 ),
+  _last_position( 0 ),
+  _overflow( 0 ),
+  invert_( 1 )  
+{ 
   // Determine encoder ID 
   if( sensor_parameters_->device_address >= MAX_ENCODERS )
   {
@@ -110,11 +96,9 @@ EncoderDriver::~EncoderDriver()
   // check if instance on serial device needs to be destroyed
   if( _encoder1_pin != _encoder2_pin )  // indicates that object was created on serial device
   {
-    uint8_t reg = 0; // does not apply for Encoder
-    uint8_t data[1] = { DESTROY }; // indicates that we want to destroy the object on the hardware device
-    uint8_t num_bytes = 1;
+    std::vector<uint8_t> data( 1, DESTROY ); // indicates that we want to destroy the object on the hardware device
     
-    if( hardware_->write( *sensor_parameters_, reg, data, num_bytes ) < 0 )
+    if( hardware_->write( *sensor_parameters_, ENCODER, data ) < 0 )
     {
       ROS_ERROR("EncoderDriver::~EncoderDriver(): could not destroy object on hardware device");
     }
@@ -160,12 +144,10 @@ uint8_t EncoderDriver::getEncoderID( )
 
 int64_t EncoderDriver::getPosition()
 {
-  uint8_t reg = 0; // does not apply for Encoder
-  uint8_t data[4]; // will store the data after successful read call
-  uint8_t num_bytes = 4; // will not be read because it is always 4 bytes
+  std::vector<uint8_t> data(4,0);
   int32_t position; // return value
   
-  if( hardware_->read( *sensor_parameters_, reg, data, num_bytes ) < 0 )
+  if( hardware_->read( *sensor_parameters_, ENCODER, data ) < 0 )
   {
     ROS_ERROR("EncoderDriver::getPosition(): could not read input");
     return false;
@@ -205,9 +187,7 @@ bool EncoderDriver::setPosition( int32_t position )
   position *= invert_;  // invert if encoder values are inverted, too
   _overflow = 0;  // reset overflow
 
-  uint8_t reg = 0; // does not apply for Encoder
-  uint8_t data[7]; // will contain split up position
-  uint8_t num_bytes = 7; // will not be read because it is always 4 byte
+  std::vector<uint8_t> data(7,0); // will contain split up position
   
   data[0] = SET_POSITION;
   data[1] = _encoder1_pin;
@@ -224,7 +204,7 @@ bool EncoderDriver::setPosition( int32_t position )
   temp = ((position & 0x000000FF) >> 0);
   data[6] = (uint8_t)temp;
   
-  if( hardware_->write( *sensor_parameters_, reg, data, num_bytes ) < 0 )
+  if( hardware_->write( *sensor_parameters_, ENCODER, data ) < 0 )
   {
     ROS_ERROR("EncoderDriver::setPosition(): could not write position");
     return false;
@@ -260,36 +240,6 @@ bool EncoderDriver::setDeviceAddress( uint8_t address)
 {
   sensor_parameters_->device_address = address;
   return true;
-}
-
-bool EncoderDriver::setFrequency( unsigned int frequency )
-{
-  sensor_parameters_->frequency = frequency;
-  return true;
-}
- 
-unsigned int EncoderDriver::getFrequency()
-{
-  return sensor_parameters_->frequency;
-}
-  
-bool EncoderDriver::setProtocol( interface_protocol protocol_name )
-{
-  if( protocol_name != ENCODER )
-    return false;
-
-  sensor_parameters_->protocol = protocol_name;
-  return true;
-}
-
-interface_protocol EncoderDriver::getProtocol()
-{
-  return sensor_parameters_->protocol;
-}
-  
-uint8_t EncoderDriver::getFlags()
-{
-  return sensor_parameters_->flags;
 }
  
 bosch_driver_parameters EncoderDriver::getParameters()

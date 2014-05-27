@@ -43,7 +43,7 @@
 #include <ros/console.h>
 
 #include <bosch_drivers_common/bosch_drivers_common.hpp>
-#include <bosch_drivers_common/bosch_drivers_sensor_driver.hpp>
+#include <bosch_drivers_common/bosch_drivers_sensor_driver_internal.hpp>
 #include <bosch_drivers_common/bosch_drivers_hardware_interface.hpp>
 
 using namespace bosch_drivers_common;
@@ -62,7 +62,7 @@ using namespace bosch_drivers_common;
  * to detect any changes.
  * See http://www.pjrc.com/teensy/td_libs_Encoder.html for more information
  */
-class EncoderDriver: public sensor_driver
+class EncoderDriver: public sensor_driver_internal
 {
   
 public:
@@ -87,14 +87,6 @@ public:
   // Public Driver Methods:
   uint8_t getDeviceAddress( void );
   bool setDeviceAddress( uint8_t address);
-
-  bool setFrequency( unsigned int frequency );
-  unsigned int getFrequency();
-  
-  bool setProtocol( interface_protocol protocol_name );
-  interface_protocol getProtocol();
-  
-  uint8_t getFlags();
  
   bosch_driver_parameters getParameters();
   bool setParameters( bosch_driver_parameters parameters );
