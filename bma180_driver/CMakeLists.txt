@@ -103,7 +103,7 @@ add_library(bma180_driver
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS bma180_driver bma180_driver_node
+install(TARGETS bma180_driver
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
