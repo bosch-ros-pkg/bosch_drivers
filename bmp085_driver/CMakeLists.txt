@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 2.8.3)
 project(bmp085_driver)
 
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
   message_generation
   std_msgs
   bosch_drivers_common
@@ -54,7 +53,7 @@ generate_messages( DEPENDENCIES
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES bmp085_driver
-  CATKIN_DEPENDS roscpp message_runtime std_msgs bosch_drivers_common
+  CATKIN_DEPENDS message_runtime std_msgs bosch_drivers_common
 #  DEPENDS system_lib
 )
 
