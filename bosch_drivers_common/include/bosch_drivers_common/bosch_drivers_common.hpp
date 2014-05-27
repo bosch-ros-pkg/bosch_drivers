@@ -39,8 +39,8 @@
 #ifndef BOSCH_DRIVERS_COMMON_H_
 #define BOSCH_DRIVERS_COMMON_H_
 
-#include <stdint.h>
 
+#include <stdint.h>
 
 /** 
  * Namespace common to all Bosch drivers
@@ -59,15 +59,21 @@ namespace bosch_drivers_common
         
 
   /**
-   * \brief the name of the protocol that both the hardware interface and the sensor are using to transmit data.
+   * \brief the communication protocol that both the hardware interface and the sensor are using to transmit data.
    *
    * This enumeration is used on the Arduino and on the host PC. To optimize the
    * arduino code, compile with the -fshort-enums flag.
    */
-  enum interface_protocol { I2C, SPI, GPIO, RS232, RS485, ETHERNET, ETHERCAT, CAN, JTAG, PROFIBUS, MODBUS, USB, PWM, ENCODER, ADCONVERTER };
-  
+  enum interface_protocol { INTERNAL, BITBANG, I2C, SPI, RS232, RS485, USB, ETHERNET, ETHERCAT, CAN, JTAG, PROFIBUS, MODBUS };
 
         
+      /**
+     * \brief Possible device locations.
+     *
+     * If the device is integrated into the hardware interface, then this should be INTERNAL_DEVICE. If the device uses wires to connect to the hardware interface, then this should be EXTERNAL_DEVICE.
+     */
+  enum device_location { INTERNAL_DEVICE, EXTERNAL_DEVICE };
+
   /**
    * \brief SPI Constants
    *
@@ -94,7 +100,6 @@ namespace bosch_drivers_common
   static const uint8_t SPI_CLOCK_DIV_128 = 0x03;
   //static const uint8_t SPI_CLOCK_DIV64 0x07;
 
-  
   /**
    *  SPI Read/Write Flags
    * \brief  The following members are the relevant bitflag offsets necessary for prompting the sensor for an SPI read or write.
@@ -108,25 +113,33 @@ namespace bosch_drivers_common
    */
   static const uint8_t SPI_READ_FLAG = 7;
   static const uint8_t SPI_WRITE_FLAG = 7;
-  
-  
+    
   // \brief This constant is used to specify an SPI device with no chip select.
   static const uint8_t NULL_DEVICE = 0xFF;
 
   /**
-   * \brief GPIO Constants
+   * \brief Types of Devices that are located internally on a hardware interface.
+   *
+   */
+  enum internal_device_type { GPIO, PWM, ADCONVERTER, ENCODER };
+
+
+  /**
+   * \brief GPIO Control Constants
    *
    */
   enum gpio_input_mode { FLOATING, PULLUP, PULLDOWN };
 
+
   /**
-   * \brief Motor Constants
+   * \brief Motor Control Constants
    *
    */
   enum motor_drive_mode { DRIVE, FREE_RUNNING, BRAKE };
 
+
   /**
-   * \brief encoder Constants
+   * \brief Encoder Control Constants
    *
    */
   enum encoder_control { CREATE, DESTROY, SET_POSITION };

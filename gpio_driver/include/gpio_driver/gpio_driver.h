@@ -36,11 +36,11 @@
 
 //\Author Kai Franke and Philip Roan, Robert Bosch LLC
 
-#ifndef PWM_DRIVER_H_
-#define PWM_DRIVER_H_
+#ifndef GPIO_DRIVER_H_
+#define GPIO_DRIVER_H_
 
-#include <ros/console.h> // ROS headers for debugging output
-
+// ROS headers for debugging output
+#include <ros/console.h>
 #include <bosch_drivers_common/bosch_drivers_common.hpp>
 #include <bosch_drivers_common/bosch_drivers_sensor_driver_internal.hpp>
 #include <bosch_drivers_common/bosch_drivers_hardware_interface.hpp>
@@ -48,67 +48,56 @@
 using namespace bosch_drivers_common;
 
 /**
- * \brief Driver to output a PWM on a supported serial device.
+ * \brief Driver to use a GPIO on a supported serial device.
  *
- * This class lets the user access the PWM pins of any supported hardware
- * to apply a PWM to supported hardware passing the duty cycle in as a value
- * between 0 (constant low) and 1 (constant high)
+ * This class lets the user access the GPIO pins of any supported hardware
+ * It is possible to configure the pin as Output, floating Input, Input with Pullup or Input with Pulldown
+ * Depending on the hardware used some of these options might not be available
+ * Once the GPIO is configured it can be set to HIGH or LOW if output
+ * or can be read if configured as an input
  */
-class PwmDriver: public sensor_driver_internal
+class GpioDriver: public sensor_driver_internal
 {
-  
+
 public:
-  /** 
-   * \brief Constructor:
-   * \param  frequency PWM frequency
-   * \param  pin pin number on the hardware device to apply the PWM to
+  /**
+   * \brief Constructor
+   * \param hw hardware interface to use
+   * \param pin GPIO pin number on the hardware device
    */
-  PwmDriver( bosch_hardware_interface* hw, unsigned int frequency, uint8_t pin, unsigned int resolution_in_bits );
-  
+  GpioDriver( bosch_hardware_interface* hw, uint8_t pin );
+
   // Destructor:
-  ~PwmDriver();
-  
-  uint8_t getDeviceAddress( ); 
-  bool setDeviceAddress( uint8_t pin );
+  ~GpioDriver();
+
+
+  uint8_t getDeviceAddress( void ); 
+  bool setDeviceAddress( uint8_t address );
 
   bosch_driver_parameters getParameters();
-  bool setParameters( bosch_driver_parameters parameters);
+  bool setParameters( bosch_driver_parameters parameters );
 
   /**
-   * \brief Sends the duty cycle \a value to a supported serial device
-   * \param  value duty cycle as fraction [0..1] with 0 being constant LOW and 1 being constant HIGH
-   * \return true if write was successful or false if not
+   * \brief Set a GPIO Pin to HIGH or LOW. It will always configure the pin as an output first.
+   * \param value 0 will set the GPIO pin to LOW and 1 will set it to HIGH
+   * \return true if GPIO output was successful or false if not
    */
-  bool setDutyCycle( double value );
-  double getDutyCycle();
-
-  unsigned int getModulationFrequency( );
-  bool setModulationFrequency( unsigned int frequency );
+  bool setOutput( bool value );
   
-  bool setResolution( unsigned int bits );
-  unsigned int getResolution();
-
+  /**
+   * \brief Performs a digital read on the GPIO Pin returning the read value in \a value
+   * \param mode configures the input pin to be either floating, add a pullup or a pulldown
+   * \return Read value at given pin. 1 if selected Pin is HIGH and 0 if it is LOW
+   */
+  bool getInput( gpio_input_mode mode );
+  
   /**
    * \brief Initializes the driver and the connected hardware
    * 
    * \return a boolean indicating success
    */
   bool initialize();
-
-private:
-  unsigned int modulation_frequency_;
-
-  typedef unsigned long long pwm_resolution_t;
-  unsigned int resolution_bits_;
-  size_t resolution_bytes_;
-
-  double duty_cycle_;
-  std::vector<uint8_t> duty_cycle_bytes_;  
-
-  bool convertDutyCycle();
-  bool sendUpdate();
-
 };
 
-#endif // PWM_DRIVER_H_
+#endif // GPIO_DRIVER_H_
 

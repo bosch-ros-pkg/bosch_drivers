@@ -1,0 +1,2 @@
+#Arduino Uno
+KERNEL=="ttyACM?", ATTRS{idVendor}=="2341", ACTION=="add", MODE="0666", GROUP="rtc", SYMLINK+="arduino%n"

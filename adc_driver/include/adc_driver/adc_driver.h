@@ -36,11 +36,11 @@
 
 //\Author Kai Franke and Philip Roan, Robert Bosch LLC
 
-#ifndef PWM_DRIVER_H_
-#define PWM_DRIVER_H_
+#ifndef ADC_DRIVER_H_
+#define ADC_DRIVER_H_
 
-#include <ros/console.h> // ROS headers for debugging output
-
+// ROS headers for debugging output
+#include <ros/console.h>
 #include <bosch_drivers_common/bosch_drivers_common.hpp>
 #include <bosch_drivers_common/bosch_drivers_sensor_driver_internal.hpp>
 #include <bosch_drivers_common/bosch_drivers_hardware_interface.hpp>
@@ -48,67 +48,53 @@
 using namespace bosch_drivers_common;
 
 /**
- * \brief Driver to output a PWM on a supported serial device.
+ * \brief Driver to use an ADC on a supported serial device.
  *
- * This class lets the user access the PWM pins of any supported hardware
- * to apply a PWM to supported hardware passing the duty cycle in as a value
- * between 0 (constant low) and 1 (constant high)
+ * This class lets the user access the ADC pins of any supported hardware
  */
-class PwmDriver: public sensor_driver_internal
+class AdcDriver: public sensor_driver_internal
 {
-  
+
 public:
-  /** 
-   * \brief Constructor:
-   * \param  frequency PWM frequency
-   * \param  pin pin number on the hardware device to apply the PWM to
+  /** Constructor:
+   * \brief sets up one pin as an ADC pin with the default reference voltage
+   * \param hw Connected hardware interface
+   * \param adc_pin Pin to use on the connected hardware
+   * \note the ADC reference voltage will be set to the default value of the connected serial device (usually the supply voltage)
    */
-  PwmDriver( bosch_hardware_interface* hw, unsigned int frequency, uint8_t pin, unsigned int resolution_in_bits );
-  
+  AdcDriver( bosch_hardware_interface* hw, uint8_t adc_pin );
+ 
   // Destructor:
-  ~PwmDriver();
-  
-  uint8_t getDeviceAddress( ); 
-  bool setDeviceAddress( uint8_t pin );
+  ~AdcDriver();
+
+  // Public Driver Methods:
+  bool setDeviceAddress( uint8_t new_pin );
+  bool setFrequency(unsigned int frequency);
 
   bosch_driver_parameters getParameters();
-  bool setParameters( bosch_driver_parameters parameters);
-
-  /**
-   * \brief Sends the duty cycle \a value to a supported serial device
-   * \param  value duty cycle as fraction [0..1] with 0 being constant LOW and 1 being constant HIGH
-   * \return true if write was successful or false if not
-   */
-  bool setDutyCycle( double value );
-  double getDutyCycle();
-
-  unsigned int getModulationFrequency( );
-  bool setModulationFrequency( unsigned int frequency );
+  bool setParameters( bosch_driver_parameters parameters );
   
-  bool setResolution( unsigned int bits );
-  unsigned int getResolution();
-
+  /**
+   * \brief Reads the analog voltage from the connected hardware device
+   * \return The read voltage in micro volts [µV]
+   */
+  uint32_t getVoltage();
+  
+  /**
+   * \brief Sets the reference voltage on the hardware for all analog pins
+   * \param voltage The voltage to set the reference to in mV. Check the hardware interface implementation for supported voltages. Setting this parameter to 0 will set the reference type to external
+   * \return true if the reference was applied successfully
+   * \todo think about switching to µV?
+   */
+  bool setReference( uint32_t voltage );
+	
   /**
    * \brief Initializes the driver and the connected hardware
    * 
    * \return a boolean indicating success
    */
   bool initialize();
-
-private:
-  unsigned int modulation_frequency_;
-
-  typedef unsigned long long pwm_resolution_t;
-  unsigned int resolution_bits_;
-  size_t resolution_bytes_;
-
-  double duty_cycle_;
-  std::vector<uint8_t> duty_cycle_bytes_;  
-
-  bool convertDutyCycle();
-  bool sendUpdate();
-
+  
 };
 
-#endif // PWM_DRIVER_H_
-
+#endif // ADC_DRIVER_H_

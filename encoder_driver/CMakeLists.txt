@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(pwm_driver)
+project(encoder_driver)
 
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
   bosch_drivers_common
+  roscpp
 )
 
 
@@ -18,7 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES pwm_driver
+  LIBRARIES encoder_driver
   CATKIN_DEPENDS roscpp bosch_drivers_common
 #  DEPENDS system_lib
 )
@@ -36,13 +36,12 @@ include_directories(
 )
 
 ## Declare a cpp library
- add_library(pwm_driver
-   src/pwm_driver.cpp
- )
-
+add_library(encoder_driver
+  src/encoder_driver.cpp
+)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(pwm_driver_node
+# target_link_libraries(encoder_driver_node
 #   ${catkin_LIBRARIES}
 # )
 
@@ -61,7 +60,7 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS pwm_driver
+install(TARGETS encoder_driver
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -69,7 +68,7 @@ install(TARGETS pwm_driver
 
 ## Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}/
-   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 
 
@@ -78,7 +77,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_pwm_driver.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_encoder_driver.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

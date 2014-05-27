@@ -1,10 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(pwm_driver)
+project(adc_driver)
 
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
   bosch_drivers_common
 )
+
+
+################################################
+## Declare ROS messages, services and actions ##
+################################################
 
 
 ###################################
@@ -18,9 +22,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES pwm_driver
-  CATKIN_DEPENDS roscpp bosch_drivers_common
-#  DEPENDS system_lib
+  LIBRARIES adc_driver
+  CATKIN_DEPENDS bosch_drivers_common
 )
 
 ###########
@@ -36,13 +39,19 @@ include_directories(
 )
 
 ## Declare a cpp library
- add_library(pwm_driver
-   src/pwm_driver.cpp
- )
+add_library(adc_driver
+  src/adc_driver.cpp
+)
 
+## Declare a cpp executable
+# add_executable(adc_driver_node src/adc_driver_node.cpp)
+
+## Add cmake target dependencies of the executable/library
+## as an example, message headers may need to be generated before nodes
+# add_dependencies(adc_driver_node adc_driver_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(pwm_driver_node
+# target_link_libraries(adc_driver_node
 #   ${catkin_LIBRARIES}
 # )
 
@@ -61,7 +70,7 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS pwm_driver
+install(TARGETS adc_driver
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -69,16 +78,22 @@ install(TARGETS pwm_driver
 
 ## Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}/
-   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
 
+## Mark other files for installation (e.g. launch and bag files, etc.)
+# install(FILES
+#   # myfile1
+#   # myfile2
+#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+# )
 
 #############
 ## Testing ##
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_pwm_driver.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_adc_driver.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

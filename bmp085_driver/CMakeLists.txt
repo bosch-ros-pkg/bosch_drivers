@@ -1,24 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(bosch_drivers_basic_nodes)
+project(bmp085_driver)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  message_generation
+  std_msgs
   bosch_drivers_common
-  arduino_interface
-  gpio_driver
-  adc_driver
-  pwm_driver
-  encoder_driver
 )
-
-## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
-
-
-## Uncomment this if the package has a setup.py. This macro ensures
-## modules and global scripts declared therein get installed
-## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -45,31 +33,14 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
-
-## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
-
-## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
-#   Action2.action
-# )
+add_message_files( FILES
+  bmp085_measurement.msg
+)
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages( DEPENDENCIES
+  std_msgs
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -81,9 +52,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES bosch_drivers_basic_nodes
-#  CATKIN_DEPENDS arduino_interface bosch_drivers_common pwm_driver
+  INCLUDE_DIRS include
+  LIBRARIES bmp085_driver
+  CATKIN_DEPENDS roscpp message_runtime std_msgs bosch_drivers_common
 #  DEPENDS system_lib
 )
 
@@ -95,38 +66,26 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
-# add_library(bosch_drivers_basic_nodes
-#   src/${PROJECT_NAME}/bosch_drivers_basic_nodes.cpp
-# )
+add_library(bmp085_driver
+  src/bmp085_driver.cpp
+)
 
 ## Declare a cpp executable
-add_executable(gpio_node src/gpio_node.cpp)
-add_executable(adc_node src/adc_node.cpp)
-add_executable(pwm_node src/pwm_node.cpp)
-add_executable(encoder_node src/encoder_node.cpp)
+# add_executable(bmp085_driver_node src/bmp085_driver_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(bosch_drivers_basic_nodes_node bosch_drivers_basic_nodes_generate_messages_cpp)
+# add_dependencies(bmp085_driver_node bmp085_driver_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(gpio_node
-  ${catkin_LIBRARIES}
-)
-target_link_libraries(adc_node
-  ${catkin_LIBRARIES}
-)
-target_link_libraries(pwm_node
-  ${catkin_LIBRARIES}
-)
-target_link_libraries(encoder_node
-  ${catkin_LIBRARIES}
-)
-
+# target_link_libraries(bmp085_driver_node
+#   ${catkin_LIBRARIES}
+# )
 
 #############
 ## Install ##
@@ -143,16 +102,16 @@ target_link_libraries(encoder_node
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS gpio_node adc_node pwm_node encoder_node
+install(TARGETS bmp085_driver
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
@@ -166,7 +125,7 @@ install(TARGETS gpio_node adc_node pwm_node encoder_node
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_bosch_drivers_basic_nodes.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_bmp085_driver.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

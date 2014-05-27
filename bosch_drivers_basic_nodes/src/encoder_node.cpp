@@ -34,19 +34,19 @@
  *
  *********************************************************************/
 
-//\Author Kai Franke, Robert Bosch LLC
+//\Author Kai Franke and Philip Roan, Robert Bosch LLC
 
 // ROS headers
 #include <ros/ros.h>
 
 #include <arduino_interface/arduino_interface.hpp> 
-#include <pwm_driver/pwm_driver.h>
+#include <encoder_driver/encoder_driver.h>
 
 int main( int argc, char **argv )
 {
   
   //ROS initialization and publisher/subscriber setup
-  ros::init( argc, argv, "PWM_Driver" );
+  ros::init( argc, argv, "Encoder_Driver" );
   ros::NodeHandle nh("~");
 
   std::string hw_id;
@@ -54,35 +54,54 @@ int main( int argc, char **argv )
   // Get parameters from .launch file or parameter server, or take defaults
   nh.param<std::string>( "hardware_id", hw_id, "/dev/ttyACM0" );
 
+  ROS_INFO("Initializing Arduino");
   ArduinoInterface Arduino( hw_id );
   Arduino.initialize();
+
+  ROS_INFO("Creating fast Encoder");  
+  // create new encoder driver using pins 3 and 4
+  EncoderDriver* encoder_driver = new EncoderDriver( &Arduino , 4, 3 ); 
+  encoder_driver->invertOutput();
   
-  uint8_t pwm_pin = 5;
-  unsigned int frequency = 490; //[Hz]
-  unsigned int resolution = 32; //[bits]
-  PwmDriver* pwm_driver = new PwmDriver( &Arduino, frequency, pwm_pin, resolution ); 
-  if( pwm_driver->initialize() == false)
+  ROS_INFO("Initializing Encoder");
+  if( encoder_driver->initialize() == false )
   {
-    ROS_ERROR("Error initializing PWM driver");
+    ROS_ERROR("Error initializing encoder driver");
     return -1;
   }
 
-  ros::Rate loop_rate_Hz(50);
+  ROS_INFO("Creating slow Encoder");  
+  // create new encoder driver using pins 5 and 6
+  EncoderDriver* encoder_driver2 = new EncoderDriver( &Arduino , 5, 6 ); 
 
-  float duty_cycle = 0;
+  ROS_INFO("Initializing slow Encoder");
+  if( encoder_driver2->initialize() == false )
+  {
+    ROS_ERROR("Error initializing encoder driver");
+    return -1;
+  }
+	
+  ros::Rate loop_rate_Hz(1);
+
+  int64_t position, position2;
+  ROS_INFO( "Setting initial position" );
+  encoder_driver->setPosition( 0 );
+  encoder_driver2->setPosition( 0 );
+
+  ROS_INFO("Start reading current position every second...");
 
   while( nh.ok() )
   {
-    pwm_driver->setDutyCycle( duty_cycle );
+    position = encoder_driver->getPosition();
+    
+    position2 = encoder_driver2->getPosition();
 
-    duty_cycle += 0.005;
-    if( duty_cycle > 1 )
-      duty_cycle = 0;
-      
+    ROS_INFO("Position1: %li    Position2: %li", position, position2);
+    
     ros::spinOnce();
     loop_rate_Hz.sleep();
   }
   
-  ROS_WARN( "Closing PWM driver." );
+  ROS_WARN( "Closing encoder driver." );
   return 0;  
 }
