@@ -58,18 +58,14 @@
 // Constructor
 /**********************************************************************/
 BMP085::BMP085( bosch_hardware_interface* hw ) :
-  sensor_driver( hw )
+  sensor_driver( hw, EXTERNAL_DEVICE ),
+  oss_( STANDARD ),
+  pressure_at_sea_level_( 101.325 ) // [kPa]
 {
-  sensor_parameters_ = new bosch_driver_parameters();
-  sensor_parameters_->device_address = DEVICE_ADDRESS; //fixed and defined in header
+  sensor_parameters_->device_address = DEVICE_ADDRESS; //Every BMP085 has same I2C address
   sensor_parameters_->protocol = I2C;
   sensor_parameters_->frequency = 400000; // [Hz]
   sensor_parameters_->flags = 0x00;
-  //((BMP085_parameters*)sensor_parameters_)->oss = BMP085_parameters::STANDARD;
-  oss_ = STANDARD;
-
-  // set default pressure at sea level:
-  pressure_at_sea_level_ = 101.325; // in [kPa]
 }
 
 
@@ -105,14 +101,11 @@ bool BMP085::initialize()
   ROS_INFO("Pressure Sensor Sampling Mode (oss): %d", oss_);
 
   // Get all Calibration Constants.  
-  // Luckily, they're all consecutively stored in memory, so we can just
-  // read them all at once into one array using a multi-byte read.   
-  uint8_t FullCalData[22];
+  std::vector<uint8_t> FullCalData(22);
    
   // Read 22 bytes of Calibration-constant data
  
-  //if( hardware_->read( this->getDeviceAddress(), this->getProtocol(), this->getFrequency(), this->getFlags(), (uint8_t)ADDRESS_AC1_MSB, FullCalData, 22 ) < 0 )
-  if( hardware_->read( *sensor_parameters_, (uint8_t)ADDRESS_AC1_MSB, FullCalData, 22 ) < 0 )
+  if( hardware_->read( *sensor_parameters_, (uint8_t)ADDRESS_AC1_MSB, FullCalData ) < 0 )
   {
     ROS_ERROR("BMP085::initialize(): Invalid Calibration data");
     return false;
@@ -133,7 +126,7 @@ bool BMP085::initialize()
   MC =  ((uint16_t)FullCalData[18] <<8) | (uint16_t)FullCalData[19];
   MD =  ((uint16_t)FullCalData[20] <<8) | (uint16_t)FullCalData[21];
 
-  //ROS_INFO("%d",AC1); // for debugging
+  ROS_DEBUG("Calibration constant 1: %d",AC1);
   return true;
 }
 
@@ -172,7 +165,8 @@ bool BMP085::getTemperatureData( void )
    *   and 8-bit LSB chunk separately.  
    *   Then, we combine them into a uint16_t.
    */
-  uint8_t MSB, LSB;
+  //uint8_t MSB, LSB;
+  std::vector<uint8_t> MSB(1), LSB(1);
   
   if( writeToReg( INPUT_REG_ADDRESS, ADDRESS_TEMP_REQUEST ) == false )
   {
@@ -182,18 +176,18 @@ bool BMP085::getTemperatureData( void )
  
   usleep( 4500 ); // sleep for 4.5 [ms] while BMP085 processes temperature.
   
-  if( hardware_->read( *sensor_parameters_, MEAS_OUTPUT_MSB, &MSB, 1 ) < 0 )
+  if( hardware_->read( *sensor_parameters_, MEAS_OUTPUT_MSB, MSB ) < 0 )
   {
     ROS_ERROR("BMP085::getTemperatureData(): Invalid data"); 
     return false;
   }
-  if( hardware_->read( *sensor_parameters_, MEAS_OUTPUT_LSB, &LSB, 1 ) < 0 )
+  if( hardware_->read( *sensor_parameters_, MEAS_OUTPUT_LSB, LSB ) < 0 )
   {
     ROS_ERROR("BMP085::getTemperatureData(): Invalid data"); 
     return false;
   }
  
-  UT = ( (uint16_t)MSB << 8 ) + LSB;
+  UT = ( (uint16_t)MSB[0] << 8 ) + LSB[0];
 
   long X1, X2; 
   X1 = ( (UT - AC6) * AC5) >> 15; // Note: X>>15 == X/(pow(2,15))
@@ -245,9 +239,9 @@ bool BMP085::getPressureData()
     break;
   }
 
-  unsigned char data[3]; 
+  std::vector<uint8_t> data(3); 
   
-  if( hardware_->read( *sensor_parameters_, MEAS_OUTPUT_MSB, data, 3 ) < 0 )
+  if( hardware_->read( *sensor_parameters_, MEAS_OUTPUT_MSB, data ) < 0 )
   {
     ROS_ERROR("BMP085::getPressureData():Invalid data");
     return false;
@@ -337,8 +331,7 @@ void BMP085::setPressureAtSeaLevel( double pressure )
 /**********************************************************************/
 bool BMP085::writeToReg( uint8_t reg, uint8_t value )
 {
-  //if( hardware_->write( this->getDeviceAddress(), this->getProtocol(), this->getFrequency(), this->getFlags(), (uint8_t)reg, &value, 1 ) < 0 )
-  if( hardware_->write( *sensor_parameters_, (uint8_t)reg, &value, 1 ) < 0 )
+  if( hardware_->write( *sensor_parameters_, (uint8_t)reg, std::vector<uint8_t>(value, 1) ) < 0 )
   {
     ROS_ERROR("could not write value to register."); 
     return false;
@@ -381,30 +374,6 @@ bool BMP085::setFrequency( unsigned int frequency )
   return true;
 }
 
-
-/**********************************************************************/
-/**********************************************************************/
-interface_protocol BMP085::getProtocol()
-{
-  return sensor_parameters_->protocol;
-}
-
-
-/**********************************************************************/
-/**********************************************************************/
-unsigned int BMP085::getFrequency()
-{
-  return sensor_parameters_->frequency;
-}
-
-
-
-/**********************************************************************/
-/**********************************************************************/
-//int* BMP085::getFlags()
-//{
-//  return sensor_parameters_->flags;
-//}
 
 
 /**********************************************************************/

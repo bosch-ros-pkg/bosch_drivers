@@ -211,10 +211,8 @@ public:
 
   uint8_t getDeviceAddress();
   bool setProtocol( interface_protocol protocol );
-  interface_protocol getProtocol();
 
   bool setFrequency( unsigned int frequency );
-  unsigned int getFrequency();
 
 private:
   // BMP085 Register Addresses
