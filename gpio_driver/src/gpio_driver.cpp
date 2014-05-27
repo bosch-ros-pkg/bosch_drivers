@@ -2,7 +2,7 @@
  *
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2012, Robert Bosch LLC.
+ *  Copyright (c) 2013, Robert Bosch LLC.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -34,62 +34,78 @@
  *
  *********************************************************************/
 
-//\Author Joshua Vasquez and Philip Roan, Robert Bosch LLC
+//\Author Kai Franke and Philip Roan, Robert Bosch LLC
 
-#ifndef BOSCH_DRIVERS_PARAMETERS_H_
-#define BOSCH_DRIVERS_PARAMETERS_H_
+#include "gpio_driver/gpio_driver.h"
 
-#include "bosch_drivers_common.hpp"
-
-namespace bosch_drivers_common
-{ 
-  /**
-   * \brief An abstract class for sensor communication properties to be used by hardware interfaces.
-   *
-   * If a device requires additional communication properties, it should inherit from this class.
-   */
-  class bosch_driver_parameters   
-  {
-  public:
-    /**
-     * \brief The address or ID of the device.
-     *
-     * For internally located devices such as GPIO or PWM drivers, this is the pin number on the hardware interface.
-     *
-     */
-    uint8_t device_address;
-
-    /**
-     * \brief The communication protocol which the sensor uses to transmit data.
-     *
-     * Some sensors support multiple protocols. See \link bma180 \endlink.
-     */
-    interface_protocol protocol;
-    
-    /**
-     * \brief The frequency at which data is being sent on the particular protocol.
-     */
-    unsigned int frequency;
- 
-    /**
-     * \brief An byte containing bit-order, mode, and the spi chip-select pin.
-     *
-     * Packing this information into an 8-bit set of flags minimizes the number
-     * of transmissions between the computer and the hardware interface.
-     */
-    uint8_t flags;   
-  
-
-    bosch_driver_parameters():
-      device_address( 0 ),
-      protocol( RS232 ),
-      frequency( 0 ),
-      flags( 0x00 )
-    {
-    }
-    
-    ~bosch_driver_parameters() {};
-
-  };
+GpioDriver::GpioDriver( bosch_hardware_interface* hw, uint8_t pin ): sensor_driver_internal( hw )
+{
+  sensor_parameters_->device_address = pin; 
 }
-#endif //BOSCH_DRIVERS_PARAMETERS_H_
+
+GpioDriver::~GpioDriver()
+{
+  delete sensor_parameters_;
+}
+
+uint8_t GpioDriver::getDeviceAddress()
+{
+  return sensor_parameters_->device_address;
+}
+
+bool GpioDriver::setDeviceAddress( uint8_t pin )
+{
+  sensor_parameters_->device_address = pin;
+
+  return true;
+}
+
+bosch_driver_parameters GpioDriver::getParameters()
+{
+  return *sensor_parameters_;
+}
+
+bool GpioDriver::setParameters( bosch_driver_parameters parameters)
+{
+  *sensor_parameters_ = parameters;
+}
+
+bool GpioDriver::initialize()
+{  
+  // Initialize the hardware interface
+  if( hardware_->initialize() == false )
+  {
+    ROS_ERROR("GpioDriver::initialize(): Could not initialize a hardware interface!");
+    return false;
+  }
+  return true;
+}
+
+bool GpioDriver::setOutput( bool value )
+{
+  std::vector<uint8_t> data;
+
+  data.push_back( value );
+  if( hardware_->write( *sensor_parameters_, GPIO, data ) < 0 )
+  {
+    ROS_ERROR("GpioDriver::setOutput(): could not set output");
+    return false;
+  } 
+  return true;
+}
+
+bool GpioDriver::getInput( gpio_input_mode mode )
+{
+  std::vector<uint8_t>data( 1,0 );
+
+  sensor_parameters_->flags = mode;
+
+  if( hardware_->read( *sensor_parameters_, GPIO, data ) < 0 )
+  {
+    ROS_ERROR("GpioDriver::readInput(): could not read input");
+    return false;
+  } 
+  return (bool)data[0];
+}
+
+

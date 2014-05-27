@@ -44,7 +44,7 @@
  * and the \p NULL_DEVICE definition.
  */
 
-#include <bosch_drivers_common.hpp>
+#include <bosch_drivers_common/bosch_drivers_common.hpp>
 
 namespace bosch_drivers_common
 {
@@ -70,11 +70,10 @@ namespace bosch_drivers_common
   static const uint8_t FAILURE = 0x35;
   
   /**
-   * \brief I2C frequency selection 
+   * \brief I2C frequency encoding 
    */
-  
-  static const uint8_t FREQ_STANDARD = 0x00; // 100 kHz
-  static const uint8_t FREQ_FAST     = 0x01; // 400 kHz
+  enum i2c_frequency { FREQ_STANDARD = 0x00, // 100 kHz
+		       FREQ_FAST     = 0x01};// 400 kHz
 
   static const uint8_t READ = 0;
   static const uint8_t WRITE = 1;

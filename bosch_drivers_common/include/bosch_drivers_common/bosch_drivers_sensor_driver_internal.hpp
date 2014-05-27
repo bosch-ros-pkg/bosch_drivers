@@ -34,15 +34,16 @@
  *
  *********************************************************************/
 
-//\Author Joshua Vasquez and Philip Roan, Robert Bosch LLC
+//\Author Philip Roan, Robert Bosch LLC
 
-#ifndef BOSCH_DRIVERS_SENSOR_DRIVER_H_
-#define BOSCH_DRIVERS_SENSOR_DRIVER_H_
+#ifndef BOSCH_DRIVERS_SENSOR_DRIVER_INTERNAL_H_
+#define BOSCH_DRIVERS_SENSOR_DRIVER_INTERNAL_H_
 
 
 #include "bosch_drivers_common.hpp"
 #include "bosch_drivers_parameters.hpp"
 #include "bosch_drivers_hardware_interface.hpp"
+#include "bosch_drivers_sensor_driver.hpp"
 
 namespace bosch_drivers_common
 {
@@ -54,53 +55,33 @@ namespace bosch_drivers_common
    * class, ensuring that all sensors are tied to a hardware interface when
    * instantiated.
    */
-  class sensor_driver    
+  class sensor_driver_internal: public sensor_driver
   {
-  protected:
-    bosch_hardware_interface* hardware_;
-    
-    // propose new name: communication_parameters
-    bosch_driver_parameters* sensor_parameters_;
-
-    /**
-     * \brief The location of the device.
-     *
-     * If the device is integrated into the hardware interface, then this should be INTERNAL_DEVICE. If the device uses wires to connect to the hardware interface, then this should be EXTERNAL_DEVICE.
-     */
-    const device_location location_;
-
   public:
     /**
      * Constructor: ties the sensor to its hardware interface
      */
-    sensor_driver( bosch_hardware_interface* hw, device_location loc, bosch_driver_parameters* parameters ):
-      hardware_( hw ),
-      sensor_parameters_( parameters ),
-      location_( loc )
+    sensor_driver_internal( bosch_hardware_interface* hw ):
+      sensor_driver( hw, INTERNAL_DEVICE )
     {
     }
 
-    sensor_driver( bosch_hardware_interface* hw, device_location loc ):
-      hardware_( hw ),
-      sensor_parameters_( new bosch_driver_parameters ),
-      location_( loc )
+    /**
+     * Constructor: ties the sensor to its hardware interface
+     */
+    sensor_driver_internal( bosch_hardware_interface* hw, bosch_driver_parameters* parameters ):
+      sensor_driver( hw, INTERNAL_DEVICE, parameters )
     {
+      sensor_parameters_->protocol = INTERNAL;
     }
 
-//    sensor_driver( bosch_hardware_interface* hw ):
-//      hardware_( hw ),
-//      sensor_parameters_( new bosch_driver_parameters )
-//    {
-//    }
     
     // Destructor
-    virtual ~sensor_driver()
+    virtual ~sensor_driver_internal()
     {
       delete sensor_parameters_;
     }
     
-
-        
     /**
      * \brief Retrieve the address of the sensor
      *
@@ -119,14 +100,17 @@ namespace bosch_drivers_common
     /**
      * \brief Sets the frequency of the sensor data transmissions between the hardware interface and the sensor.
      */           
-    virtual bool setFrequency( unsigned int frequency ) = 0;
+    virtual bool setFrequency( unsigned int frequency )
+    {
+      return false; // internal device does not have a communication frequency
+    }
     
     /**
      * \brief Retrieve the frequency at which the sensor data transmissions take place.
      */
     virtual unsigned int getFrequency()
     {
-      return sensor_parameters_->frequency;
+      return 0; // internal device does not have a communication frequency
     }
     
     /**
@@ -134,7 +118,10 @@ namespace bosch_drivers_common
      *
      * \p interface_protocol is an enumerated datatype from bosch_drivers_common.
      */
-    virtual bool setProtocol( interface_protocol protocol_name ) = 0;
+    virtual bool setProtocol( interface_protocol protocol_name )
+    {
+      return false; // Internal device does not have a communication protocol.
+    }
     
     /**
      * \brief Retrieve the communication protocol.
@@ -149,7 +136,7 @@ namespace bosch_drivers_common
      */
     virtual uint8_t getFlags()
     {
-      return sensor_parameters_->flags;
+      return 0x00; // Internal device does not have communication flags.
     }
     
     virtual bosch_driver_parameters getParameters()

@@ -2,7 +2,7 @@
  *
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2012, Robert Bosch LLC.
+ *  Copyright (c) 2013, Robert Bosch LLC.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -34,62 +34,55 @@
  *
  *********************************************************************/
 
-//\Author Joshua Vasquez and Philip Roan, Robert Bosch LLC
+//\Author Kai Franke, Robert Bosch LLC
 
-#ifndef BOSCH_DRIVERS_PARAMETERS_H_
-#define BOSCH_DRIVERS_PARAMETERS_H_
+// ROS headers
+#include <ros/ros.h>
 
-#include "bosch_drivers_common.hpp"
+#include <arduino_interface/arduino_interface.hpp> 
+#include <pwm_driver/pwm_driver.h>
 
-namespace bosch_drivers_common
-{ 
-  /**
-   * \brief An abstract class for sensor communication properties to be used by hardware interfaces.
-   *
-   * If a device requires additional communication properties, it should inherit from this class.
-   */
-  class bosch_driver_parameters   
-  {
-  public:
-    /**
-     * \brief The address or ID of the device.
-     *
-     * For internally located devices such as GPIO or PWM drivers, this is the pin number on the hardware interface.
-     *
-     */
-    uint8_t device_address;
-
-    /**
-     * \brief The communication protocol which the sensor uses to transmit data.
-     *
-     * Some sensors support multiple protocols. See \link bma180 \endlink.
-     */
-    interface_protocol protocol;
-    
-    /**
-     * \brief The frequency at which data is being sent on the particular protocol.
-     */
-    unsigned int frequency;
- 
-    /**
-     * \brief An byte containing bit-order, mode, and the spi chip-select pin.
-     *
-     * Packing this information into an 8-bit set of flags minimizes the number
-     * of transmissions between the computer and the hardware interface.
-     */
-    uint8_t flags;   
+int main( int argc, char **argv )
+{
   
+  //ROS initialization and publisher/subscriber setup
+  ros::init( argc, argv, "PWM_Driver" );
+  ros::NodeHandle nh("~");
 
-    bosch_driver_parameters():
-      device_address( 0 ),
-      protocol( RS232 ),
-      frequency( 0 ),
-      flags( 0x00 )
-    {
-    }
-    
-    ~bosch_driver_parameters() {};
+  std::string hw_id;
+  
+  // Get parameters from .launch file or parameter server, or take defaults
+  nh.param<std::string>( "hardware_id", hw_id, "/dev/ttyACM0" );
 
-  };
+  ArduinoInterface Arduino( hw_id );
+  Arduino.initialize();
+  
+  uint8_t pwm_pin = 5;
+  unsigned int frequency = 490; //[Hz]
+  unsigned int resolution = 32; //[bits]
+  PwmDriver* pwm_driver = new PwmDriver( &Arduino, frequency, pwm_pin, resolution ); 
+  if( pwm_driver->initialize() == false)
+  {
+    ROS_ERROR("Error initializing PWM driver");
+    return -1;
+  }
+
+  ros::Rate loop_rate_Hz(50);
+
+  float duty_cycle = 0;
+
+  while( nh.ok() )
+  {
+    pwm_driver->setDutyCycle( duty_cycle );
+
+    duty_cycle += 0.005;
+    if( duty_cycle > 1 )
+      duty_cycle = 0;
+      
+    ros::spinOnce();
+    loop_rate_Hz.sleep();
+  }
+  
+  ROS_WARN( "Closing PWM driver." );
+  return 0;  
 }
-#endif //BOSCH_DRIVERS_PARAMETERS_H_

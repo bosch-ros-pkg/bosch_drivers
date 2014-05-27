@@ -1,8 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(uniserial)
+project(bosch_drivers_basic_nodes)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  bosch_drivers_common
+  arduino_interface
+  gpio_driver
+  adc_driver
+  pwm_driver
+  encoder_driver
 )
 
 ## System dependencies are found with CMake's conventions
@@ -75,9 +81,10 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES uniserial
-  CATKIN_DEPENDS roscpp
+#  INCLUDE_DIRS include
+#  LIBRARIES bosch_drivers_basic_nodes
+#  CATKIN_DEPENDS arduino_interface bosch_drivers_common pwm_driver
+#  DEPENDS system_lib
 )
 
 ###########
@@ -88,26 +95,38 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-  include
   ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
-add_library( uniserial
-  src/uniserial.cpp
-)
+# add_library(bosch_drivers_basic_nodes
+#   src/${PROJECT_NAME}/bosch_drivers_basic_nodes.cpp
+# )
 
 ## Declare a cpp executable
-# add_executable(uniserial_node src/uniserial_node.cpp)
+add_executable(gpio_node src/gpio_node.cpp)
+add_executable(adc_node src/adc_node.cpp)
+add_executable(pwm_node src/pwm_node.cpp)
+add_executable(encoder_node src/encoder_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(uniserial_node uniserial_generate_messages_cpp)
+# add_dependencies(bosch_drivers_basic_nodes_node bosch_drivers_basic_nodes_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries( uniserial
+target_link_libraries(gpio_node
   ${catkin_LIBRARIES}
 )
+target_link_libraries(adc_node
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(pwm_node
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(encoder_node
+  ${catkin_LIBRARIES}
+)
+
 
 #############
 ## Install ##
@@ -124,16 +143,16 @@ target_link_libraries( uniserial
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS uniserial
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+install(TARGETS gpio_node adc_node pwm_node encoder_node
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 ## Mark cpp header files for installation
- install(DIRECTORY include/${PROJECT_NAME}/
-   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-)
+# install(DIRECTORY include/${PROJECT_NAME}/
+#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+#   FILES_MATCHING PATTERN "*.h"
+#   PATTERN ".svn" EXCLUDE
+# )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
@@ -147,7 +166,7 @@ install(TARGETS uniserial
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_uniserial.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_bosch_drivers_basic_nodes.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

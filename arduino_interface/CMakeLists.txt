@@ -5,8 +5,8 @@ project(arduino_interface)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  bosch_drivers_common
   roscpp
+  bosch_drivers_common
   uniserial
 )
 
@@ -82,7 +82,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES arduino_interface
-#  CATKIN_DEPENDS bosch_drivers_common roscpp uniserial
+  CATKIN_DEPENDS roscpp bosch_drivers_common uniserial
 )
 
 ###########
@@ -93,7 +93,8 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-  include ${catkin_INCLUDE_DIRS}
+  include
+  ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
@@ -109,9 +110,9 @@ include_directories(
 # add_dependencies(arduino_interface_node arduino_interface_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(arduino_interface_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(arduino_interface
+  ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##

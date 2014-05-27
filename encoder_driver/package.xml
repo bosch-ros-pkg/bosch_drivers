@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<package>
+  <name>encoder_driver</name>
+  <version>0.1.1</version>
+  <description>A driver for quadrature encoders connected to any supported hardware interface. The device will keep track of the encoder value using external interrupts if available on the selected pin. To contruct the encoder object the user needs to define two pins to be used by the device. These pins will automatically enable the internal pullup resistor and expect the connected encoder to pull the input to ground or drive in both directions. It is highly recommended to use a pin with external interrupt support at least for encoder1_pin. If not, the encoder object will need to be polled frequently to detect any changes. See http://www.pjrc.com/teensy/td_libs_Encoder.html for more information</description>
+  <url type="website">http://wiki.ros.org/encoder_driver</url>
+  <url type="repository">https://github.com/bosch-ros-pkg/bosch_drivers/encoder_driver</url>
+  <url type="bugtracker">https://github.com/bosch-ros-pkg/bosch_drivers/encoder_driver/issues</url>
+  <license>BSD</license>
+  <maintainer email="Philip.Roan@us.bosch.com">Philip Roan</maintainer>
+  <author>Kai Franke</author>
+
+  <!-- The *_depend tags are used to specify dependencies -->
+  <!-- Dependencies can be catkin packages or system dependencies -->
+  <!-- Examples: -->
+  <!-- Use build_depend for packages you need at compile time: -->
+  <!--   <build_depend>message_generation</build_depend> -->
+  <!-- Use buildtool_depend for build tool packages: -->
+  <!--   <buildtool_depend>catkin</buildtool_depend> -->
+  <!-- Use run_depend for packages you need at runtime: -->
+  <!--   <run_depend>message_runtime</run_depend> -->
+  <!-- Use test_depend for packages you need only for testing: -->
+  <!--   <test_depend>gtest</test_depend> -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>bosch_drivers_common</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>bosch_drivers_common</run_depend>
+
+</package>
