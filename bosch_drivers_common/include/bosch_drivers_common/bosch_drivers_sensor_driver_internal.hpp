@@ -72,6 +72,7 @@ namespace bosch_drivers_common
     sensor_driver_internal( bosch_hardware_interface* hw, bosch_driver_parameters* parameters ):
       sensor_driver( hw, INTERNAL_DEVICE, parameters )
     {
+      sensor_parameters_->protocol = INTERNAL;
     }
 
     

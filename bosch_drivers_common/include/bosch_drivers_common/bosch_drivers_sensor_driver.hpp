@@ -73,16 +73,6 @@ namespace bosch_drivers_common
     /**
      * Constructor: ties the sensor to its hardware interface
      */
-    sensor_driver( bosch_hardware_interface* hw, device_location loc ):
-      hardware_( hw ),
-      sensor_parameters_( new bosch_driver_parameters ),
-      location_( loc )
-    {
-    }
-
-    /**
-     * Constructor: ties the sensor to its hardware interface
-     */
     sensor_driver( bosch_hardware_interface* hw, device_location loc, bosch_driver_parameters* parameters ):
       hardware_( hw ),
       sensor_parameters_( parameters ),
@@ -90,6 +80,18 @@ namespace bosch_drivers_common
     {
     }
 
+    sensor_driver( bosch_hardware_interface* hw, device_location loc ):
+      hardware_( hw ),
+      sensor_parameters_( new bosch_driver_parameters ),
+      location_( loc )
+    {
+    }
+
+//    sensor_driver( bosch_hardware_interface* hw ):
+//      hardware_( hw ),
+//      sensor_parameters_( new bosch_driver_parameters )
+//    {
+//    }
     
     // Destructor
     virtual ~sensor_driver()
@@ -97,6 +99,8 @@ namespace bosch_drivers_common
       delete sensor_parameters_;
     }
     
+
+        
     /**
      * \brief Retrieve the address of the sensor
      *

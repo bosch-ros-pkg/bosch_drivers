@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   bosch_drivers_common
   arduino_interface
   gpio_driver
+  adc_driver
   pwm_driver
   encoder_driver
 )
@@ -104,6 +105,7 @@ include_directories(
 
 ## Declare a cpp executable
 add_executable(gpio_node src/gpio_node.cpp)
+add_executable(adc_node src/adc_node.cpp)
 add_executable(pwm_node src/pwm_node.cpp)
 add_executable(encoder_node src/encoder_node.cpp)
 
@@ -113,6 +115,9 @@ add_executable(encoder_node src/encoder_node.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(gpio_node
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(adc_node
   ${catkin_LIBRARIES}
 )
 target_link_libraries(pwm_node
@@ -138,7 +143,7 @@ target_link_libraries(encoder_node
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS gpio_node pwm_node encoder_node
+install(TARGETS gpio_node adc_node pwm_node encoder_node
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
