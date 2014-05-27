@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<package>
+  <name>gpio_driver</name>
+  <version>0.1.1</version>
+  <description>This pacakge provides  access the general purpose input and ouput (GPIO) pins of any supported hardware interface, such as Arduino. It is possible to configure pins as Output, floating Input, Input with Pullup or Input with Pulldown. Depending on the hardware used some of these options might not be available. Once the GPIO is configured it can be set to HIGH or LOW if output or can be read if configured as an input.</description> 
+  <url type="website">http://wiki.ros.org/gpio_driver</url>
+  <url type="repository">https://github.com/bosch-ros-pkg/bosch_drivers/gpio_driver</url>
+  <url type="bugtracker">https://github.com/bosch-ros-pkg/bosch_drivers/gpio_driver/issues</url>
+  <license>BSD</license>
+  <maintainer email="Philip.Roan@us.bosch.com">Philip Roan</maintainer>
+  <author>Kai Franke</author>
+
+
+  <!-- The *_depend tags are used to specify dependencies -->
+  <!-- Dependencies can be catkin packages or system dependencies -->
+  <!-- Examples: -->
+  <!-- Use build_depend for packages you need at compile time: -->
+  <!--   <build_depend>message_generation</build_depend> -->
+  <!-- Use buildtool_depend for build tool packages: -->
+  <!--   <buildtool_depend>catkin</buildtool_depend> -->
+  <!-- Use run_depend for packages you need at runtime: -->
+  <!--   <run_depend>message_runtime</run_depend> -->
+  <!-- Use test_depend for packages you need only for testing: -->
+  <!--   <test_depend>gtest</test_depend> -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>bosch_drivers_common</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>bosch_drivers_common</run_depend>
+
+
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- You can specify that this package is a metapackage here: -->
+    <!-- <metapackage/> -->
+
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>

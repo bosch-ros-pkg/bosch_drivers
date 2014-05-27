@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package>
+  <name>bosch_drivers_common</name>
+  <version>0.1.1</version>
+  <description>Common header files for bosch_drivers.
+  This package contains common constants and abstract class definitions for use with bosch_drivers.</description>
+  <url type="website">http://wiki.ros.org/bosch_drivers_common</url>
+  <url type="repository">https://github.com/bosch-ros-pkg/bosch_drivers/bosch_drivers_common</url>
+  <url type="bugtracker">https://github.com/bosch-ros-pkg/bosch_drivers/bosch_drivers_common/issues</url>
+
+  <license>BSD</license>
+  <maintainer email="Philip.Roan@us.bosch.com">Philip Roan</maintainer>
+  <author>Joshua Vasquez</author>
+  <author email="Philip.Roan@us.bosch.com">Philip Roan</author>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+ 
+  <build_depend>roscpp</build_depend>
+  
+  <run_depend>roscpp</run_depend>
+
+  <export>
+    <!-- <cpp cflags="-I${prefix}/include/bosch_drivers_common"/> -->
+  </export>
+</package>
