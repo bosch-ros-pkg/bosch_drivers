@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<package>
+  <name>uniserial</name>
+  <version>0.1.1</version>
+  <description>This class provides Unix machines with access to serial devices through serial ports. Essentially, this class is a wrapper of the Unix-specific function calls to (1) establish a connection, (1)read a single byte, and (1)write a single byte. The default constructer's parameters are set to 8-bit packets, No parity, and 1 stop bit; however, custom parameters can be set using the initialize(args..) method rather than the initialize() method.</description>
+  <url type="website">http://wiki.ros.org/uniserial</url>
+  <url type="repository">https://github.com/bosch-ros-pkg/bosch_drivers/uniserial</url>
+  <url type="bugtracker">https://github.com/bosch-ros-pkg/bosch_drivers/uniserial/issues</url>
+
+  <license>BSD</license>
+  <maintainer email="Philip.Roan@us.bosch.com">Philip Roan</maintainer>
+  <author>Joshua Vasquez</author>
+  <author email="Philip.Roan@us.bosch.com">Philip Roan</author>
+
+  <!-- The *_depend tags are used to specify dependencies -->
+  <!-- Dependencies can be catkin packages or system dependencies -->
+  <!-- Examples: -->
+  <!-- Use build_depend for packages you need at compile time: -->
+  <!--   <build_depend>message_generation</build_depend> -->
+  <!-- Use buildtool_depend for build tool packages: -->
+  <!--   <buildtool_depend>catkin</buildtool_depend> -->
+  <!-- Use run_depend for packages you need at runtime: -->
+  <!--   <run_depend>message_runtime</run_depend> -->
+  <!-- Use test_depend for packages you need only for testing: -->
+  <!--   <test_depend>gtest</test_depend> -->
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <build_depend>roscpp</build_depend>
+  
+  <run_depend>roscpp</run_depend>
+
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- You can specify that this package is a metapackage here: -->
+    <!-- <metapackage/> -->
+
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>
