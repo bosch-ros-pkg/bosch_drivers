@@ -103,7 +103,7 @@ y
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS bmg160_driver bmg160_driver_node
+install(TARGETS bmg160_driver
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
