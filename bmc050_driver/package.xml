@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package>
+  <name>bmc050_driver</name>
+  <version>0.1.1</version>
+  <description>The bmc050_driver package provides the user with sensor-specific methods to access the acceleration and magnetometer data on the BMC050 sensor. This class addresses the sensor through a hardware interface using generic function calls common to all hardware interfaces. In this manner, the driver is independent of the 
+  hardware device acting as a passthrough.</description>
+  <url type="website">http://wiki.ros.org/bmc050_driver</url>
+  <url type="repository">https://github.com/bosch-ros-pkg/bosch_drivers/bmc050_driver</url>
+  <url type="bugtracker">https://github.com/bosch-ros-pkg/bosch_drivers/bmc050_driver/issues</url>
+
+  <license>BSD</license>
+  <maintainer email="Philip.Roan@us.bosch.com">Philip Roan</maintainer>
+  <author>Joshua Vasquez</author>
+  <author email="Philip.Roan@us.bosch.com">Philip Roan</author>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>message_generation</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>bosch_drivers_common</build_depend>
+
+  <run_depend>message_runtime</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>bosch_drivers_common</run_depend>
+
+  <export>
+  </export>
+</package>
