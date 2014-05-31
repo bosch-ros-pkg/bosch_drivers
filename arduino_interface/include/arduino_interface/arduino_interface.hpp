@@ -101,7 +101,14 @@ public:
 		uint8_t register_address,
 		std::vector<uint8_t> data );
 
-
+  __attribute__((deprecated))
+  ssize_t read( uint8_t device_address, 
+		interface_protocol protocol, 
+		unsigned int frequency, 
+		uint8_t flags, // relevant for SPI communiction
+		uint8_t register_address, 
+		uint8_t* data, 
+		size_t num_bytes );
   /**
    * \brief Writes \a num_bytes from the requested device on the specified \a protocol at the specified protocol \a frequency
    * \var   int device_address the way that the sensor itentifies itself
@@ -117,6 +124,14 @@ public:
 		 uint8_t register_address,
 		 std::vector<uint8_t> data );
 
+  __attribute__((deprecated))
+  ssize_t write( uint8_t device_address, 
+		interface_protocol protocol, 
+		unsigned int frequency, 
+		uint8_t flags, // relevant for SPI communiction
+		uint8_t register_address, 
+		uint8_t* data, 
+		size_t num_bytes );
 
   /**
    * \brief  Returns true if the input protocol is supported by the hardware interface.

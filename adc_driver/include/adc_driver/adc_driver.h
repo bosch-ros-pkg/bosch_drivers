@@ -69,9 +69,7 @@ public:
 
   // Public Driver Methods:
   bool setDeviceAddress( uint8_t new_pin );
-  bool setFrequency(unsigned int frequency);
 
-  bosch_driver_parameters getParameters();
   bool setParameters( bosch_driver_parameters parameters );
   
   /**

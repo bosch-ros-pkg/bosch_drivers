@@ -164,11 +164,6 @@ bool PwmDriver::sendUpdate()
   return true;
 }
 
- 
-bosch_driver_parameters PwmDriver::getParameters()
-{
-  return *sensor_parameters_;
-}
 
 bool PwmDriver::setParameters( bosch_driver_parameters parameters)
 {
