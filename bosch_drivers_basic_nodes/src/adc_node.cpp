@@ -81,7 +81,7 @@ int main( int argc, char **argv )
   {
     for( int i = 0; i < 3; ++i)
     {
-      voltage[i] = adc[i]->read();
+      voltage[i] = adc[i]->getVoltage();
     }
     ROS_INFO("Read ADC values: channel 0: %u.%uV  channel 1: %u.%uV  channel 2: %u.%uV ", voltage[0] / 1000000, voltage[0] / 1000, voltage[1] / 1000000, voltage[1] / 1000, voltage[2] / 1000000, voltage[2] / 1000 );
           
