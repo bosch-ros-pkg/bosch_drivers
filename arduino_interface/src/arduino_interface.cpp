@@ -133,6 +133,23 @@ ssize_t ArduinoInterface::read( bosch_driver_parameters parameters, uint8_t regi
   return error_code;
 }
 
+__attribute__((deprecated))
+ssize_t ArduinoInterface::read( uint8_t device_address, interface_protocol protocol, unsigned int frequency, uint8_t flags, uint8_t register_address, uint8_t* data, size_t num_bytes )
+{
+  bosch_driver_parameters parameters;
+  parameters.device_address = device_address;
+  parameters.protocol = protocol;
+  parameters.frequency = frequency;
+  parameters.flags = flags;
+  
+  std::vector<uint8_t> data_vector(num_bytes);
+  for( int n = 0; n < num_bytes; n++ )
+  {
+    data_vector[n] = data[n];
+  }
+  
+  return read( parameters, register_address, data_vector );
+}
 
 /**********************************************************************/
 // Write
@@ -173,6 +190,24 @@ ssize_t ArduinoInterface::write( bosch_driver_parameters parameters, uint8_t reg
   }
  
   return error_code; // bytes written, or error. 
+}
+
+__attribute__((deprecated))
+ssize_t ArduinoInterface::write( uint8_t device_address, interface_protocol protocol, unsigned int frequency, uint8_t flags, uint8_t register_address, uint8_t* data, size_t num_bytes )
+{
+  bosch_driver_parameters parameters;
+  parameters.device_address = device_address;
+  parameters.protocol = protocol;
+  parameters.frequency = frequency;
+  parameters.flags = flags;
+  
+  std::vector<uint8_t> data_vector(num_bytes);
+  for( int n = 0; n < num_bytes; n++ )
+  {
+    data_vector[n] = data[n];
+  }
+  
+  return write( parameters, register_address, data_vector );
 }
 
 
