@@ -68,10 +68,8 @@ public:
   // Destructor:
   ~PwmDriver();
   
-  uint8_t getDeviceAddress( ); 
   bool setDeviceAddress( uint8_t pin );
 
-  bosch_driver_parameters getParameters();
   bool setParameters( bosch_driver_parameters parameters);
 
   /**
