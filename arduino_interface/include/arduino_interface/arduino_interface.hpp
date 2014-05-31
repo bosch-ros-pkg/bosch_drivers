@@ -83,6 +83,9 @@ public:
  
   bool initialize();
   //bool initialize( bosch_driver_parameters parameters );
+
+
+
   /**
    * \brief Reads \a num_bytes from the requested device on the specified \a protocol at the specified protocol \a frequency
    * \var   int device_address the way that the sensor identifies itself
@@ -94,19 +97,18 @@ public:
    * \var   uint8_t num_bytes the number of bytes to be read from the sensor.
    * \return \a num_bytes or a value less than zero, if the read failed.
    */
-  ssize_t read( uint8_t device_address,
-		interface_protocol protocol,
-		unsigned int frequency,
-		uint8_t flags,
-		uint8_t reg_address,
-		uint8_t* data,
-		size_t num_bytes );
-  
   ssize_t read( bosch_driver_parameters parameters,
-		uint8_t reg_address,
-		uint8_t* data,
-		size_t num_bytes );
+		uint8_t register_address,
+		std::vector<uint8_t> data );
 
+  __attribute__((deprecated))
+  ssize_t read( uint8_t device_address, 
+		interface_protocol protocol, 
+		unsigned int frequency, 
+		uint8_t flags, // relevant for SPI communiction
+		uint8_t register_address, 
+		uint8_t* data, 
+		size_t num_bytes );
   /**
    * \brief Writes \a num_bytes from the requested device on the specified \a protocol at the specified protocol \a frequency
    * \var   int device_address the way that the sensor itentifies itself
@@ -118,18 +120,18 @@ public:
    * \var   uint8_t num_bytes the number of bytes to be written to the sensor.
    * \return \a num_bytes or a value less than zero, if the write failed.
    */
-  ssize_t write( uint8_t device_address,
-		 interface_protocol protocol,
-		 unsigned int frequency,
-		 uint8_t flags,
-		 uint8_t reg_address,
-		 uint8_t* data,
-		 size_t num_bytes );
-
   ssize_t write( bosch_driver_parameters parameters,
-		 uint8_t reg_address,
-		 uint8_t* data,
-		 size_t num_bytes );
+		 uint8_t register_address,
+		 std::vector<uint8_t> data );
+
+  __attribute__((deprecated))
+  ssize_t write( uint8_t device_address, 
+		interface_protocol protocol, 
+		unsigned int frequency, 
+		uint8_t flags, // relevant for SPI communiction
+		uint8_t register_address, 
+		uint8_t* data, 
+		size_t num_bytes );
 
   /**
    * \brief  Returns true if the input protocol is supported by the hardware interface.
@@ -144,13 +146,16 @@ public:
   std::string getID();
 
 private:
+  ssize_t arduinoSpiRead( bosch_driver_parameters parameters, uint8_t reg_address, std::vector<uint8_t> data );
+  ssize_t arduinoSpiWrite( bosch_driver_parameters parameters, uint8_t reg_address, std::vector<uint8_t> data );
+  ssize_t arduinoI2cRead( bosch_driver_parameters parameters, uint8_t reg_address, std::vector<uint8_t> data );                
+  ssize_t arduinoI2cWrite( bosch_driver_parameters parameters, uint8_t reg_address, std::vector<uint8_t> data );
 
-  ssize_t arduinoSpiRead( uint8_t frequency, uint8_t flags, uint8_t reg_address, uint8_t* data, size_t num_bytes );
-  ssize_t arduinoSpiWrite( uint8_t frequency, uint8_t flags, uint8_t reg_address, uint8_t* data, size_t num_bytes );
-  ssize_t arduinoI2cRead( uint8_t device_address, uint32_t frequency, uint8_t reg_address, uint8_t* data, size_t num_bytes );                
-  ssize_t arduinoI2cWrite( uint8_t device_address, uint32_t frequency, uint8_t reg_address, uint8_t* data, size_t num_bytes );
-  ssize_t arduinoPwmWrite( uint8_t device_address, uint32_t frequency, uint8_t data );
-  ssize_t arduinoGpioRead( uint8_t flags, uint8_t pin, uint8_t* value );
+  ssize_t arduinoInternalRead( bosch_driver_parameters parameters, internal_device_type type, std::vector<uint8_t> data );
+  ssize_t arduinoInternalWrite( bosch_driver_parameters parameters, internal_device_type type, std::vector<uint8_t> data );
+
+    ssize_t arduinoPwmWrite( bosch_driver_parameters, std::vector<uint8_t> data );
+  ssize_t arduinoGpioRead( uint8_t pin, gpio_input_mode input_mode, uint8_t* value );
   ssize_t arduinoGpioWrite( uint8_t pin, bool value );
   ssize_t arduinoEncoderRead( uint8_t device_address, uint8_t* data );
   ssize_t arduinoEncoderWrite( uint8_t device_address, uint8_t* data );

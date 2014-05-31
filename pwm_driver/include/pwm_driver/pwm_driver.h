@@ -34,7 +34,7 @@
  *
  *********************************************************************/
 
-//\Author Kai Franke, Robert Bosch LLC
+//\Author Kai Franke and Philip Roan, Robert Bosch LLC
 
 #ifndef PWM_DRIVER_H_
 #define PWM_DRIVER_H_
@@ -42,7 +42,7 @@
 #include <ros/console.h> // ROS headers for debugging output
 
 #include <bosch_drivers_common/bosch_drivers_common.hpp>
-#include <bosch_drivers_common/bosch_drivers_sensor_driver.hpp>
+#include <bosch_drivers_common/bosch_drivers_sensor_driver_internal.hpp>
 #include <bosch_drivers_common/bosch_drivers_hardware_interface.hpp>
 
 using namespace bosch_drivers_common;
@@ -54,7 +54,7 @@ using namespace bosch_drivers_common;
  * to apply a PWM to supported hardware passing the duty cycle in as a value
  * between 0 (constant low) and 1 (constant high)
  */
-class PwmDriver: public sensor_driver
+class PwmDriver: public sensor_driver_internal
 {
   
 public:
@@ -63,24 +63,13 @@ public:
    * \param  frequency PWM frequency
    * \param  pin pin number on the hardware device to apply the PWM to
    */
-  PwmDriver( bosch_hardware_interface* hw, uint32_t frequency, uint8_t pin, unsigned int resolution_in_bits );
+  PwmDriver( bosch_hardware_interface* hw, unsigned int frequency, uint8_t pin, unsigned int resolution_in_bits );
   
   // Destructor:
   ~PwmDriver();
   
-  uint8_t getDeviceAddress( ); 
   bool setDeviceAddress( uint8_t pin );
 
-  unsigned int getFrequency( );
-  bool setFrequency( unsigned int frequency );
-
-  interface_protocol getProtocol( );
-  bool setProtocol( interface_protocol protocol );
-
-  uint8_t getFlags( );
-  bool setFlags( uint8_t flags );
-
-  bosch_driver_parameters getParameters( );
   bool setParameters( bosch_driver_parameters parameters);
 
   /**
@@ -89,11 +78,13 @@ public:
    * \return true if write was successful or false if not
    */
   bool setDutyCycle( double value );
+  double getDutyCycle();
 
-  double getDutyCycle( );
+  unsigned int getModulationFrequency( );
+  bool setModulationFrequency( unsigned int frequency );
   
   bool setResolution( unsigned int bits );
-  unsigned int getResolution( );
+  unsigned int getResolution();
 
   /**
    * \brief Initializes the driver and the connected hardware
@@ -103,6 +94,8 @@ public:
   bool initialize();
 
 private:
+  unsigned int modulation_frequency_;
+
   typedef unsigned long long pwm_resolution_t;
   unsigned int resolution_bits_;
   size_t resolution_bytes_;

@@ -34,19 +34,16 @@
  *
  *********************************************************************/
 
-//\Author Kai Franke, Robert Bosch LLC
+//\Author Kai Franke and Philip Roan, Robert Bosch LLC
 
 #include "pwm_driver/pwm_driver.h"
 
 PwmDriver::PwmDriver( bosch_hardware_interface* hw, unsigned int frequency, uint8_t pin, unsigned int resolution_in_bits ):
-  sensor_driver( hw ),
-  duty_cycle_( 0.0 )
+  sensor_driver_internal( hw ),
+  duty_cycle_( 0.0 ),
+  modulation_frequency_( 0 )
 {
-  sensor_parameters_ = new bosch_driver_parameters();
-  sensor_parameters_->protocol = PWM;
-  sensor_parameters_->frequency = frequency;
   sensor_parameters_->device_address = pin;
-  sensor_parameters_->flags = 0x00;
 
   setResolution( resolution_in_bits );
 }
@@ -56,10 +53,6 @@ PwmDriver::~PwmDriver()
   delete sensor_parameters_;
 }
 
-uint8_t PwmDriver::getDeviceAddress()
-{
-  return sensor_parameters_->device_address;
-}
 
 bool PwmDriver::setDeviceAddress( uint8_t new_pin )
 {
@@ -70,14 +63,14 @@ bool PwmDriver::setDeviceAddress( uint8_t new_pin )
   return true;
 }
 
-unsigned int PwmDriver::getFrequency()
+unsigned int PwmDriver::getModulationFrequency()
 {
-  return sensor_parameters_->frequency;
+  return modulation_frequency_;
 }
 
-bool PwmDriver::setFrequency( unsigned int new_frequency )
+bool PwmDriver::setModulationFrequency( unsigned int new_frequency )
 {
-  sensor_parameters_->frequency = new_frequency;
+  modulation_frequency_ = new_frequency;
 
   return true;
 }
@@ -163,7 +156,7 @@ bool PwmDriver::convertDutyCycle()
 
 bool PwmDriver::sendUpdate()
 {
-  if( hardware_->write( *sensor_parameters_, 0x00, &duty_cycle_bytes_[0], duty_cycle_bytes_.size() ) < 0 )
+  if( hardware_->write( *sensor_parameters_, PWM, duty_cycle_bytes_ ) < 0 )
   {
     ROS_ERROR("PwmDriver::sendUpdate(): could not write PWM to serial device.");
     return false;
@@ -171,30 +164,6 @@ bool PwmDriver::sendUpdate()
   return true;
 }
 
-  
-bool PwmDriver::setProtocol( interface_protocol protocol_name )
-{
-  if( protocol_name != PWM )
-    return false;
-
-  sensor_parameters_->protocol = protocol_name;
-  return true;
-}
-
-interface_protocol PwmDriver::getProtocol()
-{
-  return sensor_parameters_->protocol;
-}
-  
-uint8_t PwmDriver::getFlags()
-{
-  return sensor_parameters_->flags;
-}
- 
-bosch_driver_parameters PwmDriver::getParameters()
-{
-  return *sensor_parameters_;
-}
 
 bool PwmDriver::setParameters( bosch_driver_parameters parameters)
 {

@@ -77,9 +77,8 @@ namespace bosch_drivers_common
      * the byte order: little endian or big endian.
      */
     virtual bool initialize() = 0;
-
-    //virtual bool initialize( bosch_driver_parameters parameters ) = 0;
     
+
     /**
      * \brief Read a given number of bytes
      *
@@ -87,36 +86,32 @@ namespace bosch_drivers_common
      * memory. This function retrieves a number of bytes starting at a known address
      * in a device. If the particular device does not store measurements in memory
      * then it needs to be properly configured in the initialize() function.
-     * \param  device_address  The starting register address in the device's memory.
-     * \param  protocol
-     * \param  frequency       The protocol frequency
-     * \param  flags
-     * \param  reg_address     The register address
-     * \param  data            A pointer to the memory location in the host where the data
-     *                         will be stored. The user must make sure space is available.
-     *                         This data should be an array.
-     * \param  num_bytes       The requested number of bytes to read from the device.
+     * \param  register_address The register address
+     * \param  data             A standard vector large enough to hold the data.
      * \return                 The number of bytes actually read from the device or an
      *                         error code.
      *
      * \note  For SPI transactions, the \p device_address is the chip select. If
      * the device address is \p NULL_DEVICE, then the hardware interface should
      * read from the bus without changing any chip select lines.
-     * \note  For GPIO transactions, the \p device_address is the pin or port.
      */
+    __attribute__((deprecated))
     virtual ssize_t read( uint8_t device_address, 
                           interface_protocol protocol, 
                           unsigned int frequency, 
                           uint8_t flags, // relevant for SPI communiction
-                          uint8_t reg_address, 
+                          uint8_t register_address, 
                           uint8_t* data, 
-                          size_t num_bytes ) = 0;               
+                          size_t num_bytes ) = 0;
         
     virtual ssize_t read( bosch_driver_parameters parameters,
-                          uint8_t reg_address, 
-                          uint8_t* data, 
-                          size_t num_bytes ) = 0;               
+                          uint8_t register_address, 
+                          std::vector<uint8_t> data ) = 0;              
 
+    virtual ssize_t read( bosch_driver_parameters parameters, internal_device_type device_type, std::vector<uint8_t> data )
+    {
+      return read( parameters, static_cast<uint8_t>(device_type), data );
+    }
 
     /**
      * \brief Write the provided data, as bytes
@@ -125,38 +120,32 @@ namespace bosch_drivers_common
      * memory. This function sends a number of bytes starting at a known address
      * in a device. If the particular device does not store commands in memory
      * then it needs to be properly configured in the initialize() function.
-     * \param  device_address  The starting register address in the device's memory.
-     * \param  protocol
-     * \param  frequency       The protocol frequency
-     * \param  flags
-     * \param  reg_address     The register address
-     * \param  data            A pointer to the memory location in the host where the data
-     *                         will be stored. The user must make sure space is available.
-     *                         This data should be an array.
-     * \param  num_bytes       The requested number of bytes to read from the device.
+     * \param  register_address The register address
+     * \param  data             A standard vector large enough to hold the data.
      * \return                 The number of bytes actually read from the device or an
      *                         error code.
      *
-     * \note  If \p num_bytes is zero, then the hardware should just write the
-     * register as a single byte. In this case, the pointer data is irrelevant.
-     * This can be used to write single bytes.
      * \note  For SPI transactions, the \p device_address is the chip select. If
      * the device address is \p NULL_DEVICE, then the hardware interface should
      * read from the bus without changing any chip select lines.
-     * \note  For GPIO transactions, the \p device_address is the pin or port.
      */
+    __attribute__((deprecated))
     virtual ssize_t write( uint8_t device_address, 
                            interface_protocol protocol, 
                            unsigned int frequency,
                            uint8_t flags, 
-                           uint8_t reg_address, 
+                           uint8_t register_address, 
                            uint8_t* data, 
                            size_t num_bytes ) = 0;
 
     virtual ssize_t write( bosch_driver_parameters device_parameters,
-                           uint8_t reg_address, 
-                           uint8_t* data, 
-                           size_t num_bytes ) = 0;
+                           uint8_t register_address, 
+                           std::vector<uint8_t> data ) = 0;
+
+    virtual ssize_t write( bosch_driver_parameters parameters, internal_device_type device_type, std::vector<uint8_t> data )
+    {
+      return write( parameters, static_cast<uint8_t>(device_type), data );
+    }
 
     /**
      * \brief Check if a communication protocol is supported by this hardware interface.
@@ -169,7 +158,8 @@ namespace bosch_drivers_common
      * This identifier should be able to uniquely identify this interface when
      * multiple copies of this interface exist.
      */
-    virtual std::string getID() = 0;                  
+    virtual std::string getID() = 0;
+                
   };
 }
 

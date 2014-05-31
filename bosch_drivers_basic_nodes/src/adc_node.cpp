@@ -2,7 +2,7 @@
  *
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2012, Robert Bosch LLC.
+ *  Copyright (c) 2013, Robert Bosch LLC.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -34,62 +34,61 @@
  *
  *********************************************************************/
 
-//\Author Joshua Vasquez and Philip Roan, Robert Bosch LLC
+//\Author Kai Franke, Robert Bosch LLC
 
-#ifndef BOSCH_DRIVERS_PARAMETERS_H_
-#define BOSCH_DRIVERS_PARAMETERS_H_
+// ROS headers
+#include <ros/ros.h>
 
-#include "bosch_drivers_common.hpp"
+#include <arduino_interface/arduino_interface.hpp> 
+#include <adc_driver/adc_driver.h>
 
-namespace bosch_drivers_common
-{ 
-  /**
-   * \brief An abstract class for sensor communication properties to be used by hardware interfaces.
-   *
-   * If a device requires additional communication properties, it should inherit from this class.
-   */
-  class bosch_driver_parameters   
-  {
-  public:
-    /**
-     * \brief The address or ID of the device.
-     *
-     * For internally located devices such as GPIO or PWM drivers, this is the pin number on the hardware interface.
-     *
-     */
-    uint8_t device_address;
+#define REFERENCE_VOLTAGE 5000 // 5000mV = 5V
 
-    /**
-     * \brief The communication protocol which the sensor uses to transmit data.
-     *
-     * Some sensors support multiple protocols. See \link bma180 \endlink.
-     */
-    interface_protocol protocol;
-    
-    /**
-     * \brief The frequency at which data is being sent on the particular protocol.
-     */
-    unsigned int frequency;
- 
-    /**
-     * \brief An byte containing bit-order, mode, and the spi chip-select pin.
-     *
-     * Packing this information into an 8-bit set of flags minimizes the number
-     * of transmissions between the computer and the hardware interface.
-     */
-    uint8_t flags;   
+int main( int argc, char **argv )
+{
   
+  //ROS initialization and publisher/subscriber setup
+  ros::init( argc, argv, "ADC_Driver" );
+  ros::NodeHandle nh("~");
 
-    bosch_driver_parameters():
-      device_address( 0 ),
-      protocol( RS232 ),
-      frequency( 0 ),
-      flags( 0x00 )
+  std::string hw_id;
+  
+  // Get parameters from .launch file or parameter server, or take defaults
+  nh.param<std::string>( "hardware_id", hw_id, "/dev/ttyACM0" );
+
+  ArduinoInterface Arduino( hw_id );
+  Arduino.initialize();
+  
+  AdcDriver* adc[3];
+  uint32_t voltage[3];
+  
+  for( int i = 0; i < 3; ++i)
+  {
+    adc[i] = new AdcDriver( &Arduino, i );
+    if( adc[i]->initialize() == false )
     {
+      ROS_ERROR("Error initializing ADC driver");
+      return -1;
     }
-    
-    ~bosch_driver_parameters() {};
+  }
+	
+  if( !adc[0]->setReference(REFERENCE_VOLTAGE) )
+    return -1;
 
-  };
+  ros::Rate loop_rate_Hz(1);
+
+  while( nh.ok() )
+  {
+    for( int i = 0; i < 3; ++i)
+    {
+      voltage[i] = adc[i]->getVoltage();
+    }
+    ROS_INFO("Read ADC values: channel 0: %u.%uV  channel 1: %u.%uV  channel 2: %u.%uV ", voltage[0] / 1000000, voltage[0] / 1000, voltage[1] / 1000000, voltage[1] / 1000, voltage[2] / 1000000, voltage[2] / 1000 );
+          
+    ros::spinOnce();
+    loop_rate_Hz.sleep();
+  }
+  
+  ROS_WARN( "Closing ADC driver." );
+  return 0;  
 }
-#endif //BOSCH_DRIVERS_PARAMETERS_H_

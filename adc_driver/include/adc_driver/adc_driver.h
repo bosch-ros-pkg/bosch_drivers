@@ -36,8 +36,8 @@
 
 //\Author Kai Franke and Philip Roan, Robert Bosch LLC
 
-#ifndef GPIO_DRIVER_H_
-#define GPIO_DRIVER_H_
+#ifndef ADC_DRIVER_H_
+#define ADC_DRIVER_H_
 
 // ROS headers for debugging output
 #include <ros/console.h>
@@ -48,56 +48,51 @@
 using namespace bosch_drivers_common;
 
 /**
- * \brief Driver to use a GPIO on a supported serial device.
+ * \brief Driver to use an ADC on a supported serial device.
  *
- * This class lets the user access the GPIO pins of any supported hardware
- * It is possible to configure the pin as Output, floating Input, Input with Pullup or Input with Pulldown
- * Depending on the hardware used some of these options might not be available
- * Once the GPIO is configured it can be set to HIGH or LOW if output
- * or can be read if configured as an input
+ * This class lets the user access the ADC pins of any supported hardware
  */
-class GpioDriver: public sensor_driver_internal
+class AdcDriver: public sensor_driver_internal
 {
 
 public:
-  /**
-   * \brief Constructor
-   * \param hw hardware interface to use
-   * \param pin GPIO pin number on the hardware device
+  /** Constructor:
+   * \brief sets up one pin as an ADC pin with the default reference voltage
+   * \param hw Connected hardware interface
+   * \param adc_pin Pin to use on the connected hardware
+   * \note the ADC reference voltage will be set to the default value of the connected serial device (usually the supply voltage)
    */
-  GpioDriver( bosch_hardware_interface* hw, uint8_t pin );
-
+  AdcDriver( bosch_hardware_interface* hw, uint8_t adc_pin );
+ 
   // Destructor:
-  ~GpioDriver();
+  ~AdcDriver();
 
+  // Public Driver Methods:
+  bool setDeviceAddress( uint8_t new_pin );
 
-  uint8_t getDeviceAddress( void ); 
-  bool setDeviceAddress( uint8_t address );
-
-  bosch_driver_parameters getParameters();
   bool setParameters( bosch_driver_parameters parameters );
-
-  /**
-   * \brief Set a GPIO Pin to HIGH or LOW. It will always configure the pin as an output first.
-   * \param value 0 will set the GPIO pin to LOW and 1 will set it to HIGH
-   * \return true if GPIO output was successful or false if not
-   */
-  bool setOutput( bool value );
   
   /**
-   * \brief Performs a digital read on the GPIO Pin returning the read value in \a value
-   * \param mode configures the input pin to be either floating, add a pullup or a pulldown
-   * \return Read value at given pin. 1 if selected Pin is HIGH and 0 if it is LOW
+   * \brief Reads the analog voltage from the connected hardware device
+   * \return The read voltage in micro volts [µV]
    */
-  bool getInput( gpio_input_mode mode );
+  uint32_t getVoltage();
   
+  /**
+   * \brief Sets the reference voltage on the hardware for all analog pins
+   * \param voltage The voltage to set the reference to in mV. Check the hardware interface implementation for supported voltages. Setting this parameter to 0 will set the reference type to external
+   * \return true if the reference was applied successfully
+   * \todo think about switching to µV?
+   */
+  bool setReference( uint32_t voltage );
+	
   /**
    * \brief Initializes the driver and the connected hardware
    * 
    * \return a boolean indicating success
    */
   bool initialize();
+  
 };
 
-#endif // GPIO_DRIVER_H_
-
+#endif // ADC_DRIVER_H_

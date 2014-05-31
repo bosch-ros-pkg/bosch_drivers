@@ -36,76 +36,85 @@
 
 //\Author Kai Franke and Philip Roan, Robert Bosch LLC
 
-#include "gpio_driver/gpio_driver.h"
+#include "adc_driver/adc_driver.h"
 
-GpioDriver::GpioDriver( bosch_hardware_interface* hw, uint8_t pin ): sensor_driver_internal( hw )
+AdcDriver::AdcDriver( bosch_hardware_interface* hw, uint8_t adc_pin ): sensor_driver_internal( hw )
 {
-  sensor_parameters_->device_address = pin; 
 }
 
-GpioDriver::~GpioDriver()
+AdcDriver::~AdcDriver()
 {
   delete sensor_parameters_;
 }
 
-uint8_t GpioDriver::getDeviceAddress()
+bool AdcDriver::setDeviceAddress( uint8_t new_pin )
 {
-  return sensor_parameters_->device_address;
-}
+  sensor_parameters_->device_address = new_pin;
 
-bool GpioDriver::setDeviceAddress( uint8_t pin )
-{
-  sensor_parameters_->device_address = pin;
+  // do some other stuff?
 
   return true;
 }
 
-bosch_driver_parameters GpioDriver::getParameters()
-{
-  return *sensor_parameters_;
-}
 
-bool GpioDriver::setParameters( bosch_driver_parameters parameters)
+bool AdcDriver::setParameters( bosch_driver_parameters parameters )
 {
   *sensor_parameters_ = parameters;
+
+  return true;
 }
 
-bool GpioDriver::initialize()
+
+
+bool AdcDriver::initialize()
 {  
   // Initialize the hardware interface
   if( hardware_->initialize() == false )
   {
-    ROS_ERROR("GpioDriver::initialize(): Could not initialize a hardware interface!");
+    ROS_ERROR("AdcDriver::initialize(): Could not initialize a hardware interface!");
     return false;
   }
   return true;
 }
 
-bool GpioDriver::setOutput( bool value )
+uint32_t AdcDriver::getVoltage()
 {
-  std::vector<uint8_t> data;
-
-  data.push_back( value );
-  if( hardware_->write( *sensor_parameters_, GPIO, data ) < 0 )
+  std::vector<uint8_t> data(4);
+  
+  if( hardware_->read( *sensor_parameters_, ADCONVERTER, data ) < 0 )
   {
-    ROS_ERROR("GpioDriver::setOutput(): could not set output");
+    ROS_ERROR("AdcDriver::read(): could not read input");
+    return 0;
+  } 
+  // convert read data to float
+  uint32_t adc_uV;
+  adc_uV  = (data[0] << 24) + (data[1] << 16) + (data[2] << 8) + data[3] ;
+  
+  /* the following code would allow returning the voltage as a float but is most likely not very portable because of the reinterpret cast
+  return *reinterpret_cast<float *>( &adc_uV );
+  */
+  return adc_uV;
+}
+
+bool AdcDriver::setReference( uint32_t voltage )
+{
+  std::vector<uint8_t> reference_voltage(4);
+  
+  // write expects an uint_8 array, chopping uint32 to four uint8_t MSB first
+  uint32_t temp;
+  temp = (voltage & (0xFF << 24)) >> 24;
+  reference_voltage[0] = (uint8_t)temp;
+  temp = (voltage & (0xFF << 16)) >> 16;
+  reference_voltage[1] = (uint8_t)temp;
+  temp = (voltage & (0xFF << 8)) >> 8;
+  reference_voltage[2] = (uint8_t)temp;
+  temp = (voltage & (0xFF << 0));
+  reference_voltage[3] = (uint8_t)temp;
+  
+  if( hardware_->write( *sensor_parameters_, ADCONVERTER, reference_voltage ) < 0 )
+  {
+    ROS_ERROR("AdcDriver::setReference(): could not write reference voltage");
     return false;
   } 
   return true;
 }
-
-bool GpioDriver::getInput( gpio_input_mode mode )
-{
-  std::vector<uint8_t>data( 1,0 );
-
-  sensor_parameters_->flags = mode;
-
-  if( hardware_->read( *sensor_parameters_, GPIO, data ) < 0 )
-  {
-    ROS_ERROR("GpioDriver::readInput(): could not read input");
-    return false;
-  } 
-  return (bool)data[0];
-}
-
-
