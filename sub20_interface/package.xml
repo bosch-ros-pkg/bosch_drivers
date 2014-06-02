@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package>
+  <name>sub20_interface</name>
+  <version>0.1.1</version>
+  <description>The driver enables communication with a XDIMAX SUB20 device via USB. The sub20 sources are downloaded from XDIMAX during build.</description>
+  <url type="website">http://wiki.ros.org/sub20_interface</url>
+  <url type="repository">https://github.com/bosch-ros-pkg/bosch_drivers/sub20_interface</url>
+  <url type="bugtracker">https://github.com/bosch-ros-pkg/bosch_drivers/sub20_interface/issues</url>
+  <license>BSD</license>
+  <maintainer email="Philip.Roan@us.bosch.com">Philip Roan</maintainer>
+  <author email="Philip.Roan@us.bosch.com">Philip Roan</author>
+  <author>Joshua Vasquez</author>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>bosch_drivers_common</build_depend>
+  <build_depend>libusb-dev</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>bosch_drivers_common</run_depend>
+  <run_depend>libusb</run_depend>
+
+</package>
