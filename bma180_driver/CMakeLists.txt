@@ -73,7 +73,7 @@ include_directories(
 
 ## Declare a cpp library
 add_library(bma180_driver
-  src/bma180_driver.cpp
+  src/bma180.cpp
 )
 
 ## Declare a cpp executable
