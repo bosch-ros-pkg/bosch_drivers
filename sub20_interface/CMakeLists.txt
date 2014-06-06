@@ -13,18 +13,21 @@ pkg_check_modules(libusb REQUIRED libusb-1.0)
 set(TARBALL_VERSION 110319)
 set(TARBALL_MD5 b7612cbf99deb6b496e764366715579f)
 include(ExternalProject)
-externalproject_add(libsub20
+externalproject_add(libsub20_external
   PREFIX ${CMAKE_CURRENT_BINARY_DIR}
   DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download
   URL http://www.xdimax.net/download/SUB-20-snap-${TARBALL_VERSION}.tgz
   URL_MD5 ${TARBALL_MD5}
   PATCH_COMMAND patch -p0 -t -N < ${CMAKE_CURRENT_SOURCE_DIR}/src/libsub20/libsub20.patch
   CONFIGURE_COMMAND ""
-  BUILD_COMMAND make ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20/lib/Makefile
+  BUILD_COMMAND $(MAKE) -C ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib
   INSTALL_COMMAND ""
 )
-set(libsub20_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20/lib)
-
+add_library(libsub20 UNKNOWN IMPORTED)
+add_dependencies(libsub20 libsub20_external)
+set_property(TARGET libsub20 PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib/libsub.o)
+set(libsub20_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib)
+set(libsub20_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib/libsub.o)
 
 ###################################
 ## catkin specific configuration ##
@@ -46,6 +49,7 @@ catkin_package(
 ## Build ##
 ###########
 
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
@@ -57,6 +61,7 @@ include_directories(
   ${libsub20_INCLUDE_DIRS}
 )
 
+
 ## Declare a cpp library
 add_library(sub20_interface
   src/sub20_interface.cpp
@@ -65,8 +70,7 @@ add_library(sub20_interface
 ## Declare a cpp executable
 # add_executable(sub20_interface_node src/sub20_interface_node.cpp)
 
-## Add cmake target dependencies of the executable/library
-## as an example, message headers may need to be generated before nodes
+
 add_dependencies(sub20_interface libsub20)
 
 ## Specify libraries to link a library or executable target against
