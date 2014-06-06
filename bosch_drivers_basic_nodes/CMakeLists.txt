@@ -5,10 +5,12 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   bosch_drivers_common
   arduino_interface
+  sub20_interface
   gpio_driver
   adc_driver
   pwm_driver
   encoder_driver
+  bma180_driver
 )
 
 ## System dependencies are found with CMake's conventions
@@ -108,6 +110,7 @@ add_executable(gpio_node src/gpio_node.cpp)
 add_executable(adc_node src/adc_node.cpp)
 add_executable(pwm_node src/pwm_node.cpp)
 add_executable(encoder_node src/encoder_node.cpp)
+add_executable(bma180_node src/bma180_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -124,6 +127,9 @@ target_link_libraries(pwm_node
   ${catkin_LIBRARIES}
 )
 target_link_libraries(encoder_node
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(bma180_node
   ${catkin_LIBRARIES}
 )
 
@@ -143,7 +149,7 @@ target_link_libraries(encoder_node
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS gpio_node adc_node pwm_node encoder_node
+install(TARGETS gpio_node adc_node pwm_node encoder_node bma180_node
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
