@@ -20,14 +20,15 @@ externalproject_add(libsub20_external
   URL_MD5 ${TARBALL_MD5}
   PATCH_COMMAND patch -p0 -t -N < ${CMAKE_CURRENT_SOURCE_DIR}/src/libsub20/libsub20.patch
   CONFIGURE_COMMAND ""
-  BUILD_COMMAND $(MAKE) -C ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib
-  INSTALL_COMMAND ""
+  BUILD_COMMAND $(MAKE) -C ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib libsub.so
+  #INSTALL_COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/src/libsub_external/lib/libsub.h ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  INSTALL_COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib/libsub.h ${CMAKE_CURRENT_SOURCE_DIR}/include/sub20_interface/
 )
 add_library(libsub20 UNKNOWN IMPORTED)
 add_dependencies(libsub20 libsub20_external)
-set_property(TARGET libsub20 PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib/libsub.o)
+set_property(TARGET libsub20 PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib/libsub.so)
 set(libsub20_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib)
-set(libsub20_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib/libsub.o)
+set(libsub20_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib/libsub.so)
 
 ###################################
 ## catkin specific configuration ##
@@ -105,6 +106,9 @@ install(TARGETS sub20_interface
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
+#install(FILES ${libsub_INCLUDE_DIRS}/libsub.h
+#  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+#)
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
