@@ -125,11 +125,21 @@ public:
    *      sensor.
    * \return \a num_bytes or a value less than zero, if the read failed.
    */
-  ssize_t read( int device_address, interface_protocol protocol, int frequency, int* flags, uint8_t reg_address, uint8_t* data, size_t num_bytes );
+  ssize_t read( uint8_t device_address,
+		interface_protocol protocol,
+		unsigned int frequency,
+		uint8_t flags,
+		uint8_t register_address,
+		uint8_t* data,
+		size_t num_bytes );
+
+  ssize_t read( bosch_driver_parameters parameters,
+		uint8_t register_address, 
+		std::vector<uint8_t> data );
 
 
   /**
-   * \brief  reads \a num_bytes from the requested device on the 
+   * \brief  Writes \a num_bytes from the requested device on the 
    *      specified \a protocol at the specified protocol \a frequency
    *
    * \param   int device_address the way that the sensor itentifies itself
@@ -145,8 +155,17 @@ public:
    *      sensor.
    * \return \a num_bytes or a value less than zero, if the read failed.
    */
-  ssize_t write( int device_address, interface_protocol protocol, int frequency, int* flags, uint8_t reg_address, uint8_t* data, size_t num_bytes );
+  ssize_t write( uint8_t device_address,
+		 interface_protocol protocol,
+		 unsigned int frequency,
+		 uint8_t flags,
+		 uint8_t register_address,
+		 uint8_t* data,
+		 size_t num_bytes );
 
+  ssize_t write( bosch_driver_parameters device_parameters,
+		 uint8_t register_address, 
+		 std::vector<uint8_t> data );
 
   /**
    * \brief  returns true if the input protocol is supported by the
@@ -170,7 +189,7 @@ public:
   int numDevices();
 
 private:
-  bool spiConfigRoutine( int frequency, int flags );
+  bool spiConfigRoutine( unsigned int frequency, uint8_t flags );
   
   interface_protocol protocol_;
   int error_code;

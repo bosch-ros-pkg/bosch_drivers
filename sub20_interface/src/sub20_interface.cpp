@@ -68,7 +68,7 @@ bool Sub20Interface::initialize()
   if( is_initialized_ == true )
     return true;
 
-   error_code = 0;
+  error_code = 0;
   bool device_found = false;
 
   while( device_found == false )
@@ -134,21 +134,40 @@ bool Sub20Interface::initialize()
 
 /**********************************************************************/
 /**********************************************************************/
-ssize_t Sub20Interface::read( int device_address, interface_protocol protocol, int frequency, int* flags, uint8_t reg_address, uint8_t* data, size_t num_bytes )
+ssize_t Sub20Interface::read( uint8_t device_address, interface_protocol protocol, unsigned int frequency, uint8_t flags, uint8_t register_address, uint8_t* data, size_t num_bytes )
+{
+  bosch_driver_parameters parameters;
+  parameters.device_address = device_address;
+  parameters.protocol = protocol;
+  parameters.frequency = frequency;
+  parameters.flags = flags;
+  
+  std::vector<uint8_t> data_vector(num_bytes);
+  for( int n = 0; n < num_bytes; n++ )
+  {
+    data_vector[n] = data[n];
+  }
+  
+  return read( parameters, register_address, data_vector );
+}
+
+ssize_t Sub20Interface::read( bosch_driver_parameters parameters, uint8_t register_address, std::vector<uint8_t> data )
 {
   int error_code = 0;
-
-  switch( protocol )
+  size_t num_bytes = data.size();
+  
+  switch( parameters.protocol )
   {
   case I2C:
   {
+    sub_int32_t sub_freq = parameters.frequency;
     // configure i2c bus according to parameters:
-    if( sub_i2c_freq( handle_, &frequency ) < 0 )
+    if( sub_i2c_freq( handle_, &sub_freq ) < 0 )
     {
       ROS_ERROR("Sub20Interface: I2c setup failed. \r Status: %s", sub_strerror(sub_errno) );
       return -1;
     }
-    if( sub_i2c_read( handle_, device_address, reg_address, 1, (char*)data, num_bytes ) < 0 )
+    if( sub_i2c_read( handle_, parameters.device_address, register_address, 1, (char*)(&data[0]), num_bytes ) < 0 )
     {
       ROS_ERROR("Sub20Interface: I2c read failed. \r Status: %s", sub_strerror(sub_errno));
       return -1;
@@ -158,7 +177,7 @@ ssize_t Sub20Interface::read( int device_address, interface_protocol protocol, i
   case SPI:
   {
     // configure SPI bus according to parameters:
-    if( spiConfigRoutine( frequency, *flags ) == false )
+    if( spiConfigRoutine( parameters.frequency, parameters.flags ) == false )
     {
       ROS_ERROR("Sub20Interface::read(...): SPI configuration failed.");
       return -1;
@@ -167,7 +186,7 @@ ssize_t Sub20Interface::read( int device_address, interface_protocol protocol, i
     // SPI Reading has extra overhead:
     //CREATE OUTPUT DATA ARRAY: The output data is an array with reg address followed by num_bytes of dud values.
     uint8_t output_data[num_bytes + 1];
-    output_data[0] = reg_address;
+    output_data[0] = register_address;
   
     for( int i = 0; i < (int)num_bytes; i++ )
     {
@@ -178,11 +197,11 @@ ssize_t Sub20Interface::read( int device_address, interface_protocol protocol, i
     uint8_t input_data[num_bytes + 1];
   
     // BEGIN transfer: two variations, depending on device address
-    switch( device_address )
+    switch( parameters.device_address )
     {
     case NULL_DEVICE:
       // Transfer without toggling chip_select line:
-      if( sub_spi_transfer( handle_, (char*)output_data, (char*)input_data, (num_bytes + 1), SS_CONF(device_address, SS_H) ) < 0)
+      if( sub_spi_transfer( handle_, (char*)output_data, (char*)input_data, (num_bytes + 1), SS_CONF(parameters.device_address, SS_H) ) < 0)
       {
 	ROS_ERROR( "Sub20Interface::read(...): SPI read failed. \r Status: %s", sub_strerror(sub_errno) );
 	return -1;
@@ -190,7 +209,7 @@ ssize_t Sub20Interface::read( int device_address, interface_protocol protocol, i
       break;
     default:
       // Transfer normally (pull chip_select line low):
-      if( sub_spi_transfer( handle_, (char*)output_data, (char*)input_data, (num_bytes + 1), SS_CONF(device_address, SS_LO) ) < 0)
+      if( sub_spi_transfer( handle_, (char*)output_data, (char*)input_data, (num_bytes + 1), SS_CONF(parameters.device_address, SS_LO) ) < 0)
       {
 	ROS_ERROR( "Sub20Interface::read(...): SPI read failed. \r Status: %s", sub_strerror(sub_errno) );
 	return -1;
@@ -198,7 +217,7 @@ ssize_t Sub20Interface::read( int device_address, interface_protocol protocol, i
     }
   
     // Transfer reg_address, and then receive num_bytes of data back:
-    if( sub_spi_transfer( handle_, (char*)output_data, (char*)input_data, (num_bytes + 1), SS_CONF(device_address, SS_LO) ) < 0)
+    if( sub_spi_transfer( handle_, (char*)output_data, (char*)input_data, (num_bytes + 1), SS_CONF(parameters.device_address, SS_LO) ) < 0)
     {
       ROS_ERROR("Sub20Interface::read(...): SPI read failed. \r Status: %s", sub_strerror(sub_errno));
       error_code = (-1);
@@ -228,20 +247,39 @@ ssize_t Sub20Interface::read( int device_address, interface_protocol protocol, i
 
 /**********************************************************************/
 /**********************************************************************/
-ssize_t Sub20Interface::write( int device_address, interface_protocol protocol, int frequency, int* flags, uint8_t reg_address, uint8_t* data, size_t num_bytes )
+ssize_t Sub20Interface::write( uint8_t device_address, interface_protocol protocol, unsigned int frequency, uint8_t flags, uint8_t register_address, uint8_t* data, size_t num_bytes )
+{
+  bosch_driver_parameters parameters;
+  parameters.device_address = device_address;
+  parameters.protocol = protocol;
+  parameters.frequency = frequency;
+  parameters.flags = flags;
+  
+  std::vector<uint8_t> data_vector(num_bytes);
+  for( int n = 0; n < num_bytes; n++ )
+  {
+    data_vector[n] = data[n];
+  }
+  
+  return write( parameters, register_address, data_vector );
+}
+
+ssize_t Sub20Interface::write( bosch_driver_parameters parameters, uint8_t register_address, std::vector<uint8_t> data )
 {
   int error_code = 0;
+  size_t num_bytes = data.size();
   
-  switch( protocol )
+  switch( parameters.protocol )
   {
   case I2C:
   {
-    if( sub_i2c_freq(handle_, &frequency) < 0 )
+    sub_int32_t sub_freq = parameters.frequency;
+    if( sub_i2c_freq( handle_, &sub_freq ) < 0 )
     {
       ROS_ERROR("Sub20Interface::write(...): ERROR.  Could not set I2C frequency.");
       return -1;
     }
-    if( sub_i2c_write( handle_, device_address, reg_address, 1, (char*)data, num_bytes ) < 0 )
+    if( sub_i2c_write( handle_, parameters.device_address, register_address, 1, (char*)(&data[0]), num_bytes ) < 0 )
     {
       ROS_ERROR( "Sub20Interface::write(...): ERROR. Could not write data over I2C interface." );
       return -1;
@@ -250,7 +288,7 @@ ssize_t Sub20Interface::write( int device_address, interface_protocol protocol, 
   }
   case SPI:
   {
-    if( spiConfigRoutine( frequency, *flags ) == false )
+    if( spiConfigRoutine( parameters.frequency, parameters.flags ) == false )
     {
       ROS_ERROR("Sub20Interface::write(...): SPI configuration failed.");
       return -1;
@@ -259,14 +297,14 @@ ssize_t Sub20Interface::write( int device_address, interface_protocol protocol, 
     // SPI writing has extra overhead:  
     //CREATE OUTPUT DATA ARRAY:                     The output data is an array with reg address followed by the data.
     uint8_t output_data[num_bytes + 1];
-    output_data[0] = reg_address;
+    output_data[0] = register_address;
   
     for( int i = 0; i < (int)num_bytes; i++ )
     {
       output_data[i+1] = data[i];
     }
     // transfer reg_address, then data:
-    error_code += sub_spi_transfer( handle_, (char*)output_data, 0, (num_bytes+1), SS_CONF(device_address, SS_LO) ); //VERIFY SS_LO
+    error_code += sub_spi_transfer( handle_, (char*)output_data, 0, (num_bytes+1), SS_CONF(parameters.device_address, SS_LO) ); //VERIFY SS_LO
     return error_code;
   }
   case GPIO:
@@ -319,7 +357,7 @@ int Sub20Interface::numDevices()
 
 /**********************************************************************/
 /**********************************************************************/
-bool Sub20Interface::spiConfigRoutine( int frequency, int flags )
+bool Sub20Interface::spiConfigRoutine( unsigned int frequency, uint8_t flags )
 {
   int spi_configuration_ = SPI_ENABLE;
  
