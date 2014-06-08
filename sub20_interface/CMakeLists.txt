@@ -6,12 +6,19 @@ find_package(catkin REQUIRED COMPONENTS
   bosch_drivers_common
 )
 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(libusb REQUIRED libusb-1.0)
+
+catkin_destinations()
 
 # Download and build Sub20 library from Xdimax source
 set(TARBALL_VERSION 110319)
 set(TARBALL_MD5 b7612cbf99deb6b496e764366715579f)
+
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(libusb REQUIRED libusb-1.0)
+
+set(libsub20_INCLUDE_DIRS ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/libsub20)
+
 include(ExternalProject)
 externalproject_add(libsub20_external
   PREFIX ${CMAKE_CURRENT_BINARY_DIR}
@@ -22,14 +29,17 @@ externalproject_add(libsub20_external
   CONFIGURE_COMMAND ""
   BUILD_COMMAND $(MAKE) -C ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib libsub.so
   #INSTALL_COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib/libsub.h ${CMAKE_CURRENT_SOURCE_DIR}/include/sub20_interface/
-  INSTALL_COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/include/sub20_interface COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib/libsub.h ${CMAKE_CURRENT_BINARY_DIR}/include/sub20_interface/
+  #INSTALL_COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/include/sub20_interface COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib/libsub.h ${CMAKE_CURRENT_BINARY_DIR}/include/sub20_interface/
+  INSTALL_COMMAND mkdir -p ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/libsub20 COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib/libsub.h ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/libsub20/
 )
 add_library(libsub20 UNKNOWN IMPORTED)
 add_dependencies(libsub20 libsub20_external)
 set_property(TARGET libsub20 PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib/libsub.so)
-set(libsub20_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/include/sub20_interface)
+#set(libsub20_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/include/sub20_interface)
 #set(libsub20_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib)
-set(libsub20_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib/libsub.so)
+#set(libsub20_INCLUDE_DIRS ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/libsub20)
+#set(libsub20_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib/libsub.so)
+set(libsub20_LIBRARIES libsub20)
 
 ###################################
 ## catkin specific configuration ##
@@ -41,10 +51,11 @@ set(libsub20_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib/lib
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES sub20_interface libsub20
+  INCLUDE_DIRS include ${libsub20_INCLUDE_DIRS}
+  LIBRARIES sub20_interface #libsub20
   CATKIN_DEPENDS bosch_drivers_common roscpp
   DEPENDS libusb
+  EXPORTED_TARGETS libsub20_external
 )
 
 ###########
@@ -69,7 +80,7 @@ add_library(sub20_interface
   src/sub20_interface.cpp
 )
 
-add_dependencies(sub20_interface libsub20)
+add_dependencies(sub20_interface libsub20_external)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(sub20_interface
@@ -100,12 +111,9 @@ install(TARGETS sub20_interface
 )
 
 ## Mark cpp header files for installation
-install(DIRECTORY include/${PROJECT_NAME}/ ${libsub_INCLUDE_DIRS}/
+install(DIRECTORY include/${PROJECT_NAME}/ 
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
-#install(FILES ${libsub_INCLUDE_DIRS}/libsub.h
-#  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#)
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
