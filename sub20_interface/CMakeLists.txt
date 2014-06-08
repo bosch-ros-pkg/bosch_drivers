@@ -27,7 +27,7 @@ externalproject_add(libsub20_external
 add_library(libsub20 UNKNOWN IMPORTED)
 add_dependencies(libsub20 libsub20_external)
 set_property(TARGET libsub20 PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib/libsub.so)
-set(libsub20_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/include)
+set(libsub20_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/include/sub20_interface)
 #set(libsub20_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib)
 set(libsub20_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib/libsub.so)
 
