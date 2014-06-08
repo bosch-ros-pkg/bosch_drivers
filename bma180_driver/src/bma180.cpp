@@ -54,18 +54,26 @@
 #include <ros/console.h>
 
 #include "bma180_driver/bma180.hpp"
-#include "bma180_driver/bma180_parameters.hpp"
 
 
 /**********************************************************************/
 // Constructor
 /**********************************************************************/
 BMA180::BMA180( bosch_hardware_interface* hw ) :
-  sensor_driver( hw ),
-  BMA180Parameters() 
+  sensor_driver( hw, EXTERNAL_DEVICE ),
+  TempSlope_( 0.5 ),
+  accel_range_( RANGE_2),
+  sensitivity_( 0.00025 ),
+  bandwidth_( BW_150 ),
+  slave_address_bit_( 0 )
 {
-  // Set defaults:
-  TempSlope_ = 0.5;
+  sensor_parameters_->device_address = SLAVE_ADDRESS0;
+  sensor_parameters_->protocol = I2C;
+  sensor_parameters_->frequency = 400000;
+  //byte_order( MSB_FIRST ),
+  //spi_mode( SPI_MODE_3 )
+  //sensor_parameters_->flags = ;
+
 }
 
 
@@ -82,7 +90,7 @@ BMA180::~BMA180()
 uint8_t BMA180::getDeviceAddress()
 {
   // depends on the protocol:
-  switch( this->getProtocol() )
+  switch( sensor_parameters_->protocol )
   {
   case I2C:
     // depends on hardware configuration:
@@ -95,7 +103,7 @@ uint8_t BMA180::getDeviceAddress()
         ROS_ERROR( "BMA180::getDeviceAddress(): invalid I2C address" );
     break;
   case SPI:
-    return this->getPin();
+    return sensor_parameters_->device_address;
   default:
     ROS_ERROR( "BMA180::getDeviceAddress(): sensor has no identification. Either setPin(uint8_t pin) for SPI or setSlaveAddress( 0 or 1) for I2C." );
     return 255;
@@ -145,7 +153,7 @@ bool BMA180::initialize()
     return false;
   
   // Change accel_range on the sensor to match requested parameter range:
-  if( this->changeAccelRange() == false )
+  if( this->setAccelerationRange( accel_range_ ) == false )
     return false;
 
   // Change bandwidth_ on the sensor to match requested parameter bandwidth:
@@ -171,9 +179,9 @@ bool BMA180::takeMeasurement()
     return false;
   }
              
-  AccelX_ = this->getSensitivity() * int( ( ((int16_t)(Data[1] << 8)) | ( ((int16_t)Data[0]) ) ) >> 2 ); // [g]
-  AccelY_ = this->getSensitivity() * int( ( ((int16_t)(Data[3] << 8)) | ( ((int16_t)Data[2]) ) ) >> 2 ); // [g]
-  AccelZ_ = this->getSensitivity() * int( ( ((int16_t)(Data[5] << 8)) | ( ((int16_t)Data[4]) ) ) >> 2 ); // [g]
+  AccelX_ = sensitivity_ * int( ( ((int16_t)(Data[1] << 8)) | ( ((int16_t)Data[0]) ) ) >> 2 ); // [g]
+  AccelY_ = sensitivity_ * int( ( ((int16_t)(Data[3] << 8)) | ( ((int16_t)Data[2]) ) ) >> 2 ); // [g]
+  AccelZ_ = sensitivity_ * int( ( ((int16_t)(Data[5] << 8)) | ( ((int16_t)Data[4]) ) ) >> 2 ); // [g]
   Temperature_ = ( TempSlope_* (int8_t)Data[6] ) + 24; // [C]
   return true;
 }
@@ -1046,20 +1054,18 @@ bool BMA180::EnableWriting()
 /**********************************************************************/
 
 /**********************************************************************/
-bool BMA180::changeAccelRange()
+bool BMA180::setAccelerationRange(accel_range measurement_range )
 {
   uint8_t local_range;
  
   // read current accel range register value for a local copy.
   if( this->readReg( ADDRESS_OFFSET_LSB1, &local_range ) == false )
   {
-    ROS_ERROR("BMA180::changeAccelRange(): read failed.");
+    ROS_ERROR("bma180_driver: setAccelerationRange() failed to read current range.");
     return false;
   }
  
-  // #ifdef DEBUG
-  ROS_INFO( "AccelRange bits before: %d.  Default:  %d", ( (local_range & (0x07 << range)) >> range), 2); // Defaults on page 27
-  // #endif 
+  ROS_DEBUG( "bma180_driver: Acceleration range bits before changing: %d.  Default:  %d", ( (local_range & (0x07 << range)) >> range), 2); // Defaults on page 27 of datasheet
 
   // add our command to change range:
   local_range &= ~(0x07 << range); // clear old range value. Mask: b11110001
@@ -1068,14 +1074,14 @@ bool BMA180::changeAccelRange()
   // write the adjusted register value back to the sensor's register:
   if( this->writeToReg( ADDRESS_OFFSET_LSB1, local_range ) == false )
   {
-    ROS_ERROR( "BMA180::changeAccelRange(): write failed." );
+    ROS_ERROR( "bma180_driver: setAccelerationRange() failed to write new range to sensor." );
     return false;
   }
  
   // read back that register to make sure that changes worked:
   if( this->readReg( ADDRESS_OFFSET_LSB1, &local_range ) == false )
   {
-    ROS_ERROR( "BMA180::changeAccelRange(): read failed." );
+    ROS_ERROR( "bma180_driver: setAccelerationRange() failed to read new range from sensor." );
     return false;
   }
  
@@ -1083,15 +1089,44 @@ bool BMA180::changeAccelRange()
   uint8_t range_actual = ( local_range & (0x07 << range) ) >> range; // mask: b00001110
   uint8_t range_expected = (uint8_t) accel_range_; // This is the value set in the parameters. 
  
-  // #ifdef DEBUG
-  ROS_INFO( "AccelRange bits after:  %d.  Expected: %d", range_actual, range_expected );
-  // #endif 
+  ROS_DEBUG( "bma180_driver: Acceleration range bits after change:  %d.  Expected: %d", range_actual, range_expected );
  
   if( range_expected != range_actual )
   {
-    ROS_ERROR( "BMA180::changeAccelRange(): failed." );
+    ROS_ERROR( "bma180_driver: setAccelerationRange() failed verification step." );
     return false;
   }
+
+
+  // After changing the sensor, change sensitivity
+  switch( measurement_range )
+  {
+  case RANGE_1:
+    sensitivity_ = 0.00013;
+    break;
+  case RANGE_1_5:
+    sensitivity_ = 0.00019;
+    break;
+  case RANGE_2:
+    sensitivity_ = 0.00025;
+    break;
+  case RANGE_3:
+    sensitivity_ = 0.00038;
+    break;
+  case RANGE_4:
+    sensitivity_ = 0.00050;
+    break;
+  case RANGE_8:
+    sensitivity_ = 0.00099;
+    break;
+  case RANGE_16:
+    sensitivity_ = 0.00198;
+    break;
+  default: // shouldn't happen because input argument is only an accel_range data type.
+    ROS_ERROR( "bma180_parameters: invalid range setting." );
+    return false;
+  }
+
  
   // if new settings are correct:
   return true;
@@ -1209,29 +1244,33 @@ bool BMA180::setEnOffsetBit( uint8_t bit )
 /**********************************************************************/
 bool BMA180::readReg( uint8_t reg, uint8_t* value )
 {
+  std::vector<uint8_t> data(1);
+
   // Reading depends on the protocol.
   switch( this->getProtocol() )
   {
   case I2C:
-    if( hardware_->read( this->getDeviceAddress(), I2C, this->getFrequency(), this->getFlags(), reg, value, 1 ) < 0 ) 
+    if( hardware_->read( *sensor_parameters_, reg, data ) < 0 ) 
     {
-      ROS_ERROR( "BMA180::readReg(): Error reading register via I2C!" );
+      ROS_ERROR( "bma180_driver: Error reading register via I2C!" );
       return false;
     } 
     break;
   case SPI:
     // we must prepend the SPI_READ_FLAG.
-    if( hardware_->read( this->getDeviceAddress(), SPI, this->getFrequency(), this->getFlags(), ( 1 << SPI_READ_FLAG ) | reg, value, 1 ) < 0 ) 
+    if( hardware_->read( *sensor_parameters_, ( 1 << SPI_READ_FLAG ) | reg, data ) < 0 ) 
     {
-      ROS_ERROR( "BMA180::readReg(): Error reading register via SPI!" );
+      ROS_ERROR( "bma180_driver: Error reading register via SPI!" );
       return false;
     } 
     break;
   default:
     // shouldn't happen:
-    ROS_ERROR( "BMA180::readReg(...): invalid protocol." );
+    ROS_ERROR( "bma180_driver:readReg(...): invalid protocol." );
     return false;
   }
+
+  *value = data[0];
   return true;
 }
 
@@ -1240,26 +1279,28 @@ bool BMA180::readReg( uint8_t reg, uint8_t* value )
 /**********************************************************************/
 bool BMA180::writeToReg( uint8_t reg, uint8_t value )
 {
+  std::vector<uint8_t> data(1,value);
+
   // technically, writing depends on the protocol.
   switch( this->getProtocol() )
   {
   case I2C:
-    if( hardware_->write( this->getDeviceAddress(), I2C, this->getFrequency(), this->getFlags(), (uint8_t)reg, (uint8_t*)&value, 1 ) < 0 )
+    if( hardware_->write( *sensor_parameters_, reg, data ) < 0 )
     {
-      ROS_ERROR( "BMA180::writeToReg(): Error writing to register via I2C!" );
+      ROS_ERROR( "bma180_driver: Error writing to register via I2C!" );
       return false;
     } 
     break;
   case SPI:
     // we must prepend the SPI_WRITE_FLAG, although, technically it's already there, since it's zero.
-    if( hardware_->write( this->getDeviceAddress(), SPI, this->getFrequency(), this->getFlags(), (uint8_t) (~(1 << SPI_WRITE_FLAG)&reg), (uint8_t*)&value, 1) < 0 ) 
+    if( hardware_->write( *sensor_parameters_, (~(1 << SPI_WRITE_FLAG)&reg), data) < 0 ) 
     {
-      ROS_ERROR( "BMA180::writeToReg(): Error writing to register via SPI!" );
+      ROS_ERROR( "bma180_driver: Error writing to register via SPI!" );
       return false;
     } 
     break;
   default:
-    ROS_ERROR("BMA180::writeToReg(...): invalid protocol.");
+    ROS_ERROR("bma180_driver: invalid protocol.");
     return false;
   }
   return true;
@@ -1290,30 +1331,110 @@ bool BMA180::writeToRegAndVerify( uint8_t reg, uint8_t value, uint8_t expected )
 }
 
 
-bool BMA180::readSensorData( uint8_t reg, uint8_t* data, uint8_t num_bytes )
+bool BMA180::readSensorData( uint8_t reg, uint8_t* sensor_data, uint8_t num_bytes )
 {
+  std::vector<uint8_t> data(num_bytes);
   // Reading depends on the protocol.
   switch( this->getProtocol() )
   {
   case I2C:
-    if( hardware_->read( this->getDeviceAddress(), I2C, this->getFrequency(), this->getFlags(), reg, data, num_bytes ) < 0 ) 
+    if( hardware_->read( *sensor_parameters_, reg, data ) < 0 ) 
     {
-      ROS_ERROR( "BMA180::readSensorData(): Error reading register via I2C!" );
+      ROS_ERROR( "bma180_driver: Error reading register via I2C!" );
       return false;
     } 
     break;
   case SPI:
     // we must prepend the SPI_READ_FLAG.
-    if( hardware_->read( this->getDeviceAddress(), SPI, this->getFrequency(), this->getFlags(), ((1 << SPI_READ_FLAG)|reg), data, num_bytes ) < 0 ) 
+    if( hardware_->read( *sensor_parameters_, ((1 << SPI_READ_FLAG)|reg), data ) < 0 ) 
     {
-      ROS_ERROR( "BMA180::readSensorData(): Error reading register via SPI!" );
+      ROS_ERROR( "bma180_driver: Error reading register via SPI!" );
       return false;
     } 
     break;
   default:
     // shouldn't happen:
-    ROS_ERROR( "BMA180::readSensorData(...): invalid protocol." );
+    ROS_ERROR( "bma180_driver: invalid protocol." );
     return false;
   }
+
+  sensor_data = &data[0];
   return true; 
+}
+
+
+/**********************************************************************/
+/**********************************************************************/
+bool BMA180::setProtocol( interface_protocol protocol )
+{
+  switch( protocol )
+  {
+  case I2C:
+  case SPI:
+    sensor_parameters_->protocol = protocol;
+    break;
+  default:
+    ROS_ERROR( "bma180_parameters:Unsupported protocol." );
+    return false;
+  }
+  return true;
+}
+
+/**********************************************************************/
+/**********************************************************************/
+bool BMA180::setByteOrder( uint8_t value )
+{
+  // adjust the flags
+  sensor_parameters_->flags = ( (0xFB & sensor_parameters_->flags) | (value << 2) );
+  if( value > 1 )
+  {
+    ROS_ERROR("bma180_driver: Byte order must be either LSB_FIRST or MSB_FIRST");
+    return false;
+  }
+  return true;
+ 
+}
+
+/**********************************************************************/
+/**********************************************************************/
+bool BMA180::setSpiMode( uint8_t mode )
+{
+  // adjust the flags
+  sensor_parameters_->flags = ( (0xFC & sensor_parameters_->flags) | (mode) ); // 111111xx, where xx is the mode.
+ 
+  switch( mode )
+  {
+  case SPI_MODE_3:
+    return true;
+  case SPI_MODE_0:
+  case SPI_MODE_1:
+  case SPI_MODE_2:
+  default:
+    ROS_ERROR( "bma180_driver: BMA180 can only be read in SPI_MODE_3." );
+    return false;
+  }
+}
+
+
+/**********************************************************************/
+/**********************************************************************/
+void BMA180::setBandwidth( bandwidth bw )
+{ 
+  bandwidth_ = bw;
+}
+
+
+/**********************************************************************/
+/**********************************************************************/
+double BMA180::getSensitivity()
+{
+  return sensitivity_;
+}
+
+
+/**********************************************************************/
+/**********************************************************************/
+void BMA180::setPreCalOffsets( bool choice )
+{
+  offsetsEnabled_ = choice;
 }

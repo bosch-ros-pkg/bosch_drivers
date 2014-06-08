@@ -53,10 +53,8 @@
 #include <cmath>  // for atan2
 #include <unistd.h> // for the sleep function
 
-#include <bosch_drivers_sensor_driver.hpp>
-#include <bosch_drivers_hardware_interface.hpp>
-
-#include "bma180_parameters.hpp"
+#include <bosch_drivers_common/bosch_drivers_sensor_driver.hpp>
+#include <bosch_drivers_common/bosch_drivers_hardware_interface.hpp>
 
 using namespace bosch_drivers_common;
 
@@ -68,12 +66,63 @@ using namespace bosch_drivers_common;
  * however, the user cannot change modes and cannot directly implement the
  * sensor's built-in slope-detection routines.
  */
-class BMA180: public sensor_driver, public BMA180Parameters
+class BMA180: public sensor_driver
 {
 public:
-  // Constructor
+  /**
+   * I2C address (1 of 2)
+   * \note BMA180 uses this I2C address if SDO is connected to VSS
+   */
+  static const uint8_t SLAVE_ADDRESS0 = 0x40;
+
+  /**
+   * I2C address (2 of 2)
+   * \note BMA180 uses this I2C address if SDO is connected to VDDIO
+   */
+  static const uint8_t SLAVE_ADDRESS1 = 0x41; 
+  
+
+  /**
+   * \brief Write these to <3:1> in  ADDRESS_RANGE_REG to change sensitivity
+   */
+  enum accel_range
+  {
+    /** \note ±1 [g] at 0.13 [mg/LSB] */
+    RANGE_1 = 0x00,
+    /** \note ±1.5 [g] at 0.19 [mg/LSB] */
+    RANGE_1_5 = 0x01,
+    /** \note ±2 [g] at 0.25 [mg/LSB] */  
+    RANGE_2 = 0x02,
+    /** \note ±3 [g] at 0.38 [mg/LSB] */
+    RANGE_3 = 0x03,
+    /** \note ±4 [g] at 0.50 [mg/LSB] */
+    RANGE_4 = 0x04,
+    /** \note ±8 [g] at 0.99 [mg/LSB] */
+    RANGE_8 = 0x05,
+    /** \note ±16 [g] at 1.98 [mg/LSB] */
+    RANGE_16 = 0x06
+  };
+  
+  /**
+   * \brief Write these to  <7:4> in ADDRESS_BWTCS to change bandwidth filter
+   */
+  enum bandwidth 
+  {
+    BW_10,
+    BW_20,
+    BW_40,
+    BW_75,
+    BW_150,
+    BW_300,
+    BW_600,
+    BW_1200,
+    BW_HIGH_PASS,
+    BW_BAND_PASS
+  };
+
+
   BMA180( bosch_hardware_interface* hw ); 
-  // Destructor
+
   ~BMA180();
     
   // Initialize the hardware interface so it can communicate with the bma180:
@@ -98,30 +147,48 @@ public:
   bool FullCalibration();
   bool softReset();
   bool DisableI2C(); // to get bug-free SPI readings.
-  bool changeAccelRange(); 
-  bool changeBandwidth();
   //bool togglePreCalOffsets(bool choice);
   bool setEnOffsetBit( uint8_t bit );
+
+  /**
+   * \brief Set the driver to the correct device address of the sensor. 
+   */
+  bool setSlaveAddressBit( bool choice );
+  uint8_t getSlaveAddressBit();  
+
+  bool setDeviceAddress( uint8_t address );
+  uint8_t getDeviceAddress();
+
+  /**
+   * \brief Set the sensing range in [g].
+   */
+  bool setAccelerationRange( accel_range measurement_range ); 
+  double getSensitivity(); // returns sensitivity  
+  //accel_range getAccelerationRange();
+
+  /**
+   * \brief Set the internal filter on the sensor to the specified bandwidth.
+   */
+  void setBandwidth( bandwidth bw );
+  bool changeBandwidth();
+
+  void setPreCalOffsets( bool choice );
   
-  //returns the way the sensor identifies itself to the hardware interface.
-  uint8_t getDeviceAddress(); 
+  bool setFrequency( unsigned int frequency );
+  bool setProtocol( interface_protocol protocol_name );
+  bool setParameters( bosch_driver_parameters parameters );
 
-  // Inheretted Methods: (from bma180_parameters)
-  //bool setProtocol(interface_protocol protocol);
-  //bool setFrequency(int frequency);
-  //bool setPin( uint8_t pin);       
-  //bool setSlaveAddressBit(bool choice); // choose between two device addresses. 
-  //bool setByteOrder(uint8_t value);
-  //bool setSpiMode(uint8_t mode);
-  //bool setRange(accel_range new_range);
-  //double        getSensitivity(); // returns sensitivity
-  //interface_protocol  getProtocol();
-  //int         getFrequency();
-  //int*         getFlags();
-  //int         getPin();  // SPI, GPIO only
-  //uint8_t       getSlaveAddressBit();
 
-  /* ----- MEMBERS ----- */
+
+  
+protected:
+  uint8_t slave_address_bit_;
+  double sensitivity_;
+  accel_range accel_range_;
+  bandwidth bandwidth_;
+  bool useFilter_;
+  bool offsetsEnabled_;
+
   double AccelX_;
   double AccelY_;
   double AccelZ_;
@@ -130,22 +197,9 @@ public:
   double StaticRoll_;  
   
   double TempSlope_;
-  
-  
-protected:
+
+
   // BMA180 Register Definitions
-
-  /**
-   * \note an optional i2c address
-   * \note used if SDO is connected to VSS
-   */
-  static const uint8_t SLAVE_ADDRESS0 = 0x40;
-
-  /**
-   * \note an optional i2c address
-   * \note  if SDO is connected to VDDIO
-   */
-  static const uint8_t SLAVE_ADDRESS1 = 0x41; 
 
   // The Acceleration Data Registers
   static const uint8_t ADDRESS_ACCLXYZ     = 0x02;
@@ -207,6 +261,7 @@ protected:
   static const uint8_t ADDRESS_HIGH_DUR = 0x27;
   static const uint8_t CMD_DISABLE_I2C  = 0x01;
 
+
   /// (relevant) BITFLAGS for changing settings:
 
   // BitFlags: CTRL_REG0
@@ -240,6 +295,15 @@ protected:
   bool writeToReg( uint8_t reg, uint8_t value );
   bool writeToRegAndVerify( uint8_t reg, uint8_t value, uint8_t expected_value );
   bool readSensorData( uint8_t reg, uint8_t* value, uint8_t num_bytes );  
+
+  /**
+   * \brief Adjust the byte is the order of the transmission.
+   */
+  bool setByteOrder( uint8_t value );
+  /**
+   * \brief Set the SPI mode (0 -- 4).
+   */
+  bool setSpiMode( uint8_t mode );
 };
 
 #endif // BMA180_H_
