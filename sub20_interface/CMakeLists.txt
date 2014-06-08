@@ -18,74 +18,48 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(libusb REQUIRED libusb-1.0)
 
 set(libsub20_INCLUDE_DIRS ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/libsub20)
-
 include(ExternalProject)
-externalproject_add(libsub20_external
+externalproject_add(libsub20
   PREFIX ${CMAKE_CURRENT_BINARY_DIR}
   DOWNLOAD_DIR ${CMAKE_CURRENT_BINARY_DIR}/download
   URL http://www.xdimax.net/download/SUB-20-snap-${TARBALL_VERSION}.tgz
   URL_MD5 ${TARBALL_MD5}
   PATCH_COMMAND patch -p0 -t -N < ${CMAKE_CURRENT_SOURCE_DIR}/src/libsub20/libsub20.patch
   CONFIGURE_COMMAND ""
-  BUILD_COMMAND $(MAKE) -C ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib libsub.so
-  #INSTALL_COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib/libsub.h ${CMAKE_CURRENT_SOURCE_DIR}/include/sub20_interface/
-  #INSTALL_COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/include/sub20_interface COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib/libsub.h ${CMAKE_CURRENT_BINARY_DIR}/include/sub20_interface/
-  INSTALL_COMMAND mkdir -p ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/libsub20 COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib/libsub.h ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/libsub20/
+  BUILD_COMMAND $(MAKE) -C ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20/lib libsub.so
+  INSTALL_COMMAND mkdir -p ${libsub20_INCLUDE_DIRS} COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20/lib/libsub.h ${libsub20_INCLUDE_DIRS}/
 )
-add_library(libsub20 UNKNOWN IMPORTED)
-add_dependencies(libsub20 libsub20_external)
-set_property(TARGET libsub20 PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib/libsub.so)
-#set(libsub20_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/include/sub20_interface)
-#set(libsub20_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib)
-#set(libsub20_INCLUDE_DIRS ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/libsub20)
-#set(libsub20_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20_external/lib/libsub.so)
-set(libsub20_LIBRARIES libsub20)
+set(libsub20_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20/lib/libsub.so)
 
 ###################################
 ## catkin specific configuration ##
 ###################################
-## The catkin_package macro generates cmake config files for your package
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if you package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include ${libsub20_INCLUDE_DIRS}
-  LIBRARIES sub20_interface #libsub20
+  LIBRARIES sub20_interface 
   CATKIN_DEPENDS bosch_drivers_common roscpp
   DEPENDS libusb
-  EXPORTED_TARGETS libsub20_external
+  EXPORTED_TARGETS libsub20
 )
 
 ###########
 ## Build ##
 ###########
-
-
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
-# include_directories(include)
-# TODO: Check names of system library include directories (libusb)
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  ${libusb_INCLUDE_DIRS}
   ${libsub20_INCLUDE_DIRS}
 )
-
 
 ## Declare a cpp library
 add_library(sub20_interface
   src/sub20_interface.cpp
 )
-
-add_dependencies(sub20_interface libsub20_external)
-
-## Specify libraries to link a library or executable target against
+add_dependencies(sub20_interface
+  libsub20
+)
 target_link_libraries(sub20_interface
   ${catkin_LIBRARIES}
-  ${libusb_LIBRARIES}
   ${libsub20_LIBRARIES}
 )
 
@@ -109,6 +83,12 @@ install(TARGETS sub20_interface
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+#install(FILES ${libsub20_LIBRARIES}
+#  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+#)
 
 ## Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}/ 
