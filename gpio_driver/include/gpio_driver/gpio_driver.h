@@ -74,8 +74,8 @@ public:
   uint8_t getDeviceAddress( void ); 
   bool setDeviceAddress( uint8_t address );
 
-  bosch_driver_parameters getParameters();
-  bool setParameters( bosch_driver_parameters parameters );
+  bosch_drivers_communication_properties getParameters();
+  bool setParameters( bosch_drivers_communication_properties properties );
 
   /**
    * \brief Set a GPIO Pin to HIGH or LOW. It will always configure the pin as an output first.
