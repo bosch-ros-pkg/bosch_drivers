@@ -36,8 +36,8 @@
 
 //\Author Joshua Vasquez and Philip Roan, Robert Bosch LLC
 
-#ifndef BOSCH_DRIVERS_PARAMETERS_H_
-#define BOSCH_DRIVERS_PARAMETERS_H_
+#ifndef BOSCH_DRIVERS_COMMUNICATION_PROPERTIES_H_
+#define BOSCH_DRIVERS_COMMUNICATION_PROPERTIES_H_
 
 #include "bosch_drivers_common.hpp"
 
@@ -48,7 +48,7 @@ namespace bosch_drivers_common
    *
    * If a device requires additional communication properties, it should inherit from this class.
    */
-  class bosch_driver_parameters   
+  class bosch_driver_parameters 
   {
   public:
     /**
@@ -92,4 +92,4 @@ namespace bosch_drivers_common
 
   };
 }
-#endif //BOSCH_DRIVERS_PARAMETERS_H_
+#endif //BOSCH_DRIVERS_COMMUNICATION_PROPERTIES_H_
