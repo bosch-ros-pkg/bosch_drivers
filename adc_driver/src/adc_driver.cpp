@@ -44,12 +44,12 @@ AdcDriver::AdcDriver( bosch_hardware_interface* hw, uint8_t adc_pin ): sensor_dr
 
 AdcDriver::~AdcDriver()
 {
-  delete sensor_parameters_;
+  delete communication_properties_;
 }
 
 bool AdcDriver::setDeviceAddress( uint8_t new_pin )
 {
-  sensor_parameters_->device_address = new_pin;
+  communication_properties_->device_address = new_pin;
 
   // do some other stuff?
 
@@ -57,9 +57,9 @@ bool AdcDriver::setDeviceAddress( uint8_t new_pin )
 }
 
 
-bool AdcDriver::setParameters( bosch_driver_parameters parameters )
+bool AdcDriver::setParameters( bosch_drivers_communication_properties properties )
 {
-  *sensor_parameters_ = parameters;
+  *communication_properties_ = properties;
 
   return true;
 }
@@ -81,7 +81,7 @@ uint32_t AdcDriver::getVoltage()
 {
   std::vector<uint8_t> data(4);
   
-  if( hardware_->read( *sensor_parameters_, ADCONVERTER, data ) < 0 )
+  if( hardware_->read( *communication_properties_, ADCONVERTER, data ) < 0 )
   {
     ROS_ERROR("AdcDriver::read(): could not read input");
     return 0;
@@ -111,7 +111,7 @@ bool AdcDriver::setReference( uint32_t voltage )
   temp = (voltage & (0xFF << 0));
   reference_voltage[3] = (uint8_t)temp;
   
-  if( hardware_->write( *sensor_parameters_, ADCONVERTER, reference_voltage ) < 0 )
+  if( hardware_->write( *communication_properties_, ADCONVERTER, reference_voltage ) < 0 )
   {
     ROS_ERROR("AdcDriver::setReference(): could not write reference voltage");
     return false;

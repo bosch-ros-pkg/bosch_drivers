@@ -51,7 +51,6 @@
 #include <ros/console.h>
 
 #include "bmp085_driver/bmp085_driver.hpp"
-#include "bmp085_driver/bmp085_parameters.hpp"
 
 
 /**********************************************************************/
@@ -62,10 +61,10 @@ BMP085::BMP085( bosch_hardware_interface* hw ) :
   oss_( STANDARD ),
   pressure_at_sea_level_( 101.325 ) // [kPa]
 {
-  sensor_parameters_->device_address = DEVICE_ADDRESS; //Every BMP085 has same I2C address
-  sensor_parameters_->protocol = I2C;
-  sensor_parameters_->frequency = 400000; // [Hz]
-  sensor_parameters_->flags = 0x00;
+  communication_properties_->device_address = DEVICE_ADDRESS; //Every BMP085 has same I2C address
+  communication_properties_->protocol = I2C;
+  communication_properties_->frequency = 400000; // [Hz]
+  communication_properties_->flags = 0x00;
 }
 
 
@@ -74,7 +73,7 @@ BMP085::BMP085( bosch_hardware_interface* hw ) :
 /**********************************************************************/
 BMP085::~BMP085() 
 {
-  delete sensor_parameters_;
+  delete communication_properties_;
 }
 
 
@@ -90,7 +89,7 @@ bool BMP085::initialize()
     return false;
   }
 
-  // Initialize the hardware interface with the selected parameters.
+  // Initialize the hardware interface with the selected properties.
   if( hardware_->initialize() == false )
   {
     ROS_ERROR("BMP085::initialize(): Could not initialize a hardware interface!");
@@ -105,7 +104,7 @@ bool BMP085::initialize()
    
   // Read 22 bytes of Calibration-constant data
  
-  if( hardware_->read( *sensor_parameters_, (uint8_t)ADDRESS_AC1_MSB, FullCalData ) < 0 )
+  if( hardware_->read( *communication_properties_, (uint8_t)ADDRESS_AC1_MSB, FullCalData ) < 0 )
   {
     ROS_ERROR("BMP085::initialize(): Invalid Calibration data");
     return false;
@@ -152,7 +151,7 @@ bool BMP085::takeMeasurement()
 /**********************************************************************/
 uint8_t BMP085::getDeviceAddress()
 {
-  return sensor_parameters_->device_address;
+  return communication_properties_->device_address;
 }
 
 
@@ -176,12 +175,12 @@ bool BMP085::getTemperatureData( void )
  
   usleep( 4500 ); // sleep for 4.5 [ms] while BMP085 processes temperature.
   
-  if( hardware_->read( *sensor_parameters_, MEAS_OUTPUT_MSB, MSB ) < 0 )
+  if( hardware_->read( *communication_properties_, MEAS_OUTPUT_MSB, MSB ) < 0 )
   {
     ROS_ERROR("BMP085::getTemperatureData(): Invalid data"); 
     return false;
   }
-  if( hardware_->read( *sensor_parameters_, MEAS_OUTPUT_LSB, LSB ) < 0 )
+  if( hardware_->read( *communication_properties_, MEAS_OUTPUT_LSB, LSB ) < 0 )
   {
     ROS_ERROR("BMP085::getTemperatureData(): Invalid data"); 
     return false;
@@ -241,7 +240,7 @@ bool BMP085::getPressureData()
 
   std::vector<uint8_t> data(3); 
   
-  if( hardware_->read( *sensor_parameters_, MEAS_OUTPUT_MSB, data ) < 0 )
+  if( hardware_->read( *communication_properties_, MEAS_OUTPUT_MSB, data ) < 0 )
   {
     ROS_ERROR("BMP085::getPressureData():Invalid data");
     return false;
@@ -331,7 +330,7 @@ void BMP085::setPressureAtSeaLevel( double pressure )
 /**********************************************************************/
 bool BMP085::writeToReg( uint8_t reg, uint8_t value )
 {
-  if( hardware_->write( *sensor_parameters_, (uint8_t)reg, std::vector<uint8_t>(value, 1) ) < 0 )
+  if( hardware_->write( *communication_properties_, (uint8_t)reg, std::vector<uint8_t>(value, 1) ) < 0 )
   {
     ROS_ERROR("could not write value to register."); 
     return false;
@@ -360,7 +359,7 @@ bool BMP085::setProtocol( interface_protocol protocol )
   }
   else
   {
-    sensor_parameters_->protocol = protocol;
+    communication_properties_->protocol = protocol;
   }
   return true;
 }
@@ -370,7 +369,7 @@ bool BMP085::setProtocol( interface_protocol protocol )
 /**********************************************************************/
 bool BMP085::setFrequency( unsigned int frequency )
 {
-  sensor_parameters_->frequency = frequency;
+  communication_properties_->frequency = frequency;
   return true;
 }
 

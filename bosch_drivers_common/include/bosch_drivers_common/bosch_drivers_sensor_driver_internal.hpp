@@ -41,7 +41,7 @@
 
 
 #include "bosch_drivers_common.hpp"
-#include "bosch_drivers_parameters.hpp"
+#include "bosch_drivers_communication_properties.hpp"
 #include "bosch_drivers_hardware_interface.hpp"
 #include "bosch_drivers_sensor_driver.hpp"
 
@@ -69,17 +69,17 @@ namespace bosch_drivers_common
     /**
      * Constructor: ties the sensor to its hardware interface
      */
-    sensor_driver_internal( bosch_hardware_interface* hw, bosch_driver_parameters* parameters ):
-      sensor_driver( hw, INTERNAL_DEVICE, parameters )
+    sensor_driver_internal( bosch_hardware_interface* hw, bosch_drivers_communication_properties* properties ):
+      sensor_driver( hw, INTERNAL_DEVICE, properties )
     {
-      sensor_parameters_->protocol = INTERNAL;
+      communication_properties_->protocol = INTERNAL;
     }
 
     
     // Destructor
     virtual ~sensor_driver_internal()
     {
-      delete sensor_parameters_;
+      delete communication_properties_;
     }
     
     /**
@@ -92,7 +92,7 @@ namespace bosch_drivers_common
      */
     virtual uint8_t getDeviceAddress()
     {
-      return sensor_parameters_->device_address;
+      return communication_properties_->device_address;
     }
     
     virtual bool setDeviceAddress( uint8_t address ) = 0;
@@ -128,7 +128,7 @@ namespace bosch_drivers_common
      */
     virtual interface_protocol getProtocol()
     {
-      return sensor_parameters_->protocol;
+      return communication_properties_->protocol;
     }
     
     /**
@@ -139,12 +139,12 @@ namespace bosch_drivers_common
       return 0x00; // Internal device does not have communication flags.
     }
     
-    virtual bosch_driver_parameters getParameters()
+    virtual bosch_drivers_communication_properties getParameters()
     {
-      return *sensor_parameters_;
+      return *communication_properties_;
     }
 
-    virtual bool setParameters( bosch_driver_parameters parameters ) = 0;
+    virtual bool setParameters( bosch_drivers_communication_properties properties ) = 0;
   };
   
 }

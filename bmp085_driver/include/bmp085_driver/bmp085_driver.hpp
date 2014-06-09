@@ -57,7 +57,7 @@
 #include <bosch_drivers_common/bosch_drivers_sensor_driver.hpp>
 #include <bosch_drivers_common/bosch_drivers_hardware_interface.hpp>
 
-//#include "bmp085_parameters.hpp"
+//#include "bmp085_properties.hpp"
 
 using namespace bosch_drivers_common;
 
@@ -134,7 +134,7 @@ public:
    *     that communication can begin with the sensor.
    *
    * This method also sets class constants based on the user-defined (or 
-   *     default) parameters set beforehand.
+   *     default) properties set beforehand.
    * \return a boolean indicating successful hardware initialization.
    */
   bool initialize();
@@ -251,9 +251,9 @@ private:
   static const uint8_t ADDRESS_TEMP_REQUEST  = 0x2E;
 
   /**
-   * \note  this value is set to the value requested in the parameters 
+   * \note  this value is set to the value requested in the properties 
    *     upon calling the \a initialize() method.
-   * \note  if no value is called in the parameters, the oss mode is set 
+   * \note  if no value is called in the properties, the oss mode is set 
    *     to the default value: \a STANDARD.
    */
   /*!
