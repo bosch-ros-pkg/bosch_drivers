@@ -42,7 +42,7 @@
 #include <string>
 
 #include "bosch_drivers_common.hpp"
-#include "bosch_drivers_parameters.hpp"
+#include "bosch_drivers_communication_properties.hpp"
 
 namespace bosch_drivers_common
 {
@@ -104,13 +104,13 @@ namespace bosch_drivers_common
                           uint8_t* data, 
                           size_t num_bytes ) = 0;
         
-    virtual ssize_t read( bosch_driver_parameters parameters,
+    virtual ssize_t read( bosch_drivers_communication_properties properties,
                           uint8_t register_address, 
                           std::vector<uint8_t> data ) = 0;              
 
-    virtual ssize_t read( bosch_driver_parameters parameters, internal_device_type device_type, std::vector<uint8_t> data )
+    virtual ssize_t read( bosch_drivers_communication_properties properties, internal_device_type device_type, std::vector<uint8_t> data )
     {
-      return read( parameters, static_cast<uint8_t>(device_type), data );
+      return read( properties, static_cast<uint8_t>(device_type), data );
     }
 
     /**
@@ -138,13 +138,13 @@ namespace bosch_drivers_common
                            uint8_t* data, 
                            size_t num_bytes ) = 0;
 
-    virtual ssize_t write( bosch_driver_parameters device_parameters,
+    virtual ssize_t write( bosch_drivers_communication_properties device_properties,
                            uint8_t register_address, 
                            std::vector<uint8_t> data ) = 0;
 
-    virtual ssize_t write( bosch_driver_parameters parameters, internal_device_type device_type, std::vector<uint8_t> data )
+    virtual ssize_t write( bosch_drivers_communication_properties properties, internal_device_type device_type, std::vector<uint8_t> data )
     {
-      return write( parameters, static_cast<uint8_t>(device_type), data );
+      return write( properties, static_cast<uint8_t>(device_type), data );
     }
 
     /**
@@ -159,6 +159,9 @@ namespace bosch_drivers_common
      * multiple copies of this interface exist.
      */
     virtual std::string getID() = 0;
+
+//  protected:
+//    std::string hardware_id_;
                 
   };
 }

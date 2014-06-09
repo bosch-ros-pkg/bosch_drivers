@@ -43,7 +43,7 @@
 #include <ros/console.h>
 
 #include <bosch_drivers_common/bosch_drivers_hardware_interface.hpp>
-#include <bosch_drivers_common/bosch_drivers_parameters.hpp>
+#include <bosch_drivers_common/bosch_drivers_communication_properties.hpp>
 
 #include <uniserial/uniserial.hpp>
 
@@ -82,7 +82,7 @@ public:
 
  
   bool initialize();
-  //bool initialize( bosch_driver_parameters parameters );
+  //bool initialize( bosch_drivers_communication_properties properties );
 
 
 
@@ -97,7 +97,7 @@ public:
    * \var   uint8_t num_bytes the number of bytes to be read from the sensor.
    * \return \a num_bytes or a value less than zero, if the read failed.
    */
-  ssize_t read( bosch_driver_parameters parameters,
+  ssize_t read( bosch_drivers_communication_properties properties,
 		uint8_t register_address,
 		std::vector<uint8_t> data );
 
@@ -120,7 +120,7 @@ public:
    * \var   uint8_t num_bytes the number of bytes to be written to the sensor.
    * \return \a num_bytes or a value less than zero, if the write failed.
    */
-  ssize_t write( bosch_driver_parameters parameters,
+  ssize_t write( bosch_drivers_communication_properties properties,
 		 uint8_t register_address,
 		 std::vector<uint8_t> data );
 
@@ -146,15 +146,15 @@ public:
   std::string getID();
 
 private:
-  ssize_t arduinoSpiRead( bosch_driver_parameters parameters, uint8_t reg_address, std::vector<uint8_t> data );
-  ssize_t arduinoSpiWrite( bosch_driver_parameters parameters, uint8_t reg_address, std::vector<uint8_t> data );
-  ssize_t arduinoI2cRead( bosch_driver_parameters parameters, uint8_t reg_address, std::vector<uint8_t> data );                
-  ssize_t arduinoI2cWrite( bosch_driver_parameters parameters, uint8_t reg_address, std::vector<uint8_t> data );
+  ssize_t arduinoSpiRead( bosch_drivers_communication_properties properties, uint8_t reg_address, std::vector<uint8_t> data );
+  ssize_t arduinoSpiWrite( bosch_drivers_communication_properties properties, uint8_t reg_address, std::vector<uint8_t> data );
+  ssize_t arduinoI2cRead( bosch_drivers_communication_properties properties, uint8_t reg_address, std::vector<uint8_t> data );                
+  ssize_t arduinoI2cWrite( bosch_drivers_communication_properties properties, uint8_t reg_address, std::vector<uint8_t> data );
 
-  ssize_t arduinoInternalRead( bosch_driver_parameters parameters, internal_device_type type, std::vector<uint8_t> data );
-  ssize_t arduinoInternalWrite( bosch_driver_parameters parameters, internal_device_type type, std::vector<uint8_t> data );
+  ssize_t arduinoInternalRead( bosch_drivers_communication_properties properties, internal_device_type type, std::vector<uint8_t> data );
+  ssize_t arduinoInternalWrite( bosch_drivers_communication_properties properties, internal_device_type type, std::vector<uint8_t> data );
 
-    ssize_t arduinoPwmWrite( bosch_driver_parameters, std::vector<uint8_t> data );
+    ssize_t arduinoPwmWrite( bosch_drivers_communication_properties, std::vector<uint8_t> data );
   ssize_t arduinoGpioRead( uint8_t pin, gpio_input_mode input_mode, uint8_t* value );
   ssize_t arduinoGpioWrite( uint8_t pin, bool value );
   ssize_t arduinoEncoderRead( uint8_t device_address, uint8_t* data );
@@ -206,7 +206,7 @@ private:
    * command is about to be requested.
    *
    * This information allows the Arduino to prepare to send the following data
-   * according to the input parameters of \a data_packet_ .
+   * according to the input properties of \a data_packet_ .
    * The read/write flag is saved in the lowest bit while the upper 7 bits
    * are reserved for the used protocol
    */

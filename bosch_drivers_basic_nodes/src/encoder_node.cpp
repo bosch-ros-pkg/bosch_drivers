@@ -51,7 +51,7 @@ int main( int argc, char **argv )
 
   std::string hw_id;
   
-  // Get parameters from .launch file or parameter server, or take defaults
+  // Get properties from .launch file or parameter server, or take defaults
   nh.param<std::string>( "hardware_id", hw_id, "/dev/ttyACM0" );
 
   ROS_INFO("Initializing Arduino");

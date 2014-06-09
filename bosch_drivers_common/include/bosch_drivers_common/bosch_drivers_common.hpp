@@ -47,7 +47,7 @@
  *
  * These values are used repeatedly by multiple files, so I've
  * encapsulated them into their own namespace.
- * The sensor_driver class, parameters class, and
+ * The sensor_driver class, properties class, and
  * bosch_hardware_interface class are in this namespace.  
  */
 namespace bosch_drivers_common
