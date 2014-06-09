@@ -47,6 +47,7 @@ Sub20Interface::Sub20Interface( std::string sub20_serial_number ) :
   is_initialized_( false )
 {
   // make sure serialNumber_ is at least 10 chars
+
 }
 
 
