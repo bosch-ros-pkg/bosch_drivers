@@ -153,8 +153,8 @@ public:
   /**
    * \brief Set the driver to the correct device address of the sensor. 
    */
-  bool setSlaveAddressBit( bool choice );
-  uint8_t getSlaveAddressBit();  
+  //bool setSlaveAddressBit( bool choice );
+  //uint8_t getSlaveAddressBit();  
 
   bool setDeviceAddress( uint8_t address );
   uint8_t getDeviceAddress();

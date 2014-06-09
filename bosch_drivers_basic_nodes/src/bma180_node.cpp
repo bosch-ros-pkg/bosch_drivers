@@ -85,7 +85,7 @@ int main( int argc, char **argv )
 
 
   Sub20Interface sub20( hw_id );   
-  std::vector<BMA180*> bma180_chain;
+  std::vector<BMA180*> bma180_chain(number_of_bma180_sensors);
 
   // Initialize the BMA180s
   for( int i = 0; i < number_of_bma180_sensors; i++ )
@@ -94,13 +94,13 @@ int main( int argc, char **argv )
     BMA180* Accelerometer = new BMA180( &sub20 ); 
 
     // Adjust sensor settings:
-    Accelerometer->setAccelRange( BMA180Parameters::RANGE_8 );
-    Accelerometer->setBandwidth( BMA180Parameters::BW_150 );
+    Accelerometer->setAccelerationRange( BMA180::RANGE_8 );
+    Accelerometer->setBandwidth( BMA180::BW_150 );
 
     // SPI configuration
     Accelerometer->setProtocol( SPI );
     Accelerometer->setFrequency( 125000 );
-    Accelerometer->setPin( i );
+    Accelerometer->setDeviceAddress( i );
 
     // I2C configuration
     //Accelerometer->setProtocol(I2C); // CSB connected to VDD
@@ -142,11 +142,11 @@ int main( int argc, char **argv )
       roll = bma180_chain[j]->getStaticRoll() * (180.0/M_PI);   
       pitch = bma180_chain[j]->getStaticPitch() * (180.0/M_PI);
   
-      msg.AccelerationX.push_back( bma180_chain[j]->AccelX_ );
-      msg.AccelerationY.push_back( bma180_chain[j]->AccelY_ );
-      msg.AccelerationZ.push_back( bma180_chain[j]->AccelZ_ );
+      msg.AccelerationX.push_back( bma180_chain[j]->getAccelX() );
+      msg.AccelerationY.push_back( bma180_chain[j]->getAccelY() );
+      msg.AccelerationZ.push_back( bma180_chain[j]->getAccelZ() );
    
-      msg.Temperature.push_back( bma180_chain[j]->Temperature_ );
+      msg.Temperature.push_back( bma180_chain[j]->getTemperature() );
    
       msg.staticRoll.push_back( roll );
       msg.staticPitch.push_back( pitch );

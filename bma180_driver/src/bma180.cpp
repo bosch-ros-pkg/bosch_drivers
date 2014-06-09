@@ -87,6 +87,12 @@ BMA180::~BMA180()
 
 /**********************************************************************/
 /**********************************************************************/
+bool BMA180::setDeviceAddress( uint8_t address )
+{
+  sensor_parameters_->device_address = address;
+  return true;
+}
+
 uint8_t BMA180::getDeviceAddress()
 {
   // depends on the protocol:
@@ -94,10 +100,10 @@ uint8_t BMA180::getDeviceAddress()
   {
   case I2C:
     // depends on hardware configuration:
-    if( this->getSlaveAddressBit() == 0 )
+    if( slave_address_bit_ == 0 )
       return SLAVE_ADDRESS0; 
     else
-      if( this->getSlaveAddressBit() == 1 )
+      if( slave_address_bit_ == 1 )
         return SLAVE_ADDRESS1;
       else   
         ROS_ERROR( "BMA180::getDeviceAddress(): invalid I2C address" );
@@ -112,6 +118,17 @@ uint8_t BMA180::getDeviceAddress()
   return 255;
 }
 
+bool BMA180::setParameters( bosch_driver_parameters parameters )
+{
+  *sensor_parameters_ = parameters;
+  return true;
+}
+
+bool BMA180::setFrequency( unsigned int frequency )
+{
+  sensor_parameters_->frequency = frequency;
+  return true;
+}
 
 /**********************************************************************/
 // Initialize sensor and hardware interface on user-requested parameters
