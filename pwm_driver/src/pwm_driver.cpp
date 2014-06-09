@@ -43,20 +43,20 @@ PwmDriver::PwmDriver( bosch_hardware_interface* hw, unsigned int frequency, uint
   duty_cycle_( 0.0 ),
   modulation_frequency_( 0 )
 {
-  sensor_parameters_->device_address = pin;
+  communication_properties_->device_address = pin;
 
   setResolution( resolution_in_bits );
 }
 
 PwmDriver::~PwmDriver()
 {
-  delete sensor_parameters_;
+  delete communication_properties_;
 }
 
 
 bool PwmDriver::setDeviceAddress( uint8_t new_pin )
 {
-  sensor_parameters_->device_address = new_pin;
+  communication_properties_->device_address = new_pin;
 
   // do some other stuff?
 
@@ -156,7 +156,7 @@ bool PwmDriver::convertDutyCycle()
 
 bool PwmDriver::sendUpdate()
 {
-  if( hardware_->write( *sensor_parameters_, PWM, duty_cycle_bytes_ ) < 0 )
+  if( hardware_->write( *communication_properties_, PWM, duty_cycle_bytes_ ) < 0 )
   {
     ROS_ERROR("PwmDriver::sendUpdate(): could not write PWM to serial device.");
     return false;
@@ -165,7 +165,7 @@ bool PwmDriver::sendUpdate()
 }
 
 
-bool PwmDriver::setParameters( bosch_driver_parameters parameters)
+bool PwmDriver::setParameters( bosch_drivers_communication_properties properties)
 {
-  *sensor_parameters_ = parameters;
+  *communication_properties_ = properties;
 }

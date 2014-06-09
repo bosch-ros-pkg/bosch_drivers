@@ -88,8 +88,8 @@ public:
   uint8_t getDeviceAddress( void );
   bool setDeviceAddress( uint8_t address);
  
-  bosch_driver_parameters getParameters();
-  bool setParameters( bosch_driver_parameters parameters );
+  bosch_drivers_communication_properties getParameters();
+  bool setParameters( bosch_drivers_communication_properties properties );
 
   /**
    * \brief Sets the current motor encoder position to \a position
@@ -130,7 +130,7 @@ public:
   
 private:
 
-  // these two should be parameters
+  // these two should be properties
   uint8_t _encoder1_pin;
   uint8_t _encoder2_pin;
 
