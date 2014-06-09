@@ -41,7 +41,7 @@
 
 
 #include "bosch_drivers_common.hpp"
-#include "bosch_drivers_parameters.hpp"
+#include "bosch_drivers_communication_properties.hpp"
 #include "bosch_drivers_hardware_interface.hpp"
 
 namespace bosch_drivers_common
@@ -59,8 +59,7 @@ namespace bosch_drivers_common
   protected:
     bosch_hardware_interface* hardware_;
     
-    // propose new name: communication_parameters
-    bosch_driver_parameters* sensor_parameters_;
+    bosch_drivers_communication_properties* communication_properties_;
 
     /**
      * \brief The location of the device.
@@ -73,30 +72,30 @@ namespace bosch_drivers_common
     /**
      * Constructor: ties the sensor to its hardware interface
      */
-    sensor_driver( bosch_hardware_interface* hw, device_location loc, bosch_driver_parameters* parameters ):
+    sensor_driver( bosch_hardware_interface* hw, device_location loc, bosch_drivers_communication_properties* properties ):
       hardware_( hw ),
-      sensor_parameters_( parameters ),
+      communication_properties_( properties ),
       location_( loc )
     {
     }
 
     sensor_driver( bosch_hardware_interface* hw, device_location loc ):
       hardware_( hw ),
-      sensor_parameters_( new bosch_driver_parameters ),
+      communication_properties_( new bosch_drivers_communication_properties ),
       location_( loc )
     {
     }
 
 //    sensor_driver( bosch_hardware_interface* hw ):
 //      hardware_( hw ),
-//      sensor_parameters_( new bosch_driver_parameters )
+//      communication_properties_( new bosch_drivers_communication_properties )
 //    {
 //    }
     
     // Destructor
     virtual ~sensor_driver()
     {
-      delete sensor_parameters_;
+      delete communication_properties_;
     }
     
 
@@ -111,7 +110,7 @@ namespace bosch_drivers_common
      */
     virtual uint8_t getDeviceAddress()
     {
-      return sensor_parameters_->device_address;
+      return communication_properties_->device_address;
     }
     
     virtual bool setDeviceAddress( uint8_t address ) = 0;
@@ -126,7 +125,7 @@ namespace bosch_drivers_common
      */
     virtual unsigned int getFrequency()
     {
-      return sensor_parameters_->frequency;
+      return communication_properties_->frequency;
     }
     
     /**
@@ -141,7 +140,7 @@ namespace bosch_drivers_common
      */
     virtual interface_protocol getProtocol()
     {
-      return sensor_parameters_->protocol;
+      return communication_properties_->protocol;
     }
     
     /**
@@ -149,15 +148,15 @@ namespace bosch_drivers_common
      */
     virtual uint8_t getFlags()
     {
-      return sensor_parameters_->flags;
+      return communication_properties_->flags;
     }
     
-    virtual bosch_driver_parameters getParameters()
+    virtual bosch_drivers_communication_properties getParameters()
     {
-      return *sensor_parameters_;
+      return *communication_properties_;
     }
 
-    virtual bool setParameters( bosch_driver_parameters parameters ) = 0;
+    virtual bool setParameters( bosch_drivers_communication_properties properties ) = 0;
   };
   
 }

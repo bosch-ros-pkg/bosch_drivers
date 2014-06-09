@@ -70,7 +70,7 @@ public:
   
   bool setDeviceAddress( uint8_t pin );
 
-  bool setParameters( bosch_driver_parameters parameters);
+  bool setParameters( bosch_drivers_communication_properties properties);
 
   /**
    * \brief Sends the duty cycle \a value to a supported serial device

@@ -100,7 +100,7 @@ bool ArduinoInterface::initialize()
 /**********************************************************************/
 // Read
 /**********************************************************************/
-ssize_t ArduinoInterface::read( bosch_driver_parameters parameters, uint8_t register_address, std::vector<uint8_t> data )
+ssize_t ArduinoInterface::read( bosch_drivers_communication_properties properties, uint8_t register_address, std::vector<uint8_t> data )
 {
   int error_code = 0;
   
@@ -114,18 +114,18 @@ ssize_t ArduinoInterface::read( bosch_driver_parameters parameters, uint8_t regi
   data_packet_ = READ;
 
   // Specify data package protocol
-  data_packet_ |= (parameters.protocol << 1);
+  data_packet_ |= (properties.protocol << 1);
  
-  switch( parameters.protocol )
+  switch( properties.protocol )
   {
   case I2C:
-    error_code = arduinoI2cRead( parameters, register_address, data );               
+    error_code = arduinoI2cRead( properties, register_address, data );               
     break;
   case SPI: 
-    error_code = arduinoSpiRead( parameters, register_address, data );
+    error_code = arduinoSpiRead( properties, register_address, data );
       break;
   case INTERNAL:
-    error_code = arduinoInternalRead( parameters, static_cast<internal_device_type>(register_address), data );
+    error_code = arduinoInternalRead( properties, static_cast<internal_device_type>(register_address), data );
     default:
       ROS_ERROR("Arduino does not support reading through this protocol.");
       return -1;
@@ -136,11 +136,11 @@ ssize_t ArduinoInterface::read( bosch_driver_parameters parameters, uint8_t regi
 __attribute__((deprecated))
 ssize_t ArduinoInterface::read( uint8_t device_address, interface_protocol protocol, unsigned int frequency, uint8_t flags, uint8_t register_address, uint8_t* data, size_t num_bytes )
 {
-  bosch_driver_parameters parameters;
-  parameters.device_address = device_address;
-  parameters.protocol = protocol;
-  parameters.frequency = frequency;
-  parameters.flags = flags;
+  bosch_drivers_communication_properties properties;
+  properties.device_address = device_address;
+  properties.protocol = protocol;
+  properties.frequency = frequency;
+  properties.flags = flags;
   
   std::vector<uint8_t> data_vector(num_bytes);
   for( int n = 0; n < num_bytes; n++ )
@@ -148,13 +148,13 @@ ssize_t ArduinoInterface::read( uint8_t device_address, interface_protocol proto
     data_vector[n] = data[n];
   }
   
-  return read( parameters, register_address, data_vector );
+  return read( properties, register_address, data_vector );
 }
 
 /**********************************************************************/
 // Write
 /**********************************************************************/
-ssize_t ArduinoInterface::write( bosch_driver_parameters parameters, uint8_t register_address, std::vector<uint8_t> data )
+ssize_t ArduinoInterface::write( bosch_drivers_communication_properties properties, uint8_t register_address, std::vector<uint8_t> data )
 { 
   int error_code = 0;
   
@@ -169,18 +169,18 @@ ssize_t ArduinoInterface::write( bosch_driver_parameters parameters, uint8_t reg
   data_packet_ = WRITE;
   
   // Specify data package protocol
-  data_packet_ |= (parameters.protocol << 1);
+  data_packet_ |= (properties.protocol << 1);
   
-  switch( parameters.protocol )
+  switch( properties.protocol )
   {
   case I2C:
-    error_code = arduinoI2cWrite( parameters, register_address, data );
+    error_code = arduinoI2cWrite( properties, register_address, data );
     break;
   case SPI:
-    error_code = arduinoSpiWrite ( parameters, register_address, data );
+    error_code = arduinoSpiWrite ( properties, register_address, data );
     break;
   case INTERNAL:
-    error_code = arduinoInternalWrite( parameters, static_cast<internal_device_type>(register_address), data );
+    error_code = arduinoInternalWrite( properties, static_cast<internal_device_type>(register_address), data );
     break;
     default:
     {
@@ -195,11 +195,11 @@ ssize_t ArduinoInterface::write( bosch_driver_parameters parameters, uint8_t reg
 __attribute__((deprecated))
 ssize_t ArduinoInterface::write( uint8_t device_address, interface_protocol protocol, unsigned int frequency, uint8_t flags, uint8_t register_address, uint8_t* data, size_t num_bytes )
 {
-  bosch_driver_parameters parameters;
-  parameters.device_address = device_address;
-  parameters.protocol = protocol;
-  parameters.frequency = frequency;
-  parameters.flags = flags;
+  bosch_drivers_communication_properties properties;
+  properties.device_address = device_address;
+  properties.protocol = protocol;
+  properties.frequency = frequency;
+  properties.flags = flags;
   
   std::vector<uint8_t> data_vector(num_bytes);
   for( int n = 0; n < num_bytes; n++ )
@@ -207,7 +207,7 @@ ssize_t ArduinoInterface::write( uint8_t device_address, interface_protocol prot
     data_vector[n] = data[n];
   }
   
-  return write( parameters, register_address, data_vector );
+  return write( properties, register_address, data_vector );
 }
 
 
@@ -269,13 +269,13 @@ bool ArduinoInterface::waitOnBytes( int number_of_bytes )
 
 /**********************************************************************/
 /**********************************************************************/
-ssize_t ArduinoInterface::arduinoI2cWrite( bosch_driver_parameters parameters, uint8_t reg_address, std::vector<uint8_t> data )
+ssize_t ArduinoInterface::arduinoI2cWrite( bosch_drivers_communication_properties properties, uint8_t reg_address, std::vector<uint8_t> data )
 {
   // the only flag for I2C is the frequency, so no external argument accepted
   i2c_frequency freq_code;
 
   // I2C frequency section stored in flags
-  switch( parameters.frequency )
+  switch( properties.frequency )
   {
   case 100000:
     freq_code = FREQ_STANDARD;
@@ -288,7 +288,7 @@ ssize_t ArduinoInterface::arduinoI2cWrite( bosch_driver_parameters parameters, u
     return -1; // error code. 
   }
    
-  uint8_t i2c_write_prompt[5] = { data_packet_, freq_code, parameters.device_address, reg_address, data.size() };
+  uint8_t i2c_write_prompt[5] = { data_packet_, freq_code, properties.device_address, reg_address, data.size() };
   serial_port_->Write_Bytes( 5, i2c_write_prompt );
    
   //Wait for verification:
@@ -323,14 +323,14 @@ ssize_t ArduinoInterface::arduinoI2cWrite( bosch_driver_parameters parameters, u
 
 /**********************************************************************/
 /**********************************************************************/
-ssize_t ArduinoInterface::arduinoSpiWrite( bosch_driver_parameters parameters, uint8_t reg_address, std::vector<uint8_t> data )
+ssize_t ArduinoInterface::arduinoSpiWrite( bosch_drivers_communication_properties properties, uint8_t reg_address, std::vector<uint8_t> data )
 {
   // construct array to send to Arduino:
   uint8_t write_packet[5 + data.size()];
-  // load it with setup parameters and data:
+  // load it with setup properties and data:
   write_packet[0] = data_packet_;
-  write_packet[1] = parameters.frequency;
-  write_packet[2] = parameters.flags;
+  write_packet[1] = properties.frequency;
+  write_packet[2] = properties.flags;
   write_packet[3] = reg_address;
   write_packet[4] = data.size();
 
@@ -362,9 +362,9 @@ ssize_t ArduinoInterface::arduinoSpiWrite( bosch_driver_parameters parameters, u
 
 /**********************************************************************/
 /**********************************************************************/
-ssize_t ArduinoInterface::arduinoSpiRead( bosch_driver_parameters parameters, uint8_t reg_address, std::vector<uint8_t> data ) 
+ssize_t ArduinoInterface::arduinoSpiRead( bosch_drivers_communication_properties properties, uint8_t reg_address, std::vector<uint8_t> data ) 
 {
-  uint8_t spi_read_prompt[5] = { data_packet_, parameters.frequency, parameters.flags, reg_address, data.size() };
+  uint8_t spi_read_prompt[5] = { data_packet_, properties.frequency, properties.flags, reg_address, data.size() };
                 
   serial_port_->Write_Bytes( 5, spi_read_prompt );
    
@@ -402,11 +402,11 @@ ssize_t ArduinoInterface::arduinoSpiRead( bosch_driver_parameters parameters, ui
 
 
 /**********************************************************************/
-ssize_t ArduinoInterface::arduinoI2cRead(bosch_driver_parameters parameters, uint8_t reg_address, std::vector<uint8_t> data ) 
+ssize_t ArduinoInterface::arduinoI2cRead(bosch_drivers_communication_properties properties, uint8_t reg_address, std::vector<uint8_t> data ) 
 {
   i2c_frequency freq_code;
 
-  switch( parameters.frequency )
+  switch( properties.frequency )
   {
   case 100000:
     freq_code = FREQ_STANDARD;
@@ -419,7 +419,7 @@ ssize_t ArduinoInterface::arduinoI2cRead(bosch_driver_parameters parameters, uin
     return -1; // error code. 
   }
 
-  uint8_t i2c_read_prompt[5] = { data_packet_, freq_code, parameters.device_address, reg_address, data.size() };
+  uint8_t i2c_read_prompt[5] = { data_packet_, freq_code, properties.device_address, reg_address, data.size() };
   
   serial_port_->Write_Bytes( 5, i2c_read_prompt );  
   
@@ -454,9 +454,9 @@ ssize_t ArduinoInterface::arduinoI2cRead(bosch_driver_parameters parameters, uin
 
 /**********************************************************************/
 /**********************************************************************/
-ssize_t ArduinoInterface::arduinoPwmWrite( bosch_driver_parameters parameters, std::vector<uint8_t> data )
+ssize_t ArduinoInterface::arduinoPwmWrite( bosch_drivers_communication_properties properties, std::vector<uint8_t> data )
 {
-  if( parameters.frequency != 490 )
+  if( properties.frequency != 490 )
   {
     ROS_ERROR("Only frequency 490Hz suppported for Arduino");
     return -1;
@@ -464,7 +464,7 @@ ssize_t ArduinoInterface::arduinoPwmWrite( bosch_driver_parameters parameters, s
   /* 
    * the following block is Arduino Uno specific
    */
-  switch( parameters.device_address )
+  switch( properties.device_address )
   {
   case 3:
   case 5:
@@ -481,9 +481,9 @@ ssize_t ArduinoInterface::arduinoPwmWrite( bosch_driver_parameters parameters, s
   
   // construct array to send to Arduino:
   uint8_t write_packet[3];
-  // load it with setup parameters and data:
+  // load it with setup properties and data:
   write_packet[0] = data_packet_;
-  write_packet[1] = parameters.device_address;
+  write_packet[1] = properties.device_address;
   write_packet[2] = data[0]; // Arduino only accepts 8 Bit PWM, so pass MSB only
   
   // send the data:
@@ -534,7 +534,7 @@ ssize_t ArduinoInterface::arduinoGpioWrite( uint8_t pin, bool value )
   }
   // construct array to send to Arduino:
   uint8_t write_packet[3];
-  // load it with setup parameters and data:
+  // load it with setup properties and data:
   write_packet[0] = data_packet_;
   write_packet[1] = pin;
   write_packet[2] = value;
@@ -603,7 +603,7 @@ ssize_t ArduinoInterface::arduinoGpioRead( uint8_t pin, gpio_input_mode input_mo
   }
   // construct array to send to Arduino:
   uint8_t write_packet[3];
-  // load it with setup parameters and data:
+  // load it with setup properties and data:
   write_packet[0] = data_packet_;
   write_packet[1] = input_mode;
   write_packet[2] = pin;
@@ -639,7 +639,7 @@ ssize_t ArduinoInterface::arduinoEncoderRead( uint8_t device_address, uint8_t* d
   const int num_bytes_encoder_transmission = 4;
   // construct array to send to Arduino:
   uint8_t write_packet[2];
-  // load it with setup parameters and data:
+  // load it with setup properties and data:
   write_packet[0] = data_packet_;
   write_packet[1] = device_address;
   
@@ -674,7 +674,7 @@ ssize_t ArduinoInterface::arduinoEncoderWrite( uint8_t device_address, uint8_t* 
   const int num_bytes_encoder_transmission = 4;
   // construct array to send to Arduino:
   uint8_t write_packet[6];
-  // load it with setup parameters and data:
+  // load it with setup properties and data:
   write_packet[0] = data_packet_;
   write_packet[1] = device_address;  // command byte containing object_id in upper 4 bits and command in lower 4 bits
   
@@ -798,7 +798,7 @@ ssize_t ArduinoInterface::arduinoAdcRead( uint8_t pin, uint8_t* data )
   
   // construct array to send to Arduino:
   uint8_t write_packet[2];
-  // load it with setup parameters and data:
+  // load it with setup properties and data:
   write_packet[0] = data_packet_;
   write_packet[1] = pin;
   
@@ -880,7 +880,7 @@ ssize_t ArduinoInterface::arduinoAdcWrite( uint8_t* voltage )
   }
   // construct array to send to Arduino:
   uint8_t write_packet[3];
-  // load it with setup parameters and data:
+  // load it with setup properties and data:
   write_packet[0] = data_packet_;
   write_packet[1] = voltage[2]; // transmitting only the two LSB is enough because Arduino has maximum reference value = 5000
   write_packet[2] = voltage[3];
@@ -903,24 +903,24 @@ ssize_t ArduinoInterface::arduinoAdcWrite( uint8_t* voltage )
 }
 
 
-ssize_t ArduinoInterface::arduinoInternalRead( bosch_driver_parameters parameters, internal_device_type type, std::vector<uint8_t> data )
+ssize_t ArduinoInterface::arduinoInternalRead( bosch_drivers_communication_properties properties, internal_device_type type, std::vector<uint8_t> data )
 {
   int error_code = 0;
 
   switch( type )
   {
   case GPIO:
-    error_code = arduinoGpioRead( parameters.device_address, static_cast<gpio_input_mode>(parameters.flags), &data[0] );
+    error_code = arduinoGpioRead( properties.device_address, static_cast<gpio_input_mode>(properties.flags), &data[0] );
     break;
   case PWM:
     ROS_ERROR("Arduino does not support reading from an internal PWM device.");
     error_code = -1; //find the right error code for this
     break;
   case ADCONVERTER:
-    error_code = arduinoAdcRead( parameters.device_address, &data[0] );
+    error_code = arduinoAdcRead( properties.device_address, &data[0] );
     break;
   case ENCODER:
-    error_code = arduinoEncoderRead( parameters.device_address, &data[0] );
+    error_code = arduinoEncoderRead( properties.device_address, &data[0] );
     break;
   default:
       ROS_ERROR("Arduino does not support internal devices of this type.");
@@ -928,23 +928,23 @@ ssize_t ArduinoInterface::arduinoInternalRead( bosch_driver_parameters parameter
   }
   return error_code;
 }
-ssize_t ArduinoInterface::arduinoInternalWrite( bosch_driver_parameters parameters, internal_device_type type, std::vector<uint8_t> data )
+ssize_t ArduinoInterface::arduinoInternalWrite( bosch_drivers_communication_properties properties, internal_device_type type, std::vector<uint8_t> data )
 {
   int error_code = 0;
 
   switch( type )
   {
   case GPIO:
-    error_code = arduinoGpioWrite( parameters.device_address, &data[0] );
+    error_code = arduinoGpioWrite( properties.device_address, &data[0] );
     break;
   case PWM:
-    error_code = arduinoPwmWrite( parameters, data );
+    error_code = arduinoPwmWrite( properties, data );
     break;
   case ADCONVERTER:
     error_code = arduinoAdcWrite( &data[0] );
     break;
   case ENCODER:
-    error_code = arduinoEncoderWrite( parameters.device_address, &data[0] );
+    error_code = arduinoEncoderWrite( properties.device_address, &data[0] );
     break;
   default:
       ROS_ERROR("Arduino does not support internal devices of this type.");

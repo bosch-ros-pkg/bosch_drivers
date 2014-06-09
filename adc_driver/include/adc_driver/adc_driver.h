@@ -70,7 +70,7 @@ public:
   // Public Driver Methods:
   bool setDeviceAddress( uint8_t new_pin );
 
-  bool setParameters( bosch_driver_parameters parameters );
+  bool setParameters( bosch_drivers_communication_properties properties );
   
   /**
    * \brief Reads the analog voltage from the connected hardware device
