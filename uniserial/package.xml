@@ -2,7 +2,7 @@
 <package>
   <name>uniserial</name>
   <version>0.1.1</version>
-  <description>This class provides Unix machines with access to serial devices through serial ports. Essentially, this class is a wrapper of the Unix-specific function calls to (1) establish a connection, (1)read a single byte, and (1)write a single byte. The default constructer's parameters are set to 8-bit packets, No parity, and 1 stop bit; however, custom parameters can be set using the initialize(args..) method rather than the initialize() method.</description>
+  <description>This class provides Unix machines with access to serial devices through serial ports. Essentially, this class is a wrapper of the Unix-specific function calls to (1) establish a connection, (1)read a single byte, and (1)write a single byte. The default constructer's properties are set to 8-bit packets, No parity, and 1 stop bit; however, custom properties can be set using the initialize(args..) method rather than the initialize() method.</description>
   <url type="website">http://wiki.ros.org/uniserial</url>
   <url type="repository">https://github.com/bosch-ros-pkg/bosch_drivers/uniserial</url>
   <url type="bugtracker">https://github.com/bosch-ros-pkg/bosch_drivers/uniserial/issues</url>

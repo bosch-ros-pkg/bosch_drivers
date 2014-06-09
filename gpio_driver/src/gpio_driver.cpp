@@ -40,34 +40,34 @@
 
 GpioDriver::GpioDriver( bosch_hardware_interface* hw, uint8_t pin ): sensor_driver_internal( hw )
 {
-  sensor_parameters_->device_address = pin; 
+  communication_properties_->device_address = pin; 
 }
 
 GpioDriver::~GpioDriver()
 {
-  delete sensor_parameters_;
+  delete communication_properties_;
 }
 
 uint8_t GpioDriver::getDeviceAddress()
 {
-  return sensor_parameters_->device_address;
+  return communication_properties_->device_address;
 }
 
 bool GpioDriver::setDeviceAddress( uint8_t pin )
 {
-  sensor_parameters_->device_address = pin;
+  communication_properties_->device_address = pin;
 
   return true;
 }
 
-bosch_driver_parameters GpioDriver::getParameters()
+bosch_drivers_communication_properties GpioDriver::getParameters()
 {
-  return *sensor_parameters_;
+  return *communication_properties_;
 }
 
-bool GpioDriver::setParameters( bosch_driver_parameters parameters)
+bool GpioDriver::setParameters( bosch_drivers_communication_properties properties)
 {
-  *sensor_parameters_ = parameters;
+  *communication_properties_ = properties;
 }
 
 bool GpioDriver::initialize()
@@ -86,7 +86,7 @@ bool GpioDriver::setOutput( bool value )
   std::vector<uint8_t> data;
 
   data.push_back( value );
-  if( hardware_->write( *sensor_parameters_, GPIO, data ) < 0 )
+  if( hardware_->write( *communication_properties_, GPIO, data ) < 0 )
   {
     ROS_ERROR("GpioDriver::setOutput(): could not set output");
     return false;
@@ -98,9 +98,9 @@ bool GpioDriver::getInput( gpio_input_mode mode )
 {
   std::vector<uint8_t>data( 1,0 );
 
-  sensor_parameters_->flags = mode;
+  communication_properties_->flags = mode;
 
-  if( hardware_->read( *sensor_parameters_, GPIO, data ) < 0 )
+  if( hardware_->read( *communication_properties_, GPIO, data ) < 0 )
   {
     ROS_ERROR("GpioDriver::readInput(): could not read input");
     return false;

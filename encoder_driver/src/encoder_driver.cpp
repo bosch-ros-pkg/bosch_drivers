@@ -48,7 +48,7 @@ EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder1_pin
   _overflow( 0 ),
   invert_( 1 )  
 {  
-  if( getNextID( &(sensor_parameters_->device_address) ) )
+  if( getNextID( &(communication_properties_->device_address) ) )
   {
     std::vector<uint8_t> data(3);
 
@@ -58,14 +58,14 @@ EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder1_pin
     if( _encoder1_pin == _encoder2_pin )
     {
       ROS_ERROR("EncoderDriver::EncoderDriver(): Encoder pins must be different");
-      EncoderDriver::encoders_[sensor_parameters_->device_address] = false;
+      EncoderDriver::encoders_[communication_properties_->device_address] = false;
     }
     else
     {
-      if( hardware_->write( *sensor_parameters_, ENCODER, data ) < 0 )
+      if( hardware_->write( *communication_properties_, ENCODER, data ) < 0 )
       {
         ROS_ERROR("EncoderDriver::~EncoderDriver(): could not create object on hardware device");
-	EncoderDriver::encoders_[sensor_parameters_->device_address] = false;
+	EncoderDriver::encoders_[communication_properties_->device_address] = false;
       }
     }
   }
@@ -84,7 +84,7 @@ EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder_id )
   invert_( 1 )  
 { 
   // Determine encoder ID 
-  if( sensor_parameters_->device_address >= MAX_ENCODERS )
+  if( communication_properties_->device_address >= MAX_ENCODERS )
   {
     ROS_ERROR("Select an encoder_id [0..15] which was already created on the serial device");
   }
@@ -98,22 +98,22 @@ EncoderDriver::~EncoderDriver()
   {
     std::vector<uint8_t> data( 1, DESTROY ); // indicates that we want to destroy the object on the hardware device
     
-    if( hardware_->write( *sensor_parameters_, ENCODER, data ) < 0 )
+    if( hardware_->write( *communication_properties_, ENCODER, data ) < 0 )
     {
       ROS_ERROR("EncoderDriver::~EncoderDriver(): could not destroy object on hardware device");
     }
     else
     {
-      EncoderDriver::encoders_[sensor_parameters_->device_address] = false;
+      EncoderDriver::encoders_[communication_properties_->device_address] = false;
     }
   }
 
-  delete sensor_parameters_;
+  delete communication_properties_;
 }
 
 uint8_t EncoderDriver::getDeviceAddress()
 {
-  return sensor_parameters_->device_address;
+  return communication_properties_->device_address;
 }
 
 bool EncoderDriver::initialize()
@@ -139,7 +139,7 @@ bool EncoderDriver::initialize()
 
 uint8_t EncoderDriver::getEncoderID( )
 {
-  return sensor_parameters_->device_address;
+  return communication_properties_->device_address;
 }
 
 int64_t EncoderDriver::getPosition()
@@ -147,7 +147,7 @@ int64_t EncoderDriver::getPosition()
   std::vector<uint8_t> data(4,0);
   int32_t position; // return value
   
-  if( hardware_->read( *sensor_parameters_, ENCODER, data ) < 0 )
+  if( hardware_->read( *communication_properties_, ENCODER, data ) < 0 )
   {
     ROS_ERROR("EncoderDriver::getPosition(): could not read input");
     return false;
@@ -204,7 +204,7 @@ bool EncoderDriver::setPosition( int32_t position )
   temp = ((position & 0x000000FF) >> 0);
   data[6] = (uint8_t)temp;
   
-  if( hardware_->write( *sensor_parameters_, ENCODER, data ) < 0 )
+  if( hardware_->write( *communication_properties_, ENCODER, data ) < 0 )
   {
     ROS_ERROR("EncoderDriver::setPosition(): could not write position");
     return false;
@@ -238,16 +238,16 @@ bool EncoderDriver::getNextID( uint8_t* next )
 
 bool EncoderDriver::setDeviceAddress( uint8_t address)
 {
-  sensor_parameters_->device_address = address;
+  communication_properties_->device_address = address;
   return true;
 }
  
-bosch_driver_parameters EncoderDriver::getParameters()
+bosch_drivers_communication_properties EncoderDriver::getParameters()
 {
-  return *sensor_parameters_;
+  return *communication_properties_;
 }
 
-bool EncoderDriver::setParameters( bosch_driver_parameters parameters)
+bool EncoderDriver::setParameters( bosch_drivers_communication_properties properties)
 {
-  *sensor_parameters_ = parameters;
+  *communication_properties_ = properties;
 }
