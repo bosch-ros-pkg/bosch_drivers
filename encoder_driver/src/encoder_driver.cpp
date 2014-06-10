@@ -41,7 +41,7 @@
 bool EncoderDriver::encoders_[MAX_ENCODERS];
 
 EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder1_pin, uint8_t encoder2_pin ):
-  sensor_driver_internal( hw ),
+  sensor_driver_built_in( hw ),
   _encoder1_pin( encoder1_pin ),
   _encoder2_pin(encoder2_pin ),
   _last_position( 0 ),
@@ -76,7 +76,7 @@ EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder1_pin
 }
 
 EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder_id ):
-  sensor_driver_internal( hw ),
+  sensor_driver_built_in( hw ),
   _encoder1_pin( 255 ),
   _encoder2_pin( 255 ),
   _last_position( 0 ),
