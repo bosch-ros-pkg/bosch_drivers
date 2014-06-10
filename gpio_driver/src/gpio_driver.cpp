@@ -41,6 +41,7 @@
 GpioDriver::GpioDriver( bosch_hardware_interface* hw, uint8_t pin ): sensor_driver_built_in( hw )
 {
   communication_properties_->device_address = pin; 
+  communication_properties_->protocol = BUILT_IN;
 }
 
 GpioDriver::~GpioDriver()
@@ -100,7 +101,7 @@ bool GpioDriver::getInput( gpio_input_mode mode )
 
   communication_properties_->flags = mode;
 
-  if( hardware_->read( *communication_properties_, GPIO, data ) < 0 )
+  if( hardware_->read( *communication_properties_, BUILT_IN, data ) < 0 )
   {
     ROS_ERROR("GpioDriver::readInput(): could not read input");
     return false;

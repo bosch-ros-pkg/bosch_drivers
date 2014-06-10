@@ -106,7 +106,7 @@ namespace bosch_drivers_common
         
     virtual ssize_t read( bosch_drivers_communication_properties properties,
                           uint8_t register_address, 
-                          std::vector<uint8_t> data ) = 0;              
+                          std::vector<uint8_t> data ) = 0;
 
     virtual ssize_t read( bosch_drivers_communication_properties properties, built_in_device_type device_type, std::vector<uint8_t> data )
     {

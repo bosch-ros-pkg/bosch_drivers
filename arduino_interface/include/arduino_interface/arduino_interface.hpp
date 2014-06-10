@@ -99,7 +99,7 @@ public:
    */
   ssize_t read( bosch_drivers_communication_properties properties,
 		uint8_t register_address,
-		std::vector<uint8_t> data );
+                std::vector<uint8_t> data );
 
   __attribute__((deprecated))
   ssize_t read( uint8_t device_address, 
