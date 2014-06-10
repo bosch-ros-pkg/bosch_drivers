@@ -39,7 +39,7 @@
 #include "pwm_driver/pwm_driver.h"
 
 PwmDriver::PwmDriver( bosch_hardware_interface* hw, unsigned int frequency, uint8_t pin, unsigned int resolution_in_bits ):
-  sensor_driver_internal( hw ),
+  sensor_driver_built_in( hw ),
   duty_cycle_( 0.0 ),
   modulation_frequency_( 0 )
 {

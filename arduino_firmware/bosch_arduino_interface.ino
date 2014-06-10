@@ -40,7 +40,7 @@
 #include <SPI.h>
 #include "Encoder.h"
 
-#include <arduino_constants.hpp>
+#include <arduino_interface/arduino_constants.hpp>
 
 /* Important notes:
     
@@ -169,40 +169,49 @@ void loop()
       state_ = false;
     break;
 
-  case bosch_drivers_common::PWM:
-    if( read_or_write == bosch_drivers_common::WRITE )
-      state_ = pwm_write_routine();
-    else
-      state_ = false;
-    break;
-    
-  case bosch_drivers_common::GPIO:
-    if( read_or_write == bosch_drivers_common::READ )
-      state_ = gpio_read_routine();
-    else if( read_or_write == bosch_drivers_common::WRITE )
-      state_ = gpio_write_routine();
-    else
-      state_ = false;
-    break;
+  case bosch_drivers_common::BUILT_IN:
+    // read type of built-in device:
+    while( Serial.available() < 1 )
+      ; // wait for next byte
 
-  case bosch_drivers_common::ENCODER:
-    if( read_or_write == bosch_drivers_common::READ )
-      state_ = encoder_read();
-    else if( read_or_write == bosch_drivers_common::WRITE )
-      state_ = encoder_write();
-    else
-      state_ = false;
-    break;
+    switch( Serial.read() )
+    {
+    case bosch_drivers_common::PWM:
+      if( read_or_write == bosch_drivers_common::WRITE )
+	state_ = pwm_write_routine();
+      else
+	state_ = false;
+      break;
+    
+    case bosch_drivers_common::GPIO:
+      if( read_or_write == bosch_drivers_common::READ )
+	state_ = gpio_read_routine();
+      else if( read_or_write == bosch_drivers_common::WRITE )
+	state_ = gpio_write_routine();
+      else
+	state_ = false;
+      break;
+
+    case bosch_drivers_common::ENCODER:
+      if( read_or_write == bosch_drivers_common::READ )
+	state_ = encoder_read();
+      else if( read_or_write == bosch_drivers_common::WRITE )
+	state_ = encoder_write();
+      else
+	state_ = false;
+      break;
     
     case bosch_drivers_common::ADCONVERTER:
-    if( read_or_write == bosch_drivers_common::READ )
-      state_ = adc_read();
-    else if( read_or_write == bosch_drivers_common::WRITE )
-      state_ = adc_write();
-    else
-      state_ = false;
+      if( read_or_write == bosch_drivers_common::READ )
+	state_ = adc_read();
+      else if( read_or_write == bosch_drivers_common::WRITE )
+	state_ = adc_write();
+      else
+	state_ = false;
+      break;
+    }
     break;
-    
+
   default:
     // an error occured
     state_ = false;
@@ -595,6 +604,9 @@ bool gpio_read_routine()
 bool encoder_write()
 {
   long ticks;
+
+  uint8_t encoder_pin1, encoder_pin2;
+
   // wait for 1 byte
   while( Serial.available() < 1 )
     ;
@@ -606,8 +618,8 @@ bool encoder_write()
     while( Serial.available() < 2 )
       ;  // wait for hardware pin configuration to be transmitted
     
-    uint8_t encoder_pin1 = Serial.read();
-    uint8_t encoder_pin2 = Serial.read();
+    encoder_pin1 = Serial.read();
+    encoder_pin2 = Serial.read();
     // create new encoder object in Encoder pointer array at the position defined by the upper 4 bits in the control byte
     encoders[(control_byte & 0xF0) >> 4] = new Encoder( encoder_pin1, encoder_pin2 );
     break;

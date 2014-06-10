@@ -256,8 +256,8 @@ ARDUINO_LIB_OBJS := $(foreach dir, $(ARDUINO_LIBS_PATH), \
 
 # Bosch header files
 #BOSCH_INCLUDE := ../../arduino_constants.hpp
-BOSCH_INCLUDE := $(shell rospack find arduino_interface)/include/arduino_interface
-BOSCH_INCLUDE += $(shell rospack find bosch_drivers_common)/include/bosch_drivers_common
+BOSCH_INCLUDE := $(shell rospack find arduino_interface)/include
+BOSCH_INCLUDE += $(shell rospack find bosch_drivers_common)/include
 
 
 # File name for reading the firmware currently programmed into the Arduino
