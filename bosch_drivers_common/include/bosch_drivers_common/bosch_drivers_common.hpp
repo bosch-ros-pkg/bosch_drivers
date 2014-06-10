@@ -64,15 +64,15 @@ namespace bosch_drivers_common
    * This enumeration is used on the Arduino and on the host PC. To optimize the
    * arduino code, compile with the -fshort-enums flag.
    */
-  enum interface_protocol { INTERNAL, BITBANG, I2C, SPI, RS232, RS485, USB, ETHERNET, ETHERCAT, CAN, JTAG, PROFIBUS, MODBUS };
+  enum interface_protocol { BUILT_IN, BITBANG, I2C, SPI, RS232, RS485, USB, ETHERNET, ETHERCAT, CAN, JTAG, PROFIBUS, MODBUS };
 
         
       /**
      * \brief Possible device locations.
      *
-     * If the device is integrated into the hardware interface, then this should be INTERNAL_DEVICE. If the device uses wires to connect to the hardware interface, then this should be EXTERNAL_DEVICE.
+     * If the device is integrated into the hardware interface, then this should be BUILT_IN_DEVICE. If the device uses wires to connect to the hardware interface, then this should be EXTERNAL_DEVICE.
      */
-  enum device_location { INTERNAL_DEVICE, EXTERNAL_DEVICE };
+  enum device_location { BUILT_IN_DEVICE, EXTERNAL_DEVICE };
 
   /**
    * \brief SPI Constants
@@ -121,7 +121,7 @@ namespace bosch_drivers_common
    * \brief Types of Devices that are located internally on a hardware interface.
    *
    */
-  enum internal_device_type { GPIO, PWM, ADCONVERTER, ENCODER };
+  enum built_in_device_type { GPIO, PWM, ADCONVERTER, ENCODER };
 
 
   /**

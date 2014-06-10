@@ -124,8 +124,8 @@ ssize_t ArduinoInterface::read( bosch_drivers_communication_properties propertie
   case SPI: 
     error_code = arduinoSpiRead( properties, register_address, data );
       break;
-  case INTERNAL:
-    error_code = arduinoInternalRead( properties, static_cast<internal_device_type>(register_address), data );
+  case BUILT_IN:
+    error_code = arduinoBuiltInRead( properties, static_cast<built_in_device_type>(register_address), data );
     default:
       ROS_ERROR("Arduino does not support reading through this protocol.");
       return -1;
@@ -179,8 +179,8 @@ ssize_t ArduinoInterface::write( bosch_drivers_communication_properties properti
   case SPI:
     error_code = arduinoSpiWrite ( properties, register_address, data );
     break;
-  case INTERNAL:
-    error_code = arduinoInternalWrite( properties, static_cast<internal_device_type>(register_address), data );
+  case BUILT_IN:
+    error_code = arduinoBuiltInWrite( properties, static_cast<built_in_device_type>(register_address), data );
     break;
     default:
     {
@@ -218,7 +218,7 @@ bool ArduinoInterface::supportedProtocol( interface_protocol protocol )
 {
   switch( protocol )
   {
-  case INTERNAL:
+  case BUILT_IN:
     return true;
   case SPI: 
     return true;
@@ -903,7 +903,7 @@ ssize_t ArduinoInterface::arduinoAdcWrite( uint8_t* voltage )
 }
 
 
-ssize_t ArduinoInterface::arduinoInternalRead( bosch_drivers_communication_properties properties, internal_device_type type, std::vector<uint8_t> data )
+ssize_t ArduinoInterface::arduinoBuiltInRead( bosch_drivers_communication_properties properties, built_in_device_type type, std::vector<uint8_t> data )
 {
   int error_code = 0;
 
@@ -928,7 +928,7 @@ ssize_t ArduinoInterface::arduinoInternalRead( bosch_drivers_communication_prope
   }
   return error_code;
 }
-ssize_t ArduinoInterface::arduinoInternalWrite( bosch_drivers_communication_properties properties, internal_device_type type, std::vector<uint8_t> data )
+ssize_t ArduinoInterface::arduinoBuiltInWrite( bosch_drivers_communication_properties properties, built_in_device_type type, std::vector<uint8_t> data )
 {
   int error_code = 0;
 

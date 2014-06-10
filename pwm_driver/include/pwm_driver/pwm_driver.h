@@ -42,7 +42,7 @@
 #include <ros/console.h> // ROS headers for debugging output
 
 #include <bosch_drivers_common/bosch_drivers_common.hpp>
-#include <bosch_drivers_common/bosch_drivers_sensor_driver_internal.hpp>
+#include <bosch_drivers_common/bosch_drivers_sensor_driver_built_in.hpp>
 #include <bosch_drivers_common/bosch_drivers_hardware_interface.hpp>
 
 using namespace bosch_drivers_common;
@@ -54,7 +54,7 @@ using namespace bosch_drivers_common;
  * to apply a PWM to supported hardware passing the duty cycle in as a value
  * between 0 (constant low) and 1 (constant high)
  */
-class PwmDriver: public sensor_driver_internal
+class PwmDriver: public sensor_driver_built_in
 {
   
 public:

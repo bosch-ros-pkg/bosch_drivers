@@ -151,8 +151,8 @@ private:
   ssize_t arduinoI2cRead( bosch_drivers_communication_properties properties, uint8_t reg_address, std::vector<uint8_t> data );                
   ssize_t arduinoI2cWrite( bosch_drivers_communication_properties properties, uint8_t reg_address, std::vector<uint8_t> data );
 
-  ssize_t arduinoInternalRead( bosch_drivers_communication_properties properties, internal_device_type type, std::vector<uint8_t> data );
-  ssize_t arduinoInternalWrite( bosch_drivers_communication_properties properties, internal_device_type type, std::vector<uint8_t> data );
+  ssize_t arduinoBuiltInRead( bosch_drivers_communication_properties properties, built_in_device_type type, std::vector<uint8_t> data );
+  ssize_t arduinoBuiltInWrite( bosch_drivers_communication_properties properties, built_in_device_type type, std::vector<uint8_t> data );
 
     ssize_t arduinoPwmWrite( bosch_drivers_communication_properties, std::vector<uint8_t> data );
   ssize_t arduinoGpioRead( uint8_t pin, gpio_input_mode input_mode, uint8_t* value );

@@ -38,7 +38,7 @@
 
 #include "adc_driver/adc_driver.h"
 
-AdcDriver::AdcDriver( bosch_hardware_interface* hw, uint8_t adc_pin ): sensor_driver_internal( hw )
+AdcDriver::AdcDriver( bosch_hardware_interface* hw, uint8_t adc_pin ): sensor_driver_built_in( hw )
 {
 }
 
