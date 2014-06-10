@@ -100,7 +100,7 @@ bool ArduinoInterface::initialize()
 /**********************************************************************/
 // Read
 /**********************************************************************/
-ssize_t ArduinoInterface::read( bosch_drivers_communication_properties properties, uint8_t register_address, std::vector<uint8_t> data )
+ssize_t ArduinoInterface::read( bosch_drivers_communication_properties properties, uint8_t register_address, std::vector<uint8_t> &data )
 {
   int error_code = 0;
   
@@ -906,7 +906,7 @@ ssize_t ArduinoInterface::arduinoAdcWrite( uint8_t* voltage )
 }
 
 
-ssize_t ArduinoInterface::arduinoBuiltInRead( bosch_drivers_communication_properties properties, built_in_device_type type, std::vector<uint8_t> data )
+ssize_t ArduinoInterface::arduinoBuiltInRead( bosch_drivers_communication_properties properties, built_in_device_type type, std::vector<uint8_t> &data )
 {
   int error_code = 0;
 
