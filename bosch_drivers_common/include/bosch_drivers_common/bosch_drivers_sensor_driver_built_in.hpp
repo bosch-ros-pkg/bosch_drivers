@@ -55,13 +55,13 @@ namespace bosch_drivers_common
    * class, ensuring that all sensors are tied to a hardware interface when
    * instantiated.
    */
-  class sensor_driver_internal: public sensor_driver
+  class sensor_driver_built_in: public sensor_driver
   {
   public:
     /**
      * Constructor: ties the sensor to its hardware interface
      */
-    sensor_driver_internal( bosch_hardware_interface* hw ):
+    sensor_driver_built_in( bosch_hardware_interface* hw ):
       sensor_driver( hw, BUILT_IN_DEVICE )
     {
     }
@@ -69,7 +69,7 @@ namespace bosch_drivers_common
     /**
      * Constructor: ties the sensor to its hardware interface
      */
-    sensor_driver_internal( bosch_hardware_interface* hw, bosch_drivers_communication_properties* properties ):
+    sensor_driver_built_in( bosch_hardware_interface* hw, bosch_drivers_communication_properties* properties ):
       sensor_driver( hw, BUILT_IN_DEVICE, properties )
     {
       communication_properties_->protocol = BUILT_IN;
@@ -77,7 +77,7 @@ namespace bosch_drivers_common
 
     
     // Destructor
-    virtual ~sensor_driver_internal()
+    virtual ~sensor_driver_built_in()
     {
       delete communication_properties_;
     }
