@@ -36,8 +36,8 @@
 
 //\Author Philip Roan, Robert Bosch LLC
 
-#ifndef BOSCH_DRIVERS_SENSOR_DRIVER_INTERNAL_H_
-#define BOSCH_DRIVERS_SENSOR_DRIVER_INTERNAL_H_
+#ifndef BOSCH_DRIVERS_SENSOR_DRIVER_BUILT_IN_H_
+#define BOSCH_DRIVERS_SENSOR_DRIVER_BUILT_IN_H_
 
 
 #include "bosch_drivers_common.hpp"
@@ -62,7 +62,7 @@ namespace bosch_drivers_common
      * Constructor: ties the sensor to its hardware interface
      */
     sensor_driver_internal( bosch_hardware_interface* hw ):
-      sensor_driver( hw, INTERNAL_DEVICE )
+      sensor_driver( hw, BUILT_IN_DEVICE )
     {
     }
 
@@ -70,9 +70,9 @@ namespace bosch_drivers_common
      * Constructor: ties the sensor to its hardware interface
      */
     sensor_driver_internal( bosch_hardware_interface* hw, bosch_drivers_communication_properties* properties ):
-      sensor_driver( hw, INTERNAL_DEVICE, properties )
+      sensor_driver( hw, BUILT_IN_DEVICE, properties )
     {
-      communication_properties_->protocol = INTERNAL;
+      communication_properties_->protocol = BUILT_IN;
     }
 
     
@@ -120,7 +120,7 @@ namespace bosch_drivers_common
      */
     virtual bool setProtocol( interface_protocol protocol_name )
     {
-      return false; // Internal device does not have a communication protocol.
+      return false; // Built-in device does not have a communication protocol.
     }
     
     /**
@@ -136,7 +136,7 @@ namespace bosch_drivers_common
      */
     virtual uint8_t getFlags()
     {
-      return 0x00; // Internal device does not have communication flags.
+      return 0x00; // Built-in device does not have communication flags.
     }
     
     virtual bosch_drivers_communication_properties getParameters()
@@ -148,4 +148,4 @@ namespace bosch_drivers_common
   };
   
 }
-#endif //BOSCH_DRIVERS_SENSOR_DRIVER_H_
+#endif //BOSCH_DRIVERS_SENSOR_DRIVER_BUILT_IN_H_
