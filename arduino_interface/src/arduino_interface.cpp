@@ -100,7 +100,7 @@ bool ArduinoInterface::initialize()
 /**********************************************************************/
 // Read
 /**********************************************************************/
-ssize_t ArduinoInterface::read( bosch_drivers_communication_properties properties, uint8_t register_address, std::vector<uint8_t> data )
+ssize_t ArduinoInterface::read( bosch_drivers_communication_properties properties, uint8_t register_address, std::vector<uint8_t> &data )
 {
   int error_code = 0;
   
@@ -126,6 +126,7 @@ ssize_t ArduinoInterface::read( bosch_drivers_communication_properties propertie
       break;
   case BUILT_IN:
     error_code = arduinoBuiltInRead( properties, static_cast<built_in_device_type>(register_address), data );
+    break;
     default:
       ROS_ERROR("Arduino does not support reading through this protocol.");
       return -1;
@@ -533,19 +534,20 @@ ssize_t ArduinoInterface::arduinoGpioWrite( uint8_t pin, bool value )
     return -1;
   }
   // construct array to send to Arduino:
-  uint8_t write_packet[3];
+  uint8_t write_packet[4];
   // load it with setup properties and data:
   write_packet[0] = data_packet_;
-  write_packet[1] = pin;
-  write_packet[2] = value;
-  
+  write_packet[1] = bosch_drivers_common::GPIO;
+  write_packet[2] = pin;
+  write_packet[3] = value;
+
   // send the data:
-  serial_port_->Write_Bytes( 3, write_packet );
+  serial_port_->Write_Bytes( 4, write_packet );
   usleep( 5000 );    
   //Wait for verification:
   if( !( waitOnBytes( 1 )) )
     return -1;
-   
+
   uint8_t verification = serial_port_->Read();
    
   if( verification != SUCCESS )
@@ -602,14 +604,15 @@ ssize_t ArduinoInterface::arduinoGpioRead( uint8_t pin, gpio_input_mode input_mo
     return -1;
   }
   // construct array to send to Arduino:
-  uint8_t write_packet[3];
+  uint8_t write_packet[4];
   // load it with setup properties and data:
   write_packet[0] = data_packet_;
-  write_packet[1] = input_mode;
-  write_packet[2] = pin;
+  write_packet[1] = bosch_drivers_common::GPIO;
+  write_packet[2] = input_mode;
+  write_packet[3] = pin;
    
   // send the data:
-  if( !serial_port_->Write_Bytes( 3, write_packet ) )
+  if( !serial_port_->Write_Bytes( 4, write_packet ) )
   {
     ROS_ERROR("ArduinoInterface::arduinoGpioRead(): Could not send data to Arduino");
     return -1;
@@ -903,7 +906,7 @@ ssize_t ArduinoInterface::arduinoAdcWrite( uint8_t* voltage )
 }
 
 
-ssize_t ArduinoInterface::arduinoBuiltInRead( bosch_drivers_communication_properties properties, built_in_device_type type, std::vector<uint8_t> data )
+ssize_t ArduinoInterface::arduinoBuiltInRead( bosch_drivers_communication_properties properties, built_in_device_type type, std::vector<uint8_t> &data )
 {
   int error_code = 0;
 
@@ -935,7 +938,7 @@ ssize_t ArduinoInterface::arduinoBuiltInWrite( bosch_drivers_communication_prope
   switch( type )
   {
   case GPIO:
-    error_code = arduinoGpioWrite( properties.device_address, &data[0] );
+    error_code = arduinoGpioWrite( properties.device_address, data[0] );
     break;
   case PWM:
     error_code = arduinoPwmWrite( properties, data );
