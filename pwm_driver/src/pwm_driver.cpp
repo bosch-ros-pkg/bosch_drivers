@@ -44,6 +44,8 @@ PwmDriver::PwmDriver( bosch_hardware_interface* hw, unsigned int frequency, uint
   modulation_frequency_( 0 )
 {
   communication_properties_->device_address = pin;
+  communication_properties_->protocol = BUILT_IN;
+  communication_properties_->frequency = frequency;
 
   setResolution( resolution_in_bits );
 }

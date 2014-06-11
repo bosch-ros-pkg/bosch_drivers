@@ -481,14 +481,15 @@ ssize_t ArduinoInterface::arduinoPwmWrite( bosch_drivers_communication_propertie
   }
   
   // construct array to send to Arduino:
-  uint8_t write_packet[3];
+  uint8_t write_packet[4];
   // load it with setup properties and data:
   write_packet[0] = data_packet_;
-  write_packet[1] = properties.device_address;
-  write_packet[2] = data[0]; // Arduino only accepts 8 Bit PWM, so pass MSB only
+  write_packet[1] = PWM;
+  write_packet[2] = properties.device_address;
+  write_packet[3] = data[0]; // Arduino only accepts 8 Bit PWM, so pass MSB only
   
   // send the data:
-  serial_port_->Write_Bytes( 3, write_packet );
+  serial_port_->Write_Bytes( 4, write_packet );
    
   usleep( 5000 );    
   //Wait for verification:
