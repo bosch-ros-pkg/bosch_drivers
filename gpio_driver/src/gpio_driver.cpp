@@ -101,7 +101,7 @@ bool GpioDriver::getInput( gpio_input_mode mode )
 
   communication_properties_->flags = mode;
 
-  if( hardware_->read( *communication_properties_, BUILT_IN, data ) < 0 )
+  if( hardware_->read( *communication_properties_, GPIO, data ) < 0 )
   {
     ROS_ERROR("GpioDriver::readInput(): could not read input");
     return false;
