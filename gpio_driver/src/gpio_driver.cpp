@@ -41,6 +41,7 @@
 GpioDriver::GpioDriver( bosch_hardware_interface* hw, uint8_t pin ): sensor_driver_built_in( hw )
 {
   communication_properties_->device_address = pin; 
+  communication_properties_->protocol = BUILT_IN;
 }
 
 GpioDriver::~GpioDriver()
