@@ -133,9 +133,9 @@ public:
 		uint8_t* data,
 		size_t num_bytes );
 
-  ssize_t read( bosch_driver_parameters parameters,
+  ssize_t read( bosch_drivers_communication_properties communication_properties,
 		uint8_t register_address, 
-		std::vector<uint8_t> data );
+		std::vector<uint8_t> &data );
 
 
   /**
@@ -163,7 +163,7 @@ public:
 		 uint8_t* data,
 		 size_t num_bytes );
 
-  ssize_t write( bosch_driver_parameters device_parameters,
+  ssize_t write( bosch_drivers_communication_properties device_communication_properties,
 		 uint8_t register_address, 
 		 std::vector<uint8_t> data );
 
