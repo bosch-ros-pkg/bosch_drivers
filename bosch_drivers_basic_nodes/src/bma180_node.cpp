@@ -62,7 +62,7 @@ int main( int argc, char **argv )
   ros::init(argc, argv, "BMA180_node");
   ros::NodeHandle nh;
 
-  // User configurable parameters
+  // User configurable properties
 
   /**
    * \brief The unique identifier for the hardware interface connecting the
@@ -78,7 +78,7 @@ int main( int argc, char **argv )
   int number_of_bma180_sensors;
   int publish_rate_Hz;
 
-  // Get parameters from .launch file or parameter server, or take defaults
+  // Get properties from .launch file or parameter server, or take defaults
   nh.param<int>( "/bma180_node/number_of_bma180_sensors", number_of_bma180_sensors, 1 );
   nh.param<int>( "/bma180_node/publish_rate_Hz", publish_rate_Hz, 100 );
   nh.param<std::string>( "/bma180_node/hardware_id", hw_id, "0208" );
