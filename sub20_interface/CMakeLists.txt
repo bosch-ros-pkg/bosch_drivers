@@ -38,7 +38,7 @@ catkin_package(
   INCLUDE_DIRS include ${libsub20_INCLUDE_DIRS}
   LIBRARIES sub20_interface 
   CATKIN_DEPENDS bosch_drivers_common roscpp
-  DEPENDS libusb_LIBRARIES
+  DEPENDS libusb
   EXPORTED_TARGETS libsub20
 )
 
