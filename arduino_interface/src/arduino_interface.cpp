@@ -185,7 +185,7 @@ ssize_t ArduinoInterface::write( bosch_drivers_communication_properties properti
     break;
     default:
     {
-      ROS_ERROR( "Arduino does not support writing through this protocol." );
+      ROS_ERROR( "Arduino does not support writing through this (%d) protocol.", properties.protocol );
       error_code = -1;
     }
   }
@@ -801,13 +801,14 @@ ssize_t ArduinoInterface::arduinoAdcRead( uint8_t pin, uint8_t* data )
   }
   
   // construct array to send to Arduino:
-  uint8_t write_packet[2];
+  uint8_t write_packet[3];
   // load it with setup properties and data:
   write_packet[0] = data_packet_;
-  write_packet[1] = pin;
+  write_packet[1] = bosch_drivers_common::ADCONVERTER;
+  write_packet[3] = pin;
   
   // send the data:
-  if(! serial_port_->Write_Bytes( 2, write_packet ))
+  if(! serial_port_->Write_Bytes( 3, write_packet ))
   {
     ROS_ERROR("ArduinoInterface::arduinoAdcRead(): Could not send data to Arduino");
     return -1;
@@ -883,14 +884,15 @@ ssize_t ArduinoInterface::arduinoAdcWrite( uint8_t* voltage )
     return -1;
   }
   // construct array to send to Arduino:
-  uint8_t write_packet[3];
+  uint8_t write_packet[4];
   // load it with setup properties and data:
   write_packet[0] = data_packet_;
-  write_packet[1] = voltage[2]; // transmitting only the two LSB is enough because Arduino has maximum reference value = 5000
-  write_packet[2] = voltage[3];
+  write_packet[1] = bosch_drivers_common::ADCONVERTER;
+  write_packet[2] = voltage[2]; // transmitting only the two LSB is enough because Arduino has maximum reference value = 5000
+  write_packet[3] = voltage[3];
 	
   // send the data:
-  serial_port_->Write_Bytes( 3, write_packet );
+  serial_port_->Write_Bytes( 4, write_packet );
   usleep( 5000 );    //TODO remove?
   //Wait for verification:
   if(!( waitOnBytes( 1 )))
