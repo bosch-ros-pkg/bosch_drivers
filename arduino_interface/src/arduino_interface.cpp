@@ -642,13 +642,14 @@ ssize_t ArduinoInterface::arduinoEncoderRead( uint8_t device_address, uint8_t* d
 {
   const int num_bytes_encoder_transmission = 4;
   // construct array to send to Arduino:
-  uint8_t write_packet[2];
+  uint8_t write_packet[3];
   // load it with setup properties and data:
   write_packet[0] = data_packet_;
-  write_packet[1] = device_address;
+  write_packet[1] = bosch_drivers_common::ENCODER;
+  write_packet[2] = device_address;
   
   // send the data:
-  if( !serial_port_->Write_Bytes( 2, write_packet ) )
+  if( !serial_port_->Write_Bytes( 3, write_packet ) )
   {
     ROS_ERROR("ArduinoInterface::arduinoEncoderRead(): Could not send data to Arduino");
     return -1;
@@ -677,10 +678,11 @@ ssize_t ArduinoInterface::arduinoEncoderWrite( uint8_t device_address, uint8_t* 
 {  
   const int num_bytes_encoder_transmission = 4;
   // construct array to send to Arduino:
-  uint8_t write_packet[6];
+  uint8_t write_packet[7];
   // load it with setup properties and data:
   write_packet[0] = data_packet_;
-  write_packet[1] = device_address;  // command byte containing object_id in upper 4 bits and command in lower 4 bits
+  write_packet[1] = bosch_drivers_common::ENCODER;
+  write_packet[2] = device_address;  // command byte containing object_id in upper 4 bits and command in lower 4 bits
   
   switch( data[0] ) // read command
   {
@@ -734,10 +736,10 @@ ssize_t ArduinoInterface::arduinoEncoderWrite( uint8_t device_address, uint8_t* 
       return -1;
     } 
     
-    write_packet[2] = data[1];  // encoder pin 1
-    write_packet[3] = data[2];  // encoder pin 2
+    write_packet[3] = data[1];  // encoder pin 1
+    write_packet[4] = data[2];  // encoder pin 2
     // send the data:
-    if(! serial_port_->Write_Bytes( 4, write_packet ))
+    if(! serial_port_->Write_Bytes( 5, write_packet ))
     {
       ROS_ERROR("ArduinoInterface::arduinoEncoderWrite(): Could not send data to Arduino");
       return -1;
@@ -746,7 +748,7 @@ ssize_t ArduinoInterface::arduinoEncoderWrite( uint8_t device_address, uint8_t* 
       
   case DESTROY: // destroys object on hardware device
     // send the data:
-    if(! serial_port_->Write_Bytes( 2, write_packet ))
+    if(! serial_port_->Write_Bytes( 3, write_packet ))
     {
       ROS_ERROR("ArduinoInterface::arduinoEncoderWrite(): Could not send data to Arduino");
       return -1;
@@ -754,12 +756,12 @@ ssize_t ArduinoInterface::arduinoEncoderWrite( uint8_t device_address, uint8_t* 
     break;
   
   case SET_POSITION:  // sets new position for encoder object
-    write_packet[2] = data[3];  // position MSB
-    write_packet[3] = data[4];
-    write_packet[4] = data[5];
-    write_packet[5] = data[6];  // position LSB
+    write_packet[3] = data[3];  // position MSB
+    write_packet[4] = data[4];
+    write_packet[5] = data[5];
+    write_packet[6] = data[6];  // position LSB
     // send the data:
-    if(! serial_port_->Write_Bytes( 6, write_packet ))
+    if(! serial_port_->Write_Bytes( 7, write_packet ))
     {
       ROS_ERROR("ArduinoInterface::arduinoEncoderWrite(): Could not send data to Arduino");
       return -1;
@@ -805,7 +807,7 @@ ssize_t ArduinoInterface::arduinoAdcRead( uint8_t pin, uint8_t* data )
   // load it with setup properties and data:
   write_packet[0] = data_packet_;
   write_packet[1] = bosch_drivers_common::ADCONVERTER;
-  write_packet[3] = pin;
+  write_packet[2] = pin;
   
   // send the data:
   if(! serial_port_->Write_Bytes( 3, write_packet ))
