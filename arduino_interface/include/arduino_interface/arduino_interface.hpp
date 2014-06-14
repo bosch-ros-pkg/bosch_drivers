@@ -99,7 +99,7 @@ public:
    */
   ssize_t read( bosch_drivers_communication_properties properties,
 		uint8_t register_address,
-		std::vector<uint8_t> data );
+                std::vector<uint8_t> &data );
 
   __attribute__((deprecated))
   ssize_t read( uint8_t device_address, 
@@ -151,7 +151,7 @@ private:
   ssize_t arduinoI2cRead( bosch_drivers_communication_properties properties, uint8_t reg_address, std::vector<uint8_t> data );                
   ssize_t arduinoI2cWrite( bosch_drivers_communication_properties properties, uint8_t reg_address, std::vector<uint8_t> data );
 
-  ssize_t arduinoBuiltInRead( bosch_drivers_communication_properties properties, built_in_device_type type, std::vector<uint8_t> data );
+  ssize_t arduinoBuiltInRead( bosch_drivers_communication_properties properties, built_in_device_type type, std::vector<uint8_t> &data );
   ssize_t arduinoBuiltInWrite( bosch_drivers_communication_properties properties, built_in_device_type type, std::vector<uint8_t> data );
 
     ssize_t arduinoPwmWrite( bosch_drivers_communication_properties, std::vector<uint8_t> data );
