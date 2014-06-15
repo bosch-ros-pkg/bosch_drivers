@@ -34,7 +34,7 @@
  *
  *********************************************************************/
 
-//\Author Kai Franke, Robert Bosch LLC
+//\Author Kai Franke and Philip Roan, Robert Bosch LLC
 
 #include "encoder_driver/encoder_driver.h"
 
@@ -179,7 +179,7 @@ int64_t EncoderDriver::getPosition()
   }
   _last_position = position;
   
-  return ((_overflow * 4294967296) + position) * invert_ ;
+  return ((_overflow * 4294967296) + position) * invert_ ; // 2^32, replace with limits like in pwm
 }
 
 bool EncoderDriver::setPosition( int32_t position )
@@ -250,4 +250,5 @@ bosch_drivers_communication_properties EncoderDriver::getParameters()
 bool EncoderDriver::setParameters( bosch_drivers_communication_properties properties)
 {
   *communication_properties_ = properties;
+  return true;
 }
