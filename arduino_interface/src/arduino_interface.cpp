@@ -185,7 +185,7 @@ ssize_t ArduinoInterface::write( bosch_drivers_communication_properties properti
     break;
     default:
     {
-      ROS_ERROR( "Arduino does not support writing through this protocol." );
+      ROS_ERROR( "Arduino does not support writing through this (%d) protocol.", properties.protocol );
       error_code = -1;
     }
   }
