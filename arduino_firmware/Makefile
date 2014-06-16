@@ -271,8 +271,8 @@ READ_TARGET = current_firmware
 ifndef BOARD
 # Some examples:
 #BOARD := mega2560
-#BOARD := leonardo
-BOARD := uno
+BOARD := leonardo
+#BOARD := uno
 
 endif
 
