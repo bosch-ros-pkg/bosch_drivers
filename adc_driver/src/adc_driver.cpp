@@ -50,7 +50,6 @@ AdcDriver::~AdcDriver()
 bool AdcDriver::setDeviceAddress( uint8_t new_pin )
 {
   communication_properties_->device_address = new_pin;
-
   // do some other stuff?
 
   return true;
