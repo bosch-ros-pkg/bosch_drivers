@@ -64,6 +64,7 @@ namespace bosch_drivers_common
     sensor_driver_built_in( bosch_hardware_interface* hw ):
       sensor_driver( hw, BUILT_IN_DEVICE )
     {
+      communication_properties_->protocol = BUILT_IN;
     }
 
     /**
