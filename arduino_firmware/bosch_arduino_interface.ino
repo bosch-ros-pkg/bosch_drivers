@@ -608,11 +608,12 @@ bool encoder_write()
   uint8_t encoder_pin1, encoder_pin2;
 
   // wait for 1 byte
-  while( Serial.available() < 1 )
+  while( Serial.available() < 2 )
     ;
 
-  uint8_t control_byte = Serial.read();
-  switch( control_byte & 0x0F ) // read lower 4 bits to decrypt right command
+  uint8_t device_address = Serial.read();
+  uint8_t encoder_action = Serial.read();
+  switch( encoder_action )
   {
   case bosch_drivers_common::CREATE:  // create a new encoder object
     while( Serial.available() < 2 )
@@ -621,11 +622,11 @@ bool encoder_write()
     encoder_pin1 = Serial.read();
     encoder_pin2 = Serial.read();
     // create new encoder object in Encoder pointer array at the position defined by the upper 4 bits in the control byte
-    encoders[(control_byte & 0xF0) >> 4] = new Encoder( encoder_pin1, encoder_pin2 );
+    encoders[device_address] = new Encoder( encoder_pin1, encoder_pin2 );
     break;
     
   case bosch_drivers_common::DESTROY: // destroys an encoder object
-    delete encoders[(control_byte & 0xF0) >> 4];
+    delete encoders[device_address];
     break;
     
   case bosch_drivers_common::SET_POSITION:  // sets the encoder value
@@ -641,7 +642,7 @@ bool encoder_write()
     ticks |= temp[2] << 8;
     ticks |= temp[3] << 0;
     
-    encoders[(control_byte & 0xF0) >> 4]->write( ticks );
+    encoders[device_address]->write( ticks );
     break;
     
   default:
@@ -660,10 +661,10 @@ bool encoder_read()
   while( Serial.available() < 1 )
     ;
 
-  uint8_t control_byte = Serial.read();
+  uint8_t device_address = Serial.read();
   
   // reads the encoder value from the encoder object at the position defined by the upper 4 bits in the control byte
-  long ticks = encoders[(control_byte & 0xF0) >> 4]->read();
+  long ticks = encoders[device_address]->read();
   // convert long variable (4 Bytes long) by bitshifting
   Serial.write( (byte)((ticks & 0xFF000000) >> 24) );
   Serial.write( (byte)((ticks & 0x00FF0000) >> 16) );
