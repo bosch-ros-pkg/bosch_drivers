@@ -43,7 +43,7 @@
 #include <ros/console.h>
 
 #include <bosch_drivers_common/bosch_drivers_common.hpp>
-#include <bosch_drivers_common/bosch_drivers_sensor_driver_internal.hpp>
+#include <bosch_drivers_common/bosch_drivers_sensor_driver_built_in.hpp>
 #include <bosch_drivers_common/bosch_drivers_hardware_interface.hpp>
 
 using namespace bosch_drivers_common;
@@ -62,7 +62,7 @@ using namespace bosch_drivers_common;
  * to detect any changes.
  * See http://www.pjrc.com/teensy/td_libs_Encoder.html for more information
  */
-class EncoderDriver: public sensor_driver_internal
+class EncoderDriver: public sensor_driver_built_in
 {
   
 public:

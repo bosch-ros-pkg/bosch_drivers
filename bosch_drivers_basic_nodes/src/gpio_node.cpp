@@ -42,7 +42,7 @@
 #include <gpio_driver/gpio_driver.h>
 
 
-#define OUTPUT_PIN 4
+#define OUTPUT_PIN 13
 #define INPUT_PIN 3
 
 int main( int argc, char **argv )
@@ -73,7 +73,7 @@ int main( int argc, char **argv )
   
   bool value = 1;
   bool value2 = 0;
-	
+
   while( nh.ok() )
   {
     if( !gpio_output->setOutput( value ) )

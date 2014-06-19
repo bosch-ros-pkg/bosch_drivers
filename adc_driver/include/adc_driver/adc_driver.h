@@ -42,7 +42,7 @@
 // ROS headers for debugging output
 #include <ros/console.h>
 #include <bosch_drivers_common/bosch_drivers_common.hpp>
-#include <bosch_drivers_common/bosch_drivers_sensor_driver_internal.hpp>
+#include <bosch_drivers_common/bosch_drivers_sensor_driver_built_in.hpp>
 #include <bosch_drivers_common/bosch_drivers_hardware_interface.hpp>
 
 using namespace bosch_drivers_common;
@@ -52,7 +52,7 @@ using namespace bosch_drivers_common;
  *
  * This class lets the user access the ADC pins of any supported hardware
  */
-class AdcDriver: public sensor_driver_internal
+class AdcDriver: public sensor_driver_built_in
 {
 
 public:

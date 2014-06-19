@@ -38,7 +38,7 @@
 
 #include "adc_driver/adc_driver.h"
 
-AdcDriver::AdcDriver( bosch_hardware_interface* hw, uint8_t adc_pin ): sensor_driver_internal( hw )
+AdcDriver::AdcDriver( bosch_hardware_interface* hw, uint8_t adc_pin ): sensor_driver_built_in( hw )
 {
 }
 
@@ -50,7 +50,6 @@ AdcDriver::~AdcDriver()
 bool AdcDriver::setDeviceAddress( uint8_t new_pin )
 {
   communication_properties_->device_address = new_pin;
-
   // do some other stuff?
 
   return true;
