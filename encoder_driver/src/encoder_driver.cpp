@@ -34,14 +34,14 @@
  *
  *********************************************************************/
 
-//\Author Kai Franke, Robert Bosch LLC
+//\Author Kai Franke and Philip Roan, Robert Bosch LLC
 
 #include "encoder_driver/encoder_driver.h"
 
 bool EncoderDriver::encoders_[MAX_ENCODERS];
 
 EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder1_pin, uint8_t encoder2_pin ):
-  sensor_driver_internal( hw ),
+  sensor_driver_built_in( hw ),
   _encoder1_pin( encoder1_pin ),
   _encoder2_pin(encoder2_pin ),
   _last_position( 0 ),
@@ -76,7 +76,7 @@ EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder1_pin
 }
 
 EncoderDriver::EncoderDriver( bosch_hardware_interface* hw, uint8_t encoder_id ):
-  sensor_driver_internal( hw ),
+  sensor_driver_built_in( hw ),
   _encoder1_pin( 255 ),
   _encoder2_pin( 255 ),
   _last_position( 0 ),
@@ -179,7 +179,7 @@ int64_t EncoderDriver::getPosition()
   }
   _last_position = position;
   
-  return ((_overflow * 4294967296) + position) * invert_ ;
+  return ((_overflow * 4294967296) + position) * invert_ ; // 2^32, replace with limits like in pwm
 }
 
 bool EncoderDriver::setPosition( int32_t position )
@@ -250,4 +250,5 @@ bosch_drivers_communication_properties EncoderDriver::getParameters()
 bool EncoderDriver::setParameters( bosch_drivers_communication_properties properties)
 {
   *communication_properties_ = properties;
+  return true;
 }
