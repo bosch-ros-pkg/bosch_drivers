@@ -176,7 +176,7 @@ public:
   
   bool setFrequency( unsigned int frequency );
   bool setProtocol( interface_protocol protocol_name );
-  bool setParameters( bosch_driver_parameters parameters );
+  bool setParameters( bosch_drivers_communication_properties properties );
 
 
 

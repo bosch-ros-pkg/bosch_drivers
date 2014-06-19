@@ -60,7 +60,9 @@ add_dependencies(sub20_interface
 )
 target_link_libraries(sub20_interface
   ${catkin_LIBRARIES}
+  ${libusb_LIBRARIES}
   ${libsub20_LIBRARIES}
+  ${LIBUSB_1_LIBRARIES}
 )
 
 #############
@@ -93,6 +95,10 @@ install(TARGETS sub20_interface
 ## Mark cpp header files for installation
 install(DIRECTORY include/${PROJECT_NAME}/ 
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
+
+install(FILES ${libsub20_LIBRARIES}
+    DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)

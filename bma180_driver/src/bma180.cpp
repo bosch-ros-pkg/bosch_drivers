@@ -67,12 +67,12 @@ BMA180::BMA180( bosch_hardware_interface* hw ) :
   bandwidth_( BW_150 ),
   slave_address_bit_( 0 )
 {
-  sensor_parameters_->device_address = SLAVE_ADDRESS0;
-  sensor_parameters_->protocol = I2C;
-  sensor_parameters_->frequency = 400000;
+  communication_properties_->device_address = SLAVE_ADDRESS0;
+  communication_properties_->protocol = I2C;
+  communication_properties_->frequency = 400000;
   //byte_order( MSB_FIRST ),
   //spi_mode( SPI_MODE_3 )
-  //sensor_parameters_->flags = ;
+  //communication_properties_->flags = ;
 
 }
 
@@ -89,14 +89,14 @@ BMA180::~BMA180()
 /**********************************************************************/
 bool BMA180::setDeviceAddress( uint8_t address )
 {
-  sensor_parameters_->device_address = address;
+  communication_properties_->device_address = address;
   return true;
 }
 
 uint8_t BMA180::getDeviceAddress()
 {
   // depends on the protocol:
-  switch( sensor_parameters_->protocol )
+  switch( communication_properties_->protocol )
   {
   case I2C:
     // depends on hardware configuration:
@@ -109,7 +109,7 @@ uint8_t BMA180::getDeviceAddress()
         ROS_ERROR( "BMA180::getDeviceAddress(): invalid I2C address" );
     break;
   case SPI:
-    return sensor_parameters_->device_address;
+    return communication_properties_->device_address;
   default:
     ROS_ERROR( "BMA180::getDeviceAddress(): sensor has no identification. Either setPin(uint8_t pin) for SPI or setSlaveAddress( 0 or 1) for I2C." );
     return 255;
@@ -118,20 +118,20 @@ uint8_t BMA180::getDeviceAddress()
   return 255;
 }
 
-bool BMA180::setParameters( bosch_driver_parameters parameters )
+bool BMA180::setParameters( bosch_drivers_communication_properties properties )
 {
-  *sensor_parameters_ = parameters;
+  *communication_properties_ = properties;
   return true;
 }
 
 bool BMA180::setFrequency( unsigned int frequency )
 {
-  sensor_parameters_->frequency = frequency;
+  communication_properties_->frequency = frequency;
   return true;
 }
 
 /**********************************************************************/
-// Initialize sensor and hardware interface on user-requested parameters
+// Initialize sensor and hardware interface on user-requested properties
 /**********************************************************************/
 bool BMA180::initialize()
 {
@@ -1104,7 +1104,7 @@ bool BMA180::setAccelerationRange(accel_range measurement_range )
  
   // Compare register values to what we expect:
   uint8_t range_actual = ( local_range & (0x07 << range) ) >> range; // mask: b00001110
-  uint8_t range_expected = (uint8_t) accel_range_; // This is the value set in the parameters. 
+  uint8_t range_expected = (uint8_t) accel_range_; // This is the value set in the properties. 
  
   ROS_DEBUG( "bma180_driver: Acceleration range bits after change:  %d.  Expected: %d", range_actual, range_expected );
  
@@ -1140,7 +1140,7 @@ bool BMA180::setAccelerationRange(accel_range measurement_range )
     sensitivity_ = 0.00198;
     break;
   default: // shouldn't happen because input argument is only an accel_range data type.
-    ROS_ERROR( "bma180_parameters: invalid range setting." );
+    ROS_ERROR( "bma180_properties: invalid range setting." );
     return false;
   }
 
@@ -1186,7 +1186,7 @@ bool BMA180::changeBandwidth()
  
   // Compare register values to what we expect:
   uint8_t bandwidth_actual = ( local_bw_reg & (0x0F << bw) ) >> bw; // mask: b11110000
-  uint8_t bandwidth_expected = (uint8_t) bandwidth_; // This is the value set in the parameters. 
+  uint8_t bandwidth_expected = (uint8_t) bandwidth_; // This is the value set in the properties. 
  
   // #ifdef DEBUG
   ROS_INFO("Bandwidth bits after:  %d.  Expected: %d", bandwidth_actual, bandwidth_expected);
@@ -1267,7 +1267,7 @@ bool BMA180::readReg( uint8_t reg, uint8_t* value )
   switch( this->getProtocol() )
   {
   case I2C:
-    if( hardware_->read( *sensor_parameters_, reg, data ) < 0 ) 
+    if( hardware_->read( *communication_properties_, reg, data ) < 0 ) 
     {
       ROS_ERROR( "bma180_driver: Error reading register via I2C!" );
       return false;
@@ -1275,7 +1275,7 @@ bool BMA180::readReg( uint8_t reg, uint8_t* value )
     break;
   case SPI:
     // we must prepend the SPI_READ_FLAG.
-    if( hardware_->read( *sensor_parameters_, ( 1 << SPI_READ_FLAG ) | reg, data ) < 0 ) 
+    if( hardware_->read( *communication_properties_, ( 1 << SPI_READ_FLAG ) | reg, data ) < 0 ) 
     {
       ROS_ERROR( "bma180_driver: Error reading register via SPI!" );
       return false;
@@ -1302,7 +1302,7 @@ bool BMA180::writeToReg( uint8_t reg, uint8_t value )
   switch( this->getProtocol() )
   {
   case I2C:
-    if( hardware_->write( *sensor_parameters_, reg, data ) < 0 )
+    if( hardware_->write( *communication_properties_, reg, data ) < 0 )
     {
       ROS_ERROR( "bma180_driver: Error writing to register via I2C!" );
       return false;
@@ -1310,7 +1310,7 @@ bool BMA180::writeToReg( uint8_t reg, uint8_t value )
     break;
   case SPI:
     // we must prepend the SPI_WRITE_FLAG, although, technically it's already there, since it's zero.
-    if( hardware_->write( *sensor_parameters_, (~(1 << SPI_WRITE_FLAG)&reg), data) < 0 ) 
+    if( hardware_->write( *communication_properties_, (~(1 << SPI_WRITE_FLAG)&reg), data) < 0 ) 
     {
       ROS_ERROR( "bma180_driver: Error writing to register via SPI!" );
       return false;
@@ -1355,7 +1355,7 @@ bool BMA180::readSensorData( uint8_t reg, uint8_t* sensor_data, uint8_t num_byte
   switch( this->getProtocol() )
   {
   case I2C:
-    if( hardware_->read( *sensor_parameters_, reg, data ) < 0 ) 
+    if( hardware_->read( *communication_properties_, reg, data ) < 0 ) 
     {
       ROS_ERROR( "bma180_driver: Error reading register via I2C!" );
       return false;
@@ -1363,7 +1363,7 @@ bool BMA180::readSensorData( uint8_t reg, uint8_t* sensor_data, uint8_t num_byte
     break;
   case SPI:
     // we must prepend the SPI_READ_FLAG.
-    if( hardware_->read( *sensor_parameters_, ((1 << SPI_READ_FLAG)|reg), data ) < 0 ) 
+    if( hardware_->read( *communication_properties_, ((1 << SPI_READ_FLAG)|reg), data ) < 0 ) 
     {
       ROS_ERROR( "bma180_driver: Error reading register via SPI!" );
       return false;
@@ -1388,10 +1388,10 @@ bool BMA180::setProtocol( interface_protocol protocol )
   {
   case I2C:
   case SPI:
-    sensor_parameters_->protocol = protocol;
+    communication_properties_->protocol = protocol;
     break;
   default:
-    ROS_ERROR( "bma180_parameters:Unsupported protocol." );
+    ROS_ERROR( "bma180_properties:Unsupported protocol." );
     return false;
   }
   return true;
@@ -1402,7 +1402,7 @@ bool BMA180::setProtocol( interface_protocol protocol )
 bool BMA180::setByteOrder( uint8_t value )
 {
   // adjust the flags
-  sensor_parameters_->flags = ( (0xFB & sensor_parameters_->flags) | (value << 2) );
+  communication_properties_->flags = ( (0xFB & communication_properties_->flags) | (value << 2) );
   if( value > 1 )
   {
     ROS_ERROR("bma180_driver: Byte order must be either LSB_FIRST or MSB_FIRST");
@@ -1417,7 +1417,7 @@ bool BMA180::setByteOrder( uint8_t value )
 bool BMA180::setSpiMode( uint8_t mode )
 {
   // adjust the flags
-  sensor_parameters_->flags = ( (0xFC & sensor_parameters_->flags) | (mode) ); // 111111xx, where xx is the mode.
+  communication_properties_->flags = ( (0xFC & communication_properties_->flags) | (mode) ); // 111111xx, where xx is the mode.
  
   switch( mode )
   {
