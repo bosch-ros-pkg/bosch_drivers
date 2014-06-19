@@ -1,4 +1,4 @@
---- lib/Makefile	2011-01-18 06:11:23.000000000 -0800
+--- lib/Makefile	2010-09-05 09:51:21.000000000 -0700
 +++ lib/Makefile	2011-06-17 16:32:52.590648968 -0700
 @@ -24,7 +24,7 @@
  #------------------------------------------------------------------------------
@@ -9,8 +9,15 @@
  ifneq (,$(findstring $(OS),Linux Darwin))
  	CFLAGS += -DLIBUSB_1_0 -I/usr/local/include/libusb-1.0
  endif
-
-
+@@ -50,7 +50,7 @@
+ libsub.a : libsub.o
+ 	ar -rcsv $@ $^
+ libsub.so: libsub.o
+-	$(CC) -shared -Wl,-soname,$@ -o $@ libsub.o
++	$(CC) -shared -Wl,-soname,$@ -o $@ libsub.o -lusb-1.0
+ 
+ clean:
+ 	@echo $(OS) Clean
 --- lib/libsub.h	2011-01-18 06:11:23.000000000 -0800
 +++ lib/libsub.h	2011-06-17 16:32:52.590648968 -0700
 @@ -331,6 +331,7 @@

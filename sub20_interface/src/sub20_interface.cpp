@@ -137,11 +137,11 @@ bool Sub20Interface::initialize()
 /**********************************************************************/
 ssize_t Sub20Interface::read( uint8_t device_address, interface_protocol protocol, unsigned int frequency, uint8_t flags, uint8_t register_address, uint8_t* data, size_t num_bytes )
 {
-  bosch_driver_parameters parameters;
-  parameters.device_address = device_address;
-  parameters.protocol = protocol;
-  parameters.frequency = frequency;
-  parameters.flags = flags;
+  bosch_drivers_communication_properties communication_properties;
+  communication_properties.device_address = device_address;
+  communication_properties.protocol = protocol;
+  communication_properties.frequency = frequency;
+  communication_properties.flags = flags;
   
   std::vector<uint8_t> data_vector(num_bytes);
   for( int n = 0; n < num_bytes; n++ )
@@ -149,26 +149,26 @@ ssize_t Sub20Interface::read( uint8_t device_address, interface_protocol protoco
     data_vector[n] = data[n];
   }
   
-  return read( parameters, register_address, data_vector );
+  return read( communication_properties, register_address, data_vector );
 }
 
-ssize_t Sub20Interface::read( bosch_driver_parameters parameters, uint8_t register_address, std::vector<uint8_t> data )
+ssize_t Sub20Interface::read( bosch_drivers_communication_properties communication_properties, uint8_t register_address, std::vector<uint8_t> &data )
 {
   int error_code = 0;
   size_t num_bytes = data.size();
   
-  switch( parameters.protocol )
+  switch( communication_properties.protocol )
   {
   case I2C:
   {
-    sub_int32_t sub_freq = parameters.frequency;
-    // configure i2c bus according to parameters:
+    sub_int32_t sub_freq = communication_properties.frequency;
+    // configure i2c bus according to communication_properties:
     if( sub_i2c_freq( handle_, &sub_freq ) < 0 )
     {
       ROS_ERROR("Sub20Interface: I2c setup failed. \r Status: %s", sub_strerror(sub_errno) );
       return -1;
     }
-    if( sub_i2c_read( handle_, parameters.device_address, register_address, 1, (char*)(&data[0]), num_bytes ) < 0 )
+    if( sub_i2c_read( handle_, communication_properties.device_address, register_address, 1, (char*)(&data[0]), num_bytes ) < 0 )
     {
       ROS_ERROR("Sub20Interface: I2c read failed. \r Status: %s", sub_strerror(sub_errno));
       return -1;
@@ -177,8 +177,8 @@ ssize_t Sub20Interface::read( bosch_driver_parameters parameters, uint8_t regist
   }
   case SPI:
   {
-    // configure SPI bus according to parameters:
-    if( spiConfigRoutine( parameters.frequency, parameters.flags ) == false )
+    // configure SPI bus according to communication_properties:
+    if( spiConfigRoutine( communication_properties.frequency, communication_properties.flags ) == false )
     {
       ROS_ERROR("Sub20Interface::read(...): SPI configuration failed.");
       return -1;
@@ -198,11 +198,11 @@ ssize_t Sub20Interface::read( bosch_driver_parameters parameters, uint8_t regist
     uint8_t input_data[num_bytes + 1];
   
     // BEGIN transfer: two variations, depending on device address
-    switch( parameters.device_address )
+    switch( communication_properties.device_address )
     {
     case NULL_DEVICE:
       // Transfer without toggling chip_select line:
-      if( sub_spi_transfer( handle_, (char*)output_data, (char*)input_data, (num_bytes + 1), SS_CONF(parameters.device_address, SS_H) ) < 0)
+      if( sub_spi_transfer( handle_, (char*)output_data, (char*)input_data, (num_bytes + 1), SS_CONF(communication_properties.device_address, SS_H) ) < 0)
       {
 	ROS_ERROR( "Sub20Interface::read(...): SPI read failed. \r Status: %s", sub_strerror(sub_errno) );
 	return -1;
@@ -210,7 +210,7 @@ ssize_t Sub20Interface::read( bosch_driver_parameters parameters, uint8_t regist
       break;
     default:
       // Transfer normally (pull chip_select line low):
-      if( sub_spi_transfer( handle_, (char*)output_data, (char*)input_data, (num_bytes + 1), SS_CONF(parameters.device_address, SS_LO) ) < 0)
+      if( sub_spi_transfer( handle_, (char*)output_data, (char*)input_data, (num_bytes + 1), SS_CONF(communication_properties.device_address, SS_LO) ) < 0)
       {
 	ROS_ERROR( "Sub20Interface::read(...): SPI read failed. \r Status: %s", sub_strerror(sub_errno) );
 	return -1;
@@ -218,7 +218,7 @@ ssize_t Sub20Interface::read( bosch_driver_parameters parameters, uint8_t regist
     }
   
     // Transfer reg_address, and then receive num_bytes of data back:
-    if( sub_spi_transfer( handle_, (char*)output_data, (char*)input_data, (num_bytes + 1), SS_CONF(parameters.device_address, SS_LO) ) < 0)
+    if( sub_spi_transfer( handle_, (char*)output_data, (char*)input_data, (num_bytes + 1), SS_CONF(communication_properties.device_address, SS_LO) ) < 0)
     {
       ROS_ERROR("Sub20Interface::read(...): SPI read failed. \r Status: %s", sub_strerror(sub_errno));
       error_code = (-1);
@@ -250,11 +250,11 @@ ssize_t Sub20Interface::read( bosch_driver_parameters parameters, uint8_t regist
 /**********************************************************************/
 ssize_t Sub20Interface::write( uint8_t device_address, interface_protocol protocol, unsigned int frequency, uint8_t flags, uint8_t register_address, uint8_t* data, size_t num_bytes )
 {
-  bosch_driver_parameters parameters;
-  parameters.device_address = device_address;
-  parameters.protocol = protocol;
-  parameters.frequency = frequency;
-  parameters.flags = flags;
+  bosch_drivers_communication_properties communication_properties;
+  communication_properties.device_address = device_address;
+  communication_properties.protocol = protocol;
+  communication_properties.frequency = frequency;
+  communication_properties.flags = flags;
   
   std::vector<uint8_t> data_vector(num_bytes);
   for( int n = 0; n < num_bytes; n++ )
@@ -262,25 +262,25 @@ ssize_t Sub20Interface::write( uint8_t device_address, interface_protocol protoc
     data_vector[n] = data[n];
   }
   
-  return write( parameters, register_address, data_vector );
+  return write( communication_properties, register_address, data_vector );
 }
 
-ssize_t Sub20Interface::write( bosch_driver_parameters parameters, uint8_t register_address, std::vector<uint8_t> data )
+ssize_t Sub20Interface::write( bosch_drivers_communication_properties communication_properties, uint8_t register_address, std::vector<uint8_t> data )
 {
   int error_code = 0;
   size_t num_bytes = data.size();
   
-  switch( parameters.protocol )
+  switch( communication_properties.protocol )
   {
   case I2C:
   {
-    sub_int32_t sub_freq = parameters.frequency;
+    sub_int32_t sub_freq = communication_properties.frequency;
     if( sub_i2c_freq( handle_, &sub_freq ) < 0 )
     {
       ROS_ERROR("Sub20Interface::write(...): ERROR.  Could not set I2C frequency.");
       return -1;
     }
-    if( sub_i2c_write( handle_, parameters.device_address, register_address, 1, (char*)(&data[0]), num_bytes ) < 0 )
+    if( sub_i2c_write( handle_, communication_properties.device_address, register_address, 1, (char*)(&data[0]), num_bytes ) < 0 )
     {
       ROS_ERROR( "Sub20Interface::write(...): ERROR. Could not write data over I2C interface." );
       return -1;
@@ -289,7 +289,7 @@ ssize_t Sub20Interface::write( bosch_driver_parameters parameters, uint8_t regis
   }
   case SPI:
   {
-    if( spiConfigRoutine( parameters.frequency, parameters.flags ) == false )
+    if( spiConfigRoutine( communication_properties.frequency, communication_properties.flags ) == false )
     {
       ROS_ERROR("Sub20Interface::write(...): SPI configuration failed.");
       return -1;
@@ -305,7 +305,7 @@ ssize_t Sub20Interface::write( bosch_driver_parameters parameters, uint8_t regis
       output_data[i+1] = data[i];
     }
     // transfer reg_address, then data:
-    error_code += sub_spi_transfer( handle_, (char*)output_data, 0, (num_bytes+1), SS_CONF(parameters.device_address, SS_LO) ); //VERIFY SS_LO
+    error_code += sub_spi_transfer( handle_, (char*)output_data, 0, (num_bytes+1), SS_CONF(communication_properties.device_address, SS_LO) ); //VERIFY SS_LO
     return error_code;
   }
   case GPIO:
@@ -391,7 +391,7 @@ bool Sub20Interface::spiConfigRoutine( unsigned int frequency, uint8_t flags )
     return false;
   }
  
-  // decrypt flags, which were set in the parameters class:
+  // decrypt flags, which were set in the communication_properties class:
   uint8_t bit_order = ( (flags>>2) & 0x01 );  //0x01 = B00000001
   uint8_t mode = (flags & 0x03);        //0x03 = B00000011
   uint8_t spi_slave_select = ((flags >> 4) & 0x0F); //0x0F = B00001111

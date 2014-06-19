@@ -37,13 +37,15 @@
 //\Author Kai Franke and Philip Roan, Robert Bosch LLC
 
 #include "pwm_driver/pwm_driver.h"
+#include <limits.h>
 
 PwmDriver::PwmDriver( bosch_hardware_interface* hw, unsigned int frequency, uint8_t pin, unsigned int resolution_in_bits ):
-  sensor_driver_internal( hw ),
+  sensor_driver_built_in( hw ),
   duty_cycle_( 0.0 ),
   modulation_frequency_( 0 )
 {
   communication_properties_->device_address = pin;
+  communication_properties_->frequency = frequency;
 
   setResolution( resolution_in_bits );
 }
@@ -144,13 +146,23 @@ bool PwmDriver::convertDutyCycle()
   //duty_cycle_bytes_[3] = (uint8_t)temp;
 
  
-  pwm_resolution_t temp = (duty_cycle_ * static_cast<double>( 1<<resolution_bits_) );
+  pwm_resolution_t max_pwm_value = std::numeric_limits<pwm_resolution_t>::max();
+  max_pwm_value = max_pwm_value >> ((sizeof(pwm_resolution_t) - resolution_bytes_)*8);
+
+  pwm_resolution_t current_pwm_value = pwm_resolution_t(duty_cycle_* max_pwm_value);
+
   for( unsigned int i = 0; i < duty_cycle_bytes_.size(); i++ )
   {
-    duty_cycle_bytes_[i] = static_cast<uint8_t>( temp  >> 8*(resolution_bytes_ - i) );
+    unsigned int bit_movement = (resolution_bytes_ - i - 1) * 8;
+    duty_cycle_bytes_[i] = static_cast<uint8_t>( (current_pwm_value & (max_pwm_value << bit_movement )) >> bit_movement );
   }
   
-  //std::cout << "duty cycle: " << duty_cycle_ << "  chopped: " << duty_cycle_bytes_[0] + 0 << " " << duty_cycle_bytes_[1] + 0 << " " << duty_cycle_bytes_[2] + 0 << " " << duty_cycle_bytes[3] + 0 << " " << std::endl;
+  std::cout << "duty cycle: " << duty_cycle_ << "  chopped: ";
+  for(unsigned i = 0; i < duty_cycle_bytes_.size(); ++i) {
+      std::cout << duty_cycle_bytes_[i] + 0 << " ";
+  }
+  std::cout << std::endl;
+
   return true;
 }
 
