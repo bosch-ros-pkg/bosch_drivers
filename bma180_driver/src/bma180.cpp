@@ -1074,6 +1074,9 @@ bool BMA180::EnableWriting()
 bool BMA180::setAccelerationRange(accel_range measurement_range )
 {
   uint8_t local_range;
+  
+  /// Update data member
+  accel_range_ = measurement_range;
  
   // read current accel range register value for a local copy.
   if( this->readReg( ADDRESS_OFFSET_LSB1, &local_range ) == false )
