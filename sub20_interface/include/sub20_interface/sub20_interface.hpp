@@ -42,7 +42,7 @@
 // ROS headers for debugging output
 #include <ros/console.h>
 
-#include <libsub.h>
+#include <libsub20/libsub.h>
 #include <bosch_drivers_common/bosch_drivers_common.hpp>
 #include <bosch_drivers_common/bosch_drivers_hardware_interface.hpp>
 
