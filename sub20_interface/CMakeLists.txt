@@ -17,7 +17,7 @@ set(TARBALL_MD5 b7612cbf99deb6b496e764366715579f)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(libusb REQUIRED libusb-1.0)
 
-set(libsub20_INCLUDE_DIRS ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}/libsub20)
+set(libsub20_INCLUDE_DIRS ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION})
 include(ExternalProject)
 externalproject_add(libsub20
   PREFIX ${CMAKE_CURRENT_BINARY_DIR}
@@ -27,7 +27,7 @@ externalproject_add(libsub20
   PATCH_COMMAND patch -p0 -t -N < ${CMAKE_CURRENT_SOURCE_DIR}/src/libsub20/libsub20.patch
   CONFIGURE_COMMAND ""
   BUILD_COMMAND $(MAKE) -C ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20/lib libsub.so
-  INSTALL_COMMAND mkdir -p ${libsub20_INCLUDE_DIRS} COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20/lib/libsub.h ${libsub20_INCLUDE_DIRS}/
+  INSTALL_COMMAND mkdir -p ${libsub20_INCLUDE_DIRS}/libsub20 COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20/lib/libsub.h ${libsub20_INCLUDE_DIRS}/libsub20/
 )
 set(libsub20_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/src/libsub20/lib/libsub.so)
 
@@ -62,7 +62,6 @@ target_link_libraries(sub20_interface
   ${catkin_LIBRARIES}
   ${libusb_LIBRARIES}
   ${libsub20_LIBRARIES}
-  ${LIBUSB_1_LIBRARIES}
 )
 
 #############
